@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>AWS CDK</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
+    }
+
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
+    pre {
+      background-color: #000;
+      padding: 20px;
+      color: #fff;
+      font-size: 16px;
+      overflow: auto
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <p>This guide covers the essentials of AWS CDK with TypeScript, practical examples, and five real-world applications.</p>
+  <p>It&#39;ll provide a comprehensive guide to AWS CDK (Cloud Development Kit) in TypeScript, tailored for beginners to
+    advanced users, covering definitions, setup, step-by-step app creation, and detailed examples of five real-world
+    applications using popular AWS services.</p>
+  <hr>
+  <h2>What is AWS CDK?</h2>
+  <p>The <strong>AWS Cloud Development Kit (CDK)</strong> is an open-source framework that allows you to define cloud
+    infrastructure as code (IaC) using familiar programming languages like TypeScript, Python, Java, C#, and Go. Instead
+    of writing YAML/JSON templates (like AWS CloudFormation), you write code to define AWS resources, leveraging
+    programming constructs like loops, conditionals, and abstractions.</p>
+  <p><strong>Key Features</strong>:</p>
+  <ul>
+    <li><strong>High-level constructs</strong>: Pre-built components for common patterns (e.g., Lambda + API Gateway).
+    </li>
+    <li><strong>Type safety</strong>: TypeScript ensures compile-time validation of AWS resources.</li>
+    <li><strong>Modularity</strong>: Reuse code across projects with constructs and stacks.</li>
+    <li><strong>Integration with CloudFormation</strong>: CDK synthesizes CloudFormation templates under the hood.</li>
+    <li><strong>Local testing</strong>: Simulate AWS resources locally for faster development.</li>
+  </ul>
+  <p><strong>Why TypeScript?</strong>
+    TypeScript combines JavaScript’s flexibility with static typing, making it ideal for large-scale infrastructure
+    projects. It offers autocompletion, type checking, and better IDE support, reducing errors when defining AWS
+    resources.</p>
+  <hr>
+  <h2>Step-by-Step Guide to AWS CDK with TypeScript</h2>
+  <h3>Prerequisites</h3>
+  <ol>
+    <li><strong>AWS Account</strong>: Sign up at <a href="https://aws.amazon.com">aws.amazon.com</a>.</li>
+    <li><strong>Node.js</strong>: Install Node.js (v16 or later) from <a href="https://nodejs.org">nodejs.org</a>.</li>
+    <li><strong>AWS CLI</strong>: Install and configure the AWS CLI (<code>aws configure</code>) with your credentials.
+    </li>
+    <li><strong>TypeScript</strong>: Installed globally via <code>npm install -g typescript</code>.</li>
+    <li><strong>AWS CDK CLI</strong>: Install via <code>npm install -g aws-cdk</code>.</li>
+    <li><strong>IDE</strong>: Use VS Code or any TypeScript-compatible IDE for better development experience.</li>
+  </ol>
+  <h3>Step 1: Set Up a New CDK Project</h3>
+  <ol>
+    <li><strong>Create a directory</strong> for your project:
+      <pre><code class="language-bash">mkdir my-cdk-app
+cd my-cdk-app
+</code></pre>
+    </li>
+    <li><strong>Initialize a CDK app</strong>:
+      <pre><code class="language-bash">cdk init app --language typescript
+</code></pre>
+      This creates a scaffold with:<ul>
+        <li><code>lib/my-cdk-app-stack.ts</code>: Main stack definition.</li>
+        <li><code>bin/my-cdk-app.ts</code>: Entry point for the app.</li>
+        <li><code>package.json</code>: Node.js dependencies.</li>
+        <li><code>cdk.json</code>: CDK configuration.</li>
+      </ul>
+    </li>
+    <li><strong>Install AWS CDK libraries</strong>:
+      <pre><code class="language-bash">npm install @aws-cdk/aws-ec2 @aws-cdk/aws-lambda @aws-cdk/aws-appsync @aws-cdk/aws-apigateway @aws-cdk/aws-dynamodb @aws-cdk/aws-eventbridge @aws-cdk/aws-ses @aws-cdk/aws-sns @aws-cdk/aws-s3
+</code></pre>
+    </li>
+    <li><strong>Verify setup</strong>:
+      <pre><code class="language-bash">cdk synth
+</code></pre>
+      This generates a CloudFormation template in <code>cdk.out/</code>.
+    </li>
+  </ol>
+  <h3>Step 2: Understand CDK Concepts</h3>
+  <ul>
+    <li><strong>Construct</strong>: The building block of CDK. Represents an AWS resource (e.g., S3 bucket, Lambda
+      function).</li>
+    <li><strong>Stack</strong>: A collection of constructs that form a deployable unit (maps to a CloudFormation stack).
+    </li>
+    <li><strong>App</strong>: The root of your CDK project, containing one or more stacks.</li>
+    <li><strong>Environment</strong>: Specifies the AWS account and region for deployment.</li>
+  </ul>
+  <h3>Step 3: Write Your First CDK Stack</h3>
+  <p>Edit <code>lib/my-cdk-app-stack.ts</code> to define a simple S3 bucket:</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as s3 from &#39;aws-cdk-lib/aws-s3&#39;;
+
+export class MyCdkAppStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Define an S3 bucket
+    new s3.Bucket(this, &#39;MyFirstBucket&#39;, {
+      versioned: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes bucket on stack deletion
+      autoDeleteObjects: true, // Auto-deletes objects on bucket deletion
+    });
+  }
+}
+</code></pre>
+  <h3>Step 4: Deploy the Stack</h3>
+  <ol>
+    <li><strong>Bootstrap CDK</strong> (one-time setup for your AWS account/region):
+      <pre><code class="language-bash">cdk bootstrap aws://&lt;your-account-id&gt;/&lt;your-region&gt;
+</code></pre>
+    </li>
+    <li><strong>Synthesize the template</strong>:
+      <pre><code class="language-bash">cdk synth
+</code></pre>
+    </li>
+    <li><strong>Deploy the stack</strong>:
+      <pre><code class="language-bash">cdk deploy
+</code></pre>
+      This creates the S3 bucket in your AWS account.
+    </li>
+    <li><strong>Clean up</strong> (optional):
+      <pre><code class="language-bash">cdk destroy
+</code></pre>
+    </li>
+  </ol>
+  <hr>
+  <h2>Example 1: EC2 with Nginx and WordPress</h2>
+  <p>This example creates an EC2 instance running Nginx and WordPress.</p>
+  <p><strong>Code</strong> (<code>lib/ec2-wordpress-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as ec2 from &#39;aws-cdk-lib/aws-ec2&#39;;
+import * as iam from &#39;aws-cdk-lib/aws-iam&#39;;
+
+export class Ec2WordpressStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Create a VPC
+    const vpc = new ec2.Vpc(this, &#39;WordpressVPC&#39;, {
+      maxAzs: 2,
+    });
+
+    // Create an EC2 instance
+    const instance = new ec2.Instance(this, &#39;WordpressInstance&#39;, {
+      vpc,
+      instanceType: new ec2.InstanceType(&#39;t2.micro&#39;),
+      machineImage: ec2.MachineImage.latestAmazonLinux2(),
+      securityGroup: new ec2.SecurityGroup(this, &#39;InstanceSG&#39;, {
+        vpc,
+        allowAllOutbound: true,
+      }),
+    });
+
+    // Allow HTTP traffic
+    instance.connections.allowFromAnyIpv4(ec2.Port.tcp(80), &#39;Allow HTTP&#39;);
+
+    // User data script to install Nginx and WordPress
+    instance.addUserData(
+      `#!/bin/bash
+      yum update -y
+      amazon-linux-extras install nginx1 -y
+      systemctl enable nginx
+      systemctl start nginx
+      yum install php php-mysqlnd php-fpm mariadb -y
+      wget https://wordpress.org/latest.tar.gz
+      tar -xzf latest.tar.gz -C /usr/share/nginx/html/
+      chown -R nginx:nginx /usr/share/nginx/html/wordpress
+      echo &quot;server {
+        listen 80;
+        root /usr/share/nginx/html/wordpress;
+        index index.php;
+        location / {
+          try_files \$uri \$uri/ /index.php?\$args;
+        }
+        location ~ \\.php$ {
+          include fastcgi_params;
+          fastcgi_pass unix:/run/php-fpm/www.sock;
+          fastcgi_index index.php;
+          fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        }
+      }&quot; &gt; /etc/nginx/conf.d/wordpress.conf
+      systemctl restart nginx
+      systemctl restart php-fpm`
+    );
+
+    // Add SSM role for debugging
+    instance.role.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(&#39;AmazonSSMManagedInstanceCore&#39;)
+    );
+
+    // Output the instance public IP
+    new cdk.CfnOutput(this, &#39;InstancePublicIP&#39;, {
+      value: instance.instancePublicIp,
+    });
+  }
+}
+</code></pre>
+  <p><strong>Deploy</strong>:</p>
+  <ol>
+    <li>Update <code>bin/my-cdk-app.ts</code> to use <code>Ec2WordpressStack</code>.</li>
+    <li>Run <code>cdk deploy</code>.</li>
+    <li>Access the WordPress site via the public IP (configure a database separately for production).</li>
+  </ol>
+  <p><strong>Usage</strong>:</p>
+  <ul>
+    <li>Hosts a WordPress blog or site.</li>
+    <li>Scalable by adding an Auto Scaling Group.</li>
+    <li>Secure with a custom security group.</li>
+  </ul>
+  <hr>
+  <h2>Example 2: Lambda + API Gateway + DynamoDB</h2>
+  <p>This example creates a serverless REST API with Lambda and DynamoDB for a simple CRUD app.</p>
+  <p><strong>Code</strong> (<code>lib/serverless-api-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as lambda from &#39;aws-cdk-lib/aws-lambda&#39;;
+import * as apigateway from &#39;aws-cdk-lib/aws-apigateway&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+
+export class ServerlessApiStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Create DynamoDB table
+    const table = new dynamodb.Table(this, &#39;ItemsTable&#39;, {
+      partitionKey: { name: &#39;id&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Create Lambda function
+    const fn = new lambda.Function(this, &#39;ItemsFunction&#39;, {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: &#39;index.handler&#39;,
+      code: lambda.Code.fromInline(`
+        const AWS = require(&#39;aws-sdk&#39;);
+        const dynamo = new AWS.DynamoDB.DocumentClient();
+        exports.handler = async (event) =&gt; {
+          const id = event.pathParameters?.id || Math.random().toString(36).slice(2);
+          const body = event.body ? JSON.parse(event.body) : {};
+          if (event.httpMethod === &#39;GET&#39;) {
+            const data = await dynamo.get({ TableName: &#39;${table.tableName}&#39;, Key: { id } }).promise();
+            return { statusCode: 200, body: JSON.stringify(data.Item) };
+          } else if (event.httpMethod === &#39;PUT&#39;) {
+            await dynamo.put({ TableName: &#39;${table.tableName}&#39;, Item: { id, ...body } }).promise();
+            return { statusCode: 200, body: JSON.stringify({ id, ...body }) };
+          }
+          return { statusCode: 400 };
+        };
+      `),
+    });
+
+    // Grant Lambda access to DynamoDB
+    table.grantReadWriteData(fn);
+
+    // Create API Gateway
+    const api = new apigateway.RestApi(this, &#39;ItemsApi&#39;);
+    const items = api.root.addResource(&#39;items&#39;);
+    const item = items.addResource(&#39;{id}&#39;);
+    item.addMethod(&#39;GET&#39;, new apigateway.LambdaIntegration(fn));
+    item.addMethod(&#39;PUT&#39;, new apigateway.LambdaIntegration(fn));
+
+    // Output API URL
+    new cdk.CfnOutput(this, &#39;ApiUrl&#39;, { value: api.url });
+  }
+}
+</code></pre>
+  <p><strong>Deploy</strong>:</p>
+  <ol>
+    <li>Update <code>bin/my-cdk-app.ts</code>.</li>
+    <li>Run <code>cdk deploy</code>.</li>
+    <li>Test with <code>curl &lt;api-url&gt;/items/123</code> (GET) or
+      <code>curl -X PUT &lt;api-url&gt;/items/123 -d &#39;{&quot;name&quot;:&quot;test&quot;}&#39;</code> (PUT).</li>
+  </ol>
+  <p><strong>Usage</strong>:</p>
+  <ul>
+    <li>Backend for apps needing simple CRUD operations.</li>
+    <li>Scales automatically with Lambda.</li>
+    <li>Cost-efficient for low-traffic APIs.</li>
+  </ul>
+  <hr>
+  <h2>Example 3: AppSync + DynamoDB</h2>
+  <p>This example creates a GraphQL API with AppSync and DynamoDB.</p>
+  <p><strong>Code</strong> (<code>lib/appsync-graphql-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as appsync from &#39;aws-cdk-lib/aws-appsync&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+
+export class AppsyncGraphqlStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Create DynamoDB table
+    const table = new dynamodb.Table(this, &#39;TodosTable&#39;, {
+      partitionKey: { name: &#39;id&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Create AppSync API
+    const api = new appsync.GraphqlApi(this, &#39;TodoApi&#39;, {
+      name: &#39;todo-api&#39;,
+      schema: appsync.Schema.fromAsset(&#39;graphql/schema.graphql&#39;),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.API_KEY,
+        },
+      },
+    });
+
+    // Create data source
+    const dataSource = api.addDynamoDbDataSource(&#39;TodoDataSource&#39;, table);
+
+    // Define resolvers
+    dataSource.createResolver({
+      typeName: &#39;Query&#39;,
+      fieldName: &#39;getTodo&#39;,
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbGetItem(&#39;id&#39;, &#39;id&#39;),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
+
+    dataSource.createResolver({
+      typeName: &#39;Mutation&#39;,
+      fieldName: &#39;createTodo&#39;,
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbPutItem(
+        appsync.PrimaryKey.partition(&#39;id&#39;).auto(),
+        appsync.Values.projecting(&#39;input&#39;)
+      ),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
+
+    // Output API URL and key
+    new cdk.CfnOutput(this, &#39;GraphqlUrl&#39;, { value: api.graphqlUrl });
+    new cdk.CfnOutput(this, &#39;ApiKey&#39;, { value: api.apiKey || &#39;&#39; });
+  }
+}
+</code></pre>
+  <p><strong>GraphQL Schema</strong> (<code>graphql/schema.graphql</code>):</p>
+  <pre><code class="language-graphql">type Todo {
+  id: ID!
+  title: String!
+}
+type Query {
+  getTodo(id: ID!): Todo
+}
+type Mutation {
+  createTodo(input: TodoInput!): Todo
+}
+input TodoInput {
+  title: String!
+}
+</code></pre>
+  <p><strong>Deploy</strong>:</p>
+  <ol>
+    <li>Create the <code>graphql/</code> folder and add <code>schema.graphql</code>.</li>
+    <li>Update <code>bin/my-cdk-app.ts</code>.</li>
+    <li>Run <code>cdk deploy</code>.</li>
+    <li>Test with a GraphQL client like Postman.</li>
+  </ol>
+  <p><strong>Usage</strong>:</p>
+  <ul>
+    <li>Powers modern frontends (React, Vue) with real-time GraphQL.</li>
+    <li>Integrates with authentication (Cognito).</li>
+    <li>Scales with AppSync’s managed infrastructure.</li>
+  </ul>
+  <hr>
+  <h2>Five Real-World CDK Applications</h2>
+  <h3>1. E-commerce Website</h3>
+  <p><strong>Architecture</strong>:</p>
+  <ul>
+    <li><strong>S3</strong>: Static website hosting for frontend (React).</li>
+    <li><strong>API Gateway + Lambda</strong>: REST API for product catalog and orders.</li>
+    <li><strong>DynamoDB</strong>: Stores products, users, and orders.</li>
+    <li><strong>SES</strong>: Sends order confirmation emails.</li>
+    <li><strong>CloudFront</strong>: CDN for fast content delivery.</li>
+  </ul>
+  <p><strong>Code</strong> (<code>lib/ecommerce-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as s3 from &#39;aws-cdk-lib/aws-s3&#39;;
+import * as cloudfront from &#39;aws-cdk-lib/aws-cloudfront&#39;;
+import * as lambda from &#39;aws-cdk-lib/aws-lambda&#39;;
+import * as apigateway from &#39;aws-cdk-lib/aws-apigateway&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+import * as ses from &#39;aws-cdk-lib/aws-ses&#39;;
+
+export class EcommerceStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // S3 bucket for frontend
+    const bucket = new s3.Bucket(this, &#39;FrontendBucket&#39;, {
+      websiteIndexDocument: &#39;index.html&#39;,
+      publicReadAccess: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // CloudFront distribution
+    const distribution = new cloudfront.CloudFrontWebDistribution(this, &#39;Distribution&#39;, {
+      originConfigs: [
+        {
+          s3OriginSource: { s3BucketSource: bucket },
+          behaviors: [{ isDefaultBehavior: true }],
+        },
+      ],
+    });
+
+    // DynamoDB table for products
+    const productTable = new dynamodb.Table(this, &#39;ProductsTable&#39;, {
+      partitionKey: { name: &#39;id&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Lambda for product API
+    const productFn = new lambda.Function(this, &#39;ProductFunction&#39;, {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: &#39;index.handler&#39;,
+      code: lambda.Code.fromInline(`
+        const AWS = require(&#39;aws-sdk&#39;);
+        const dynamo = new AWS.DynamoDB.DocumentClient();
+        exports.handler = async () =&gt; {
+          const data = await dynamo.scan({ TableName: &#39;${productTable.tableName}&#39; }).promise();
+          return { statusCode: 200, body: JSON.stringify(data.Items) };
+        };
+      `),
+    });
+    productTable.grantReadData(productFn);
+
+    // API Gateway
+    const api = new apigateway.RestApi(this, &#39;ProductApi&#39;);
+    api.root.addResource(&#39;products&#39;).addMethod(&#39;GET&#39;, new apigateway.LambdaIntegration(productFn));
+
+    // SES for emails
+    new ses.EmailIdentity(this, &#39;EmailIdentity&#39;, {
+      identity: ses.Identity.email(&#39;no-reply@yourdomain.com&#39;),
+    });
+
+    // Outputs
+    new cdk.CfnOutput(this, &#39;FrontendUrl&#39;, { value: `https://${distribution.distributionDomainName}` });
+    new cdk.CfnOutput(this, &#39;ApiUrl&#39;, { value: api.url });
+  }
+}
+</code></pre>
+  <p><strong>Features</strong>:</p>
+  <ul>
+    <li>Scalable frontend with S3 + CloudFront.</li>
+    <li>Serverless backend with Lambda.</li>
+    <li>Email notifications for orders.</li>
+    <li>DynamoDB for fast product queries.</li>
+  </ul>
+  <hr>
+  <h3>2. Subscription-Based Website</h3>
+  <p><strong>Architecture</strong>:</p>
+  <ul>
+    <li><strong>EC2</strong>: Hosts a Node.js app for subscription management.</li>
+    <li><strong>DynamoDB</strong>: Stores user subscriptions.</li>
+    <li><strong>SNS</strong>: Notifies users of subscription changes.</li>
+    <li><strong>EventBridge</strong>: Schedules billing reminders.</li>
+  </ul>
+  <p><strong>Code</strong> (<code>lib/subscription-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as ec2 from &#39;aws-cdk-lib/aws-ec2&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+import * as sns from &#39;aws-cdk-lib/aws-sns&#39;;
+import * as eventbridge from &#39;aws-cdk-lib/aws-events&#39;;
+import * as targets from &#39;aws-cdk-lib/aws-events-targets&#39;;
+import * as lambda from &#39;aws-cdk-lib/aws-lambda&#39;;
+
+export class SubscriptionStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // VPC for EC2
+    const vpc = new ec2.Vpc(this, &#39;SubscriptionVPC&#39;, { maxAzs: 2 });
+
+    // EC2 instance for Node.js app
+    const instance = new ec2.Instance(this, &#39;AppInstance&#39;, {
+      vpc,
+      instanceType: new ec2.InstanceType(&#39;t2.micro&#39;),
+      machineImage: ec2.MachineImage.latestAmazonLinux2(),
+      securityGroup: new ec2.SecurityGroup(this, &#39;AppSG&#39;, {
+        vpc,
+        allowAllOutbound: true,
+      }),
+    });
+    instance.connections.allowFromAnyIpv4(ec2.Port.tcp(80), &#39;Allow HTTP&#39;);
+
+    // DynamoDB for subscriptions
+    const subscriptionTable = new dynamodb.Table(this, &#39;SubscriptionsTable&#39;, {
+      partitionKey: { name: &#39;userId&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // SNS topic for notifications
+    const topic = new sns.Topic(this, &#39;SubscriptionTopic&#39;);
+
+    // Lambda for billing reminders
+    const reminderFn = new lambda.Function(this, &#39;ReminderFunction&#39;, {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: &#39;index.handler&#39;,
+      code: lambda.Code.fromInline(`
+        const AWS = require(&#39;aws-sdk&#39;);
+        const sns = new AWS.SNS();
+        exports.handler = async () =&gt; {
+          await sns.publish({
+            TopicArn: &#39;${topic.topicArn}&#39;,
+            Message: &#39;Your subscription is due soon!&#39;,
+          }).promise();
+          return { statusCode: 200 };
+        };
+      `),
+    });
+    topic.grantPublish(reminderFn);
+
+    // EventBridge rule for weekly reminders
+    new eventbridge.Rule(this, &#39;BillingRule&#39;, {
+      schedule: eventbridge.Schedule.rate(cdk.Duration.days(7)),
+      targets: [new targets.LambdaFunction(reminderFn)],
+    });
+
+    // Outputs
+    new cdk.CfnOutput(this, &#39;InstanceIP&#39;, { value: instance.instancePublicIp });
+  }
+}
+</code></pre>
+  <p><strong>Features</strong>:</p>
+  <ul>
+    <li>Node.js app for subscription management.</li>
+    <li>Automated billing reminders via EventBridge + Lambda.</li>
+    <li>SNS for user notifications.</li>
+    <li>DynamoDB for persistent storage.</li>
+  </ul>
+  <hr>
+  <h3>3. Membership-Based Website</h3>
+  <p><strong>Architecture</strong>:</p>
+  <ul>
+    <li><strong>AppSync</strong>: GraphQL API for membership data.</li>
+    <li><strong>DynamoDB</strong>: Stores member profiles.</li>
+    <li><strong>Cognito</strong>: User authentication.</li>
+    <li><strong>S3</strong>: Stores member-uploaded files.</li>
+  </ul>
+  <p><strong>Code</strong> (<code>lib/membership-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as appsync from &#39;aws-cdk-lib/aws-appsync&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+import * as cognito from &#39;aws-cdk-lib/aws-cognito&#39;;
+import * as s3 from &#39;aws-cdk-lib/aws-s3&#39;;
+
+export class MembershipStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Cognito user pool
+    const userPool = new cognito.UserPool(this, &#39;MemberPool&#39;, {
+      selfSignUpEnabled: true,
+      autoVerify: { email: true },
+      signInAliases: { email: true },
+    });
+
+    // DynamoDB for member data
+    const memberTable = new dynamodb.Table(this, &#39;MembersTable&#39;, {
+      partitionKey: { name: &#39;id&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // AppSync API
+    const api = new appsync.GraphqlApi(this, &#39;MemberApi&#39;, {
+      name: &#39;member-api&#39;,
+      schema: appsync.Schema.fromAsset(&#39;graphql/membership.graphql&#39;),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.USER_POOL,
+          userPoolConfig: { userPool },
+        },
+      },
+    });
+
+    // Data source
+    const dataSource = api.addDynamoDbDataSource(&#39;MemberDataSource&#39;, memberTable);
+    dataSource.createResolver({
+      typeName: &#39;Query&#39;,
+      fieldName: &#39;getMember&#39;,
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbGetItem(&#39;id&#39;, &#39;id&#39;),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
+
+    // S3 bucket for uploads
+    const uploadBucket = new s3.Bucket(this, &#39;UploadBucket&#39;, {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Outputs
+    new cdk.CfnOutput(this, &#39;GraphqlUrl&#39;, { value: api.graphqlUrl });
+    new cdk.CfnOutput(this, &#39;UserPoolId&#39;, { value: userPool.userPoolId });
+  }
+}
+</code></pre>
+  <p><strong>GraphQL Schema</strong> (<code>graphql/membership.graphql</code>):</p>
+  <pre><code class="language-graphql">type Member {
+  id: ID!
+  name: String!
+}
+type Query {
+  getMember(id: ID!): Member
+}
+</code></pre>
+  <p><strong>Features</strong>:</p>
+  <ul>
+    <li>Secure user authentication with Cognito.</li>
+    <li>GraphQL API for member data.</li>
+    <li>S3 for file uploads (e.g., profile pictures).</li>
+    <li>Scalable and serverless.</li>
+  </ul>
+  <hr>
+  <h3>4. Multiple News Websites</h3>
+  <p><strong>Architecture</strong>:</p>
+  <ul>
+    <li><strong>S3 + CloudFront</strong>: Hosts multiple static news sites.</li>
+    <li><strong>Lambda@Edge</strong>: Customizes content based on domain.</li>
+    <li><strong>DynamoDB</strong>: Stores articles.</li>
+    <li><strong>EventBridge</strong>: Schedules content updates.</li>
+  </ul>
+  <p><strong>Code</strong> (<code>lib/news-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as s3 from &#39;aws-cdk-lib/aws-s3&#39;;
+import * as cloudfront from &#39;aws-cdk-lib/aws-cloudfront&#39;;
+import * as lambda from &#39;aws-cdk-lib/aws-lambda&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+import * as eventbridge from &#39;aws-cdk-lib/aws-events&#39;;
+import * as targets from &#39;aws-cdk-lib/aws-events-targets&#39;;
+
+export class NewsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // S3 bucket for news sites
+    const bucket = new s3.Bucket(this, &#39;NewsBucket&#39;, {
+      websiteIndexDocument: &#39;index.html&#39;,
+      publicReadAccess: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Lambda@Edge for domain-based routing
+    const edgeFn = new lambda.Function(this, &#39;EdgeFunction&#39;, {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: &#39;index.handler&#39;,
+      code: lambda.Code.fromInline(`
+        exports.handler = async (event) =&gt; {
+          const request = event.Records[0].cf.request;
+          request.uri = request.headers.host[0].value.includes(&#39;site1&#39;) ? &#39;/site1/index.html&#39; : &#39;/site2/index.html&#39;;
+          return request;
+        };
+      `),
+    });
+
+    // CloudFront distribution
+    const distribution = new cloudfront.CloudFrontWebDistribution(this, &#39;NewsDistribution&#39;, {
+      originConfigs: [
+        {
+          s3OriginSource: { s3BucketSource: bucket },
+          behaviors: [
+            {
+              isDefaultBehavior: true,
+              lambdaFunctionAssociations: [
+                {
+                  eventType: cloudfront.LambdaFunctionAssociationEventType.VIEWER_REQUEST,
+                  lambdaFunction: edgeFn,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    // DynamoDB for articles
+    const articleTable = new dynamodb.Table(this, &#39;ArticlesTable&#39;, {
+      partitionKey: { name: &#39;id&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Lambda for content updates
+    const updateFn = new lambda.Function(this, &#39;UpdateFunction&#39;, {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: &#39;index.handler&#39;,
+      code: lambda.Code.fromInline(`
+        exports.handler = async () =&gt; {
+          console.log(&#39;Updating articles...&#39;);
+          return { statusCode: 200 };
+        };
+      `),
+    });
+
+    // EventBridge for daily updates
+    new eventbridge.Rule(this, &#39;UpdateRule&#39;, {
+      schedule: eventbridge.Schedule.rate(cdk.Duration.days(1)),
+      targets: [new targets.LambdaFunction(updateFn)],
+    });
+
+    // Outputs
+    new cdk.CfnOutput(this, &#39;DistributionUrl&#39;, { value: `https://${distribution.distributionDomainName}` });
+  }
+}
+</code></pre>
+  <p><strong>Features</strong>:</p>
+  <ul>
+    <li>Multiple news sites from one S3 bucket.</li>
+    <li>Dynamic routing with Lambda@Edge.</li>
+    <li>Scheduled content updates.</li>
+    <li>Fast delivery with CloudFront.</li>
+  </ul>
+  <hr>
+  <h3>5. CRM System</h3>
+  <p><strong>Architecture</strong>:</p>
+  <ul>
+    <li><strong>AppSync</strong>: GraphQL API for customer data.</li>
+    <li><strong>DynamoDB</strong>: Stores customer records.</li>
+    <li><strong>Lambda</strong>: Processes customer interactions.</li>
+    <li><strong>SNS</strong>: Sends notifications to sales reps.</li>
+  </ul>
+  <p><strong>Code</strong> (<code>lib/crm-stack.ts</code>):</p>
+  <pre><code class="language-typescript">import * as cdk from &#39;aws-cdk-lib&#39;;
+import { Construct } from &#39;constructs&#39;;
+import * as appsync from &#39;aws-cdk-lib/aws-appsync&#39;;
+import * as dynamodb from &#39;aws-cdk-lib/aws-dynamodb&#39;;
+import * as lambda from &#39;aws-cdk-lib/aws-lambda&#39;;
+import * as sns from &#39;aws-cdk-lib/aws-sns&#39;;
+
+export class CrmStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // DynamoDB for customers
+    const customerTable = new dynamodb.Table(this, &#39;CustomersTable&#39;, {
+      partitionKey: { name: &#39;id&#39;, type: dynamodb.AttributeType.STRING },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // AppSync API
+    const api = new appsync.GraphqlApi(this, &#39;CrmApi&#39;, {
+      name: &#39;crm-api&#39;,
+      schema: appsync.Schema.fromAsset(&#39;graphql/crm.graphql&#39;),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.API_KEY,
+        },
+      },
+    });
+
+    // Data source
+    const dataSource = api.addDynamoDbDataSource(&#39;CustomerDataSource&#39;, customerTable);
+    dataSource.createResolver({
+      typeName: &#39;Query&#39;,
+      fieldName: &#39;getCustomer&#39;,
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbGetItem(&#39;id&#39;, &#39;id&#39;),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
+
+    // SNS topic for notifications
+    const topic = new sns.Topic(this, &#39;CustomerTopic&#39;);
+
+    // Lambda for processing interactions
+    const interactionFn = new lambda.Function(this, &#39;InteractionFunction&#39;, {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: &#39;index.handler&#39;,
+      code: lambda.Code.fromInline(`
+        const AWS = require(&#39;aws-sdk&#39;);
+        const sns = new AWS.SNS();
+        exports.handler = async (event) =&gt; {
+          await sns.publish({
+            TopicArn: &#39;${topic.topicArn}&#39;,
+            Message: &#39;New customer interaction: &#39; + JSON.stringify(event),
+          }).promise();
+          return { statusCode: 200 };
+        };
+      `),
+    });
+    topic.grantPublish(interactionFn);
+
+    // Outputs
+    new cdk.CfnOutput(this, &#39;GraphqlUrl&#39;, { value: api.graphqlUrl });
+  }
+}
+</code></pre>
+  <p><strong>GraphQL Schema</strong> (<code>graphql/crm.graphql</code>):</p>
+  <pre><code class="language-graphql">type Customer {
+  id: ID!
+  name: String!
+}
+type Query {
+  getCustomer(id: ID!): Customer
+}
+</code></pre>
+  <p><strong>Features</strong>:</p>
+  <ul>
+    <li>GraphQL API for customer management.</li>
+    <li>Real-time notifications via SNS.</li>
+    <li>Scalable data storage with DynamoDB.</li>
+    <li>Extensible with Lambda for automation.</li>
+  </ul>
+  <hr>
+  <h2>Best Practices</h2>
+  <ol>
+    <li><strong>Modularize Constructs</strong>: Create reusable constructs for common patterns (e.g., Lambda + API
+      Gateway).</li>
+    <li><strong>Use Removal Policies</strong>: Set <code>removalPolicy: cdk.RemovalPolicy.DESTROY</code> for
+      non-production stacks to avoid orphaned resources.</li>
+    <li><strong>Secure Resources</strong>: Use least-privilege IAM roles and security groups.</li>
+    <li><strong>Version Control</strong>: Store CDK code in Git for collaboration and history.</li>
+    <li><strong>Test Locally</strong>: Use <code>cdk synth</code> to validate templates before deployment.</li>
+    <li><strong>Monitor and Log</strong>: Integrate CloudWatch for Lambda and API Gateway.</li>
+  </ol>
+  <hr>
+  <h2>Additional Resources</h2>
+  <ul>
+    <li><a href="https://docs.aws.amazon.com/cdk/v2/guide/home.html">AWS CDK Documentation</a></li>
+    <li><a href="https://github.com/aws-samples/aws-cdk-examples">CDK Examples</a></li>
+    <li><a href="https://www.typescriptlang.org/docs/">TypeScript Docs</a></li>
+  </ul>
+</body>
+
+</html>

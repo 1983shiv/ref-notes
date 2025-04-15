@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+  <html>
+    <title>Javascript 50 Interview Questions</title>
+    <style>
+      body {
+          font-family: sans-serif;
+          padding: 2rem;
+          background-color: #f4f4f4;
+      }
+      h3{
+        font-size: 20px;
+      }
+      p{
+        font-size: 18px;
+      }
+      pre {
+          background-color: #000;
+          padding: 20px;
+          color: #fff;
+          font-size: 16px;
+      }
+    </style>
+    <body>
+
+<h3>1. What is a JavaScript engine, and how does it work?</h3>
+<p>A JavaScript engine is a program that executes JavaScript code by converting it into machine code that a computer can understand. It parses the code, compiles it (often using Just-In-Time compilation), and executes it, managing memory and optimizing performance.</p>
+<p><strong>How it works</strong>:</p>
+<ul>
+<li><strong>Parsing</strong>: Converts code into an Abstract Syntax Tree (AST).</li>
+<li><strong>Compilation</strong>: Translates AST into bytecode or machine code.</li>
+<li><strong>Execution</strong>: Runs the code, managing memory and call stacks.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">console.log(&quot;Hello, World!&quot;);
+</code></pre>
+<p>The engine (e.g., V8 in Chrome) parses this code, creates an AST, compiles it to machine code, and executes it to print &quot;Hello, World!&quot; to the console.</p>
+<hr>
+<h3>2. What are the different JavaScript engines available (V8, SpiderMonkey, Chakra, etc.)?</h3>
+<p>JavaScript engines are implemented by different browsers and environments:</p>
+<ul>
+<li><strong>V8</strong>: Used in Chrome and Node.js, known for high performance with JIT compilation.</li>
+<li><strong>SpiderMonkey</strong>: Powers Firefox, developed by Mozilla.</li>
+<li><strong>Chakra</strong>: Used in legacy Microsoft Edge (pre-Chromium).</li>
+<li><strong>JavaScriptCore (Nitro)</strong>: Used in Safari, optimized for Apple ecosystems.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Runs differently based on engine
+let arr = [1, 2, 3];
+arr.map(x =&gt; x * 2); // V8, SpiderMonkey, etc., optimize this differently
+</code></pre>
+<p>Each engine processes this code, but performance varies due to their optimization strategies.</p>
+<hr>
+<h3>3. What is Just-In-Time (JIT) compilation, and how does it optimize JavaScript performance?</h3>
+<p>JIT compilation combines interpretation and compilation. It compiles JavaScript code at runtime, optimizing frequently executed code paths to improve speed.</p>
+<p><strong>Optimization</strong>:</p>
+<ul>
+<li><strong>Baseline Compilation</strong>: Quick compilation to bytecode.</li>
+<li><strong>Optimizing Compilation</strong>: Recompiles hot code with assumptions for speed.</li>
+<li><strong>Deoptimization</strong>: Falls back if assumptions fail.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function sumArray(arr) {
+  let sum = 0;
+  for (let i = 0; i &lt; arr.length; i++) {
+    sum += arr[i];
+  }
+  return sum;
+}
+console.log(sumArray([1, 2, 3, 4, 5])); // JIT optimizes loop after repeated calls
+</code></pre>
+<p>V8’s JIT compiler optimizes the loop if <code>sumArray</code> is called multiple times, reducing execution time.</p>
+<hr>
+<h3>4. What are the different phases of JavaScript execution? (Parsing, Compilation, and Execution)</h3>
+<p>JavaScript execution involves:</p>
+<ul>
+<li><strong>Parsing</strong>: Code is broken into tokens and converted to an AST.</li>
+<li><strong>Compilation</strong>: AST is translated to bytecode or machine code (often via JIT).</li>
+<li><strong>Execution</strong>: The engine runs the code, managing memory and call stacks.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let x = 10;
+function add(y) {
+  return x + y;
+}
+console.log(add(5)); // Outputs 15
+</code></pre>
+<ul>
+<li><strong>Parsing</strong>: Creates AST for variable <code>x</code> and function <code>add</code>.</li>
+<li><strong>Compilation</strong>: Generates bytecode for <code>add</code>.</li>
+<li><strong>Execution</strong>: Runs <code>add(5)</code>, resolving <code>x</code> and outputting 15.</li>
+</ul>
+<hr>
+<h3>5. What is an Abstract Syntax Tree (AST), and how is it generated?</h3>
+<p>An AST is a tree representation of the syntactic structure of code, where nodes represent constructs like variables, functions, or operators.</p>
+<p><strong>Generation</strong>:</p>
+<ul>
+<li>The parser tokenizes the code (e.g., splits <code>let x = 5;</code> into <code>let</code>, <code>x</code>, <code>=</code>, <code>5</code>, <code>;</code>).</li>
+<li>It builds a tree where each node represents a syntax element.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let x = 5 + 3;
+</code></pre>
+<p><strong>AST (simplified)</strong>:</p>
+<pre><code>- VariableDeclaration
+  - Identifier: x
+  - BinaryExpression
+    - Left: 5
+    - Operator: +
+    - Right: 3
+</code></pre>
+<p>Tools like <code>esprima</code> can generate this:</p>
+<pre><code class="language-javascript">const esprima = require(&quot;esprima&quot;);
+console.log(esprima.parseScript(&quot;let x = 5 + 3;&quot;));
+</code></pre>
+<hr>
+<h3>6. How does JavaScript handle memory allocation and garbage collection?</h3>
+<p>JavaScript allocates memory for variables, objects, and functions on the heap. Garbage collection (GC) reclaims memory from unused objects.</p>
+<p><strong>Process</strong>:</p>
+<ul>
+<li><strong>Allocation</strong>: Objects are created in heap memory.</li>
+<li><strong>Garbage Collection</strong>: Identifies unreachable objects and frees memory (e.g., using Mark-and-Sweep).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let obj = { name: &quot;Alice&quot; };
+obj = null; // Object is now eligible for garbage collection
+</code></pre>
+<p>After <code>obj = null</code>, the engine’s GC (e.g., V8’s Orinoco) marks <code>{ name: &quot;Alice&quot; }</code> as unreachable and frees its memory.</p>
+<hr>
+<h3>7. What is the role of the interpreter and compiler in JavaScript execution?</h3>
+<ul>
+<li><strong>Interpreter</strong>: Executes code line-by-line, enabling quick startup (e.g., V8’s Ignition).</li>
+<li><strong>Compiler</strong>: Translates code to optimized machine code for performance (e.g., V8’s TurboFan).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function multiply(a, b) {
+  return a * b;
+}
+console.log(multiply(4, 5)); // 20
+</code></pre>
+<p>Ignition interprets initially for fast execution; TurboFan compiles it to optimized code if called repeatedly.</p>
+<hr>
+<h3>8. What is the difference between a runtime and a JavaScript engine?</h3>
+<ul>
+<li><strong>JavaScript Engine</strong>: Executes JavaScript code (e.g., V8, SpiderMonkey).</li>
+<li><strong>Runtime</strong>: Provides additional APIs and environments (e.g., Node.js adds file system APIs; browsers add DOM).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Browser runtime
+document.getElementById(&quot;demo&quot;).innerText = &quot;Hello&quot;; // Uses browser runtime
+
+// Node.js runtime
+const fs = require(&quot;fs&quot;);
+fs.writeFileSync(&quot;test.txt&quot;, &quot;Hello&quot;); // Uses Node.js runtime
+</code></pre>
+<p>V8 executes the JavaScript, but the runtime provides <code>document</code> or <code>fs</code>.</p>
+<hr>
+<h3>9. How does the optimizing compiler improve JavaScript performance?</h3>
+<p>The optimizing compiler (e.g., V8’s TurboFan) analyzes code at runtime, making assumptions (e.g., variable types) to generate faster machine code. It deoptimizes if assumptions fail.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function addNumbers(a, b) {
+  return a + b;
+}
+for (let i = 0; i &lt; 1000; i++) {
+  addNumbers(10, 20); // Compiler optimizes assuming numbers
+}
+</code></pre>
+<p>TurboFan optimizes <code>addNumbers</code> for integers, speeding up execution after repeated calls.</p>
+<hr>
+<h3>10. What is hidden class optimization in V8, and why is it important?</h3>
+<p>V8 uses <strong>hidden classes</strong> to track object property layouts. Objects with the same structure share a hidden class, enabling faster property access.</p>
+<p><strong>Importance</strong>: Reduces lookup time, improving performance.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function Point(x, y) {
+  this.x = x;
+  this.y = y;
+}
+let p1 = new Point(1, 2);
+let p2 = new Point(3, 4); // Same hidden class
+p1.z = 5; // New hidden class for p1
+</code></pre>
+<p><code>p1</code> and <code>p2</code> share a hidden class until <code>p1.z</code> creates a new one, slowing access for <code>p1</code>.</p>
+<hr>
+<h3>11. What is an Execution Context, and how is it created in JavaScript?</h3>
+<p>An Execution Context is an environment where JavaScript code runs, containing variable bindings, <code>this</code>, and scope information.</p>
+<p><strong>Creation</strong>:</p>
+<ul>
+<li><strong>Variable Object</strong>: Stores variables and functions.</li>
+<li><strong>Scope Chain</strong>: Links to outer scopes.</li>
+<li><strong>this</strong>: Binds to the context (e.g., global object or instance).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let x = 10;
+function foo() {
+  console.log(x);
+}
+foo(); // 10
+</code></pre>
+<p>The engine creates a global execution context for <code>x</code> and a function context for <code>foo</code>, linking them via scope.</p>
+<hr>
+<h3>12. What are the different types of Execution Contexts in JavaScript? (Global, Function, Eval)</h3>
+<ul>
+<li><strong>Global</strong>: Created for code outside functions, binds to the global object (e.g., <code>window</code>).</li>
+<li><strong>Function</strong>: Created for each function call, with its own variables and <code>this</code>.</li>
+<li><strong>Eval</strong>: Created for code in <code>eval()</code>, with access to the caller’s context.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Global
+let x = 5;
+
+// Function
+function test() {
+  let y = 10;
+  console.log(x, y); // 5, 10
+}
+test();
+
+// Eval
+eval(&quot;console.log(x);&quot;); // 5
+</code></pre>
+<hr>
+<h3>13. What is the Execution Stack (Call Stack), and how does JavaScript manage function calls?</h3>
+<p>The Execution Stack tracks execution contexts. When a function is called, its context is pushed; when it returns, it’s popped.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function first() {
+  second();
+}
+function second() {
+  console.log(&quot;Called&quot;);
+}
+first();
+</code></pre>
+<p><strong>Stack</strong>:</p>
+<ol>
+<li>Global context</li>
+<li><code>first</code> context</li>
+<li><code>second</code> context</li>
+<li>Pop <code>second</code>, then <code>first</code>, back to global.</li>
+</ol>
+<hr>
+<h3>14. What is Scope in JavaScript, and how does Lexical Scope work?</h3>
+<p><strong>Scope</strong> determines variable accessibility. <strong>Lexical Scope</strong> means a function’s scope is defined by its position in the source code, not where it’s called.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let x = 10;
+function outer() {
+  let y = 20;
+  function inner() {
+    console.log(x, y); // 10, 20
+  }
+  inner();
+}
+outer();
+</code></pre>
+<p><code>inner</code> accesses <code>x</code> and <code>y</code> from its lexical parent scopes (<code>outer</code> and global).</p>
+<hr>
+<h3>15. What is the difference between the Global Execution Context and Function Execution Context?</h3>
+<ul>
+<li><strong>Global Execution Context</strong>:<ul>
+<li>Created once per script.</li>
+<li>Binds to the global object (<code>window</code> in browsers).</li>
+<li>Holds global variables.</li>
+</ul>
+</li>
+<li><strong>Function Execution Context</strong>:<ul>
+<li>Created per function call.</li>
+<li>Has its own variable environment and <code>this</code>.</li>
+<li>Links to outer scopes.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let globalVar = &quot;global&quot;;
+function func() {
+  let localVar = &quot;local&quot;;
+  console.log(globalVar, localVar); // global, local
+}
+func();
+</code></pre>
+<hr>
+<h3>16. What is the Scope Chain, and how does it help resolve variables?</h3>
+<p>The Scope Chain links a function’s execution context to its outer scopes, used to resolve variables by searching upward.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let a = 1;
+function outer() {
+  let b = 2;
+  function inner() {
+    let c = 3;
+    console.log(a, b, c); // 1, 2, 3
+  }
+  inner();
+}
+outer();
+</code></pre>
+<p><code>inner</code> resolves <code>a</code> from global, <code>b</code> from <code>outer</code>, and <code>c</code> locally via the scope chain.</p>
+<hr>
+<h3>17. What is Hoisting, and how does JavaScript handle it?</h3>
+<p>Hoisting moves variable and function declarations to the top of their scope during compilation, but not assignments.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">console.log(x); // undefined
+var x = 5;
+
+foo(); // Works
+function foo() {
+  console.log(&quot;Hello&quot;);
+}
+</code></pre>
+<p><code>var x</code> is hoisted (initialized as <code>undefined</code>); <code>function foo</code> is fully hoisted.</p>
+<hr>
+<h3>18. What is the Temporal Dead Zone (TDZ) in JavaScript?</h3>
+<p>The TDZ is the period where <code>let</code> and <code>const</code> variables exist but are uninitialized, causing errors if accessed.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">console.log(x); // ReferenceError: x is not defined
+let x = 10;
+</code></pre>
+<p><code>x</code> is in the TDZ until its declaration, unlike <code>var</code>.</p>
+<hr>
+<h3>19. What is Closure, and how does it work internally?</h3>
+<p>A closure is a function that retains access to its lexical scope’s variables even after the outer function returns.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function outer() {
+  let count = 0;
+  return function inner() {
+    count++;
+    console.log(count);
+  };
+}
+let counter = outer();
+counter(); // 1
+counter(); // 2
+</code></pre>
+<p><code>inner</code> closes over <code>count</code>, preserving it in memory.</p>
+<hr>
+<h3>20. What is the <code>this</code> keyword, and how does it behave in different contexts?</h3>
+<p><code>this</code> refers to the object executing the current function:</p>
+<ul>
+<li><strong>Global</strong>: <code>window</code> (browsers).</li>
+<li><strong>Method</strong>: The object calling the method.</li>
+<li><strong>Constructor</strong>: The new instance.</li>
+<li><strong>Arrow Function</strong>: Inherits <code>this</code> from the parent scope.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const obj = {
+  name: &quot;Alice&quot;,
+  say: function () {
+    console.log(this.name);
+  },
+};
+obj.say(); // Alice
+
+const arrow = () =&gt; console.log(this.name);
+arrow(); // undefined or window.name (global)
+</code></pre>
+<hr>
+<h3>21. What is the difference between Stack and Heap memory in JavaScript?</h3>
+<ul>
+<li><strong>Stack</strong>: Stores primitive values and function call frames (fixed size).</li>
+<li><strong>Heap</strong>: Stores objects and dynamic data (variable size).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let num = 10; // Stack
+let obj = { value: 20 }; // Heap
+function test() {
+  let local = 30; // Stack
+}
+test();
+</code></pre>
+<p><code>num</code> and <code>local</code> go on the stack; <code>obj</code> is allocated on the heap.</p>
+<hr>
+<h3>22. How does JavaScript manage memory and avoid memory leaks?</h3>
+<p>JavaScript uses garbage collection to reclaim unused memory. To avoid leaks:</p>
+<ul>
+<li>Nullify unused references.</li>
+<li>Avoid global variables.</li>
+<li>Clean up event listeners.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let data = { big: new Array(1000000).fill(&quot;x&quot;) };
+data = null; // Allows GC to reclaim memory
+</code></pre>
+<hr>
+<h3>23. What is Garbage Collection, and how does it work in JavaScript?</h3>
+<p>Garbage Collection identifies and frees memory for objects no longer reachable from the root (e.g., global object).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function createObj() {
+  let obj = { data: &quot;temp&quot; };
+  return null; // obj becomes unreachable
+}
+createObj();
+</code></pre>
+<p>The engine’s GC (e.g., Mark-and-Sweep) frees <code>obj</code>’s memory.</p>
+<hr>
+<h3>24. What are the different types of Garbage Collection algorithms? (Mark and Sweep, Reference Counting)</h3>
+<ul>
+<li><strong>Mark-and-Sweep</strong>: Marks reachable objects, sweeps unmarked ones. Used in V8.</li>
+<li><strong>Reference Counting</strong>: Tracks references to objects, freeing those with zero references (not common in JavaScript due to circular reference issues).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let obj = { a: 1 };
+obj = null; // Mark-and-Sweep will collect it
+</code></pre>
+<hr>
+<h3>25. What is a memory leak in JavaScript, and how can you prevent it?</h3>
+<p>A memory leak occurs when memory isn’t freed, causing increased usage. Causes include forgotten timers, global variables, or event listeners.</p>
+<p><strong>Prevention</strong>:</p>
+<ul>
+<li>Clear timers.</li>
+<li>Remove event listeners.</li>
+<li>Nullify references.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let element = document.getElementById(&quot;btn&quot;);
+element.addEventListener(&quot;click&quot;, () =&gt; console.log(&quot;Clicked&quot;));
+element.removeEventListener(&quot;click&quot;, () =&gt; console.log(&quot;Clicked&quot;)); // Prevents leak
+</code></pre>
+<hr>
+<h3>26. How do WeakMap and WeakSet help with memory management?</h3>
+<p><code>WeakMap</code> and <code>WeakSet</code> hold weak references, allowing garbage collection if the key (WeakMap) or value (WeakSet) is only referenced there.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let weakMap = new WeakMap();
+let key = {};
+weakMap.set(key, &quot;data&quot;);
+key = null; // Allows GC to collect key and its data
+console.log(weakMap.has(key)); // false
+</code></pre>
+<hr>
+<h3>27. What are closures, and how can they cause memory leaks?</h3>
+<p>Closures retain outer scope variables, which can cause leaks if references (e.g., event listeners) persist.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">function setup() {
+  let data = new Array(1000000).fill(&quot;x&quot;);
+  document.getElementById(&quot;btn&quot;).addEventListener(&quot;click&quot;, () =&gt; {
+    console.log(data.length); // data persists
+  });
+}
+setup();
+</code></pre>
+<p><strong>Fix</strong>:</p>
+<pre><code class="language-javascript">document.getElementById(&quot;btn&quot;).removeEventListener(&quot;click&quot;, listener);
+</code></pre>
+<hr>
+<h3>28. How can you monitor and optimize JavaScript memory usage?</h3>
+<p>Use browser tools (e.g., Chrome DevTools Memory tab) to profile heap snapshots and detect leaks. Optimize by minimizing allocations and clearing references.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// DevTools: Record heap snapshot
+let arr = new Array(1000000).fill(&quot;x&quot;);
+arr = null; // Check if memory is reclaimed
+</code></pre>
+<hr>
+<h3>29. How does JavaScript handle large objects and memory-intensive operations?</h3>
+<p>JavaScript relies on GC and efficient allocation. For large objects:</p>
+<ul>
+<li>Use streams or chunks.</li>
+<li>Avoid unnecessary copies.</li>
+<li>Use Typed Arrays for raw data.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Process large data in chunks
+let largeArray = new Array(1000000).fill(1);
+for (let i = 0; i &lt; largeArray.length; i += 1000) {
+  let chunk = largeArray.slice(i, i + 1000);
+  console.log(chunk.reduce((a, b) =&gt; a + b));
+}
+</code></pre>
+<hr>
+<h3>30. What are Typed Arrays, and how do they improve performance in JavaScript?</h3>
+<p>Typed Arrays provide fixed-size arrays for raw binary data (e.g., <code>Int32Array</code>), offering better performance than regular arrays for numeric operations.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">let regular = [1, 2, 3];
+let typed = new Int32Array([1, 2, 3]);
+for (let i = 0; i &lt; 1000000; i++) {
+  typed[0] += typed[1]; // Faster than regular[0] += regular[1]
+}
+</code></pre>
+<p>Typed Arrays avoid dynamic resizing, improving speed for computations.</p>
+
+
+</body>
+</html>

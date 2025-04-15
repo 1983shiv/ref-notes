@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NodeJs 100 Interview Questions</title>
+    <style>
+      body {
+          font-family: sans-serif;
+          padding: 2rem;
+          background-color: #f4f4f4;
+      }
+      h3{
+        font-size: 20px;
+      }
+      p{
+        font-size: 18px;
+      }
+      pre {
+          background-color: #000;
+          padding: 20px;
+          color: #fff;
+          font-size: 16px;
+      }
+    </style>
+    </head>
+    <body>
+      
+
+<h3>1. What is Node.js, and how does it differ from traditional server-side technologies like PHP or Java?</h3>
+<p>Node.js is a runtime environment that executes JavaScript outside the browser using the V8 engine. Unlike PHP (interpreted, often synchronous) or Java (compiled, multi-threaded), Node.js is event-driven, non-blocking, and single-threaded, ideal for I/O-heavy tasks.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  res.write(&quot;Hello from Node.js!&quot;);
+  res.end();
+}).listen(3000);
+</code></pre>
+<p>Node.js handles requests asynchronously, unlike PHP’s typical synchronous processing.</p>
+<hr>
+<h3>2. Explain the event-driven architecture of Node.js.</h3>
+<p>Node.js uses an event-driven model where events (e.g., HTTP requests) trigger callbacks. The Event Loop processes these events, enabling non-blocking I/O.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const EventEmitter = require(&quot;events&quot;);
+const emitter = new EventEmitter();
+emitter.on(&quot;greet&quot;, () =&gt; console.log(&quot;Hello!&quot;));
+emitter.emit(&quot;greet&quot;); // Outputs: Hello!
+</code></pre>
+<p>Events like <code>greet</code> trigger registered listeners.</p>
+<hr>
+<h3>3. What is the role of V8 in Node.js?</h3>
+<p>V8 is the JavaScript engine in Node.js, compiling JavaScript to machine code for fast execution. It handles memory management and JIT compilation.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">console.log(process.versions.v8); // Outputs V8 version, e.g., 12.4.254.14-node.8
+</code></pre>
+<p>V8 powers the execution of this code in Node.js.</p>
+<hr>
+<h3>4. How does Node.js achieve non-blocking I/O?</h3>
+<p>Node.js uses an event loop and asynchronous APIs to handle I/O operations (e.g., file reading, HTTP requests) without blocking the main thread.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+fs.readFile(&quot;file.txt&quot;, (err, data) =&gt; {
+  if (err) throw err;
+  console.log(data.toString());
+});
+console.log(&quot;Reading file...&quot;); // Prints before file content
+</code></pre>
+<p><code>readFile</code> runs asynchronously, allowing other code to execute.</p>
+<hr>
+<h3>5. What is the difference between synchronous and asynchronous code in Node.js?</h3>
+<ul>
+<li><strong>Synchronous</strong>: Blocks execution until complete.</li>
+<li><strong>Asynchronous</strong>: Continues execution, handling results via callbacks, Promises, or async/await.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+// Synchronous
+const dataSync = fs.readFileSync(&quot;file.txt&quot;);
+console.log(dataSync.toString());
+
+// Asynchronous
+fs.readFile(&quot;file.txt&quot;, (err, data) =&gt; {
+  console.log(data.toString());
+});
+</code></pre>
+<p>Sync blocks; async doesn’t.</p>
+<hr>
+<h3>6. What is the process object in Node.js, and what are some of its key properties?</h3>
+<p>The <code>process</code> object provides information about the Node.js process. Key properties: <code>argv</code> (arguments), <code>env</code> (environment variables), <code>pid</code> (process ID).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">console.log(process.env.NODE_ENV); // e.g., &quot;development&quot;
+console.log(process.argv); // Command-line arguments
+console.log(process.pid); // Process ID
+</code></pre>
+<hr>
+<h3>7. Explain the purpose of package.json in a Node.js project.</h3>
+<p><code>package.json</code> defines a project’s metadata, dependencies, scripts, and configuration.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;my-app&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;dependencies&quot;: {
+    &quot;express&quot;: &quot;^4.18.2&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;node index.js&quot;
+  }
+}
+</code></pre>
+<p>Running <code>npm install</code> installs <code>express</code>; <code>npm start</code> runs <code>index.js</code>.</p>
+<hr>
+<h3>8. What is npm, and how does it interact with Node.js?</h3>
+<p>npm is the package manager for Node.js, used to install, manage, and publish packages. It interacts via <code>package.json</code> and the npm CLI.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash">npm install express
+</code></pre>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;); // Uses npm-installed module
+</code></pre>
+<hr>
+<h3>9. What are the differences between Node.js versions (e.g., LTS vs. Current)?</h3>
+<ul>
+<li><strong>LTS (Long-Term Support)</strong>: Stable, supported for 30 months (e.g., 20.x).</li>
+<li><strong>Current</strong>: Latest features, less stable (e.g., 21.x).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Check version
+console.log(process.version); // e.g., v20.12.2 (LTS)
+</code></pre>
+<p>Use LTS for production, Current for experimenting.</p>
+<hr>
+<h3>10. How does Node.js handle single-threaded execution for concurrent requests?</h3>
+<p>Node.js uses a single thread with an event loop, offloading I/O to the OS and handling callbacks asynchronously.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  setTimeout(() =&gt; res.end(&quot;Done&quot;), 1000); // Simulates async work
+}).listen(3000);
+</code></pre>
+<p>Multiple requests are queued and processed concurrently.</p>
+<hr>
+<h3>11. What is the Event Loop in Node.js, and how does it work?</h3>
+<p>The Event Loop manages asynchronous operations by processing tasks in a queue, executing callbacks when I/O completes.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">setTimeout(() =&gt; console.log(&quot;Timeout&quot;), 0);
+console.log(&quot;Immediate&quot;);
+</code></pre>
+<p>Output: <code>Immediate</code>, <code>Timeout</code>. The event loop schedules <code>setTimeout</code>.</p>
+<hr>
+<h3>12. Explain the phases of the Event Loop in detail.</h3>
+<p>Phases:</p>
+<ul>
+<li><strong>Timers</strong>: Executes <code>setTimeout</code>/<code>setInterval</code> callbacks.</li>
+<li><strong>Pending Callbacks</strong>: Handles I/O callbacks.</li>
+<li><strong>Idle, Prepare</strong>: Internal use.</li>
+<li><strong>Poll</strong>: Retrieves new I/O events.</li>
+<li><strong>Check</strong>: Runs <code>setImmediate</code> callbacks.</li>
+<li><strong>Close Callbacks</strong>: Handles close events.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">setTimeout(() =&gt; console.log(&quot;Timer&quot;), 0);
+setImmediate(() =&gt; console.log(&quot;Immediate&quot;));
+</code></pre>
+<p><code>Timer</code> or <code>Immediate</code> may run first, depending on the poll phase.</p>
+<hr>
+<h3>13. What is a callback, and what are its drawbacks in Node.js?</h3>
+<p>A callback is a function passed to another function to handle async results. Drawbacks: callback hell, error handling complexity.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">fs.readFile(&quot;file.txt&quot;, (err, data) =&gt; {
+  if (err) throw err;
+  console.log(data.toString());
+});
+</code></pre>
+<p>Nested callbacks can become unreadable.</p>
+<hr>
+<h3>14. How do Promises improve upon callbacks?</h3>
+<p>Promises provide a cleaner way to handle async operations with <code>.then()</code> and <code>.catch()</code>, avoiding nested callbacks.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;).promises;
+fs.readFile(&quot;file.txt&quot;)
+  .then(data =&gt; console.log(data.toString()))
+  .catch(err =&gt; console.error(err));
+</code></pre>
+<hr>
+<h3>15. What is async/await, and how does it simplify asynchronous code?</h3>
+<p><code>async/await</code> is syntactic sugar for Promises, making async code look synchronous and easier to read.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;).promises;
+async function readFile() {
+  try {
+    const data = await fs.readFile(&quot;file.txt&quot;);
+    console.log(data.toString());
+  } catch (err) {
+    console.error(err);
+  }
+}
+readFile();
+</code></pre>
+<hr>
+<h3>16. What happens if an asynchronous operation is not handled properly in Node.js?</h3>
+<p>Uncaught errors in async operations (e.g., Promises) crash the process unless handled.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">Promise.reject(&quot;Error&quot;).catch(err =&gt; console.log(err)); // Handled
+// Promise.reject(&quot;Error&quot;); // Unhandled, crashes
+</code></pre>
+<hr>
+<h3>17. Explain the difference between setTimeout, setInterval, and setImmediate.</h3>
+<ul>
+<li><code>setTimeout</code>: Runs code after a delay.</li>
+<li><code>setInterval</code>: Repeats code at intervals.</li>
+<li><code>setImmediate</code>: Runs code after the current poll phase.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">setTimeout(() =&gt; console.log(&quot;Timeout&quot;), 0);
+setInterval(() =&gt; console.log(&quot;Interval&quot;), 1000);
+setImmediate(() =&gt; console.log(&quot;Immediate&quot;));
+</code></pre>
+<hr>
+<h3>18. What is the purpose of process.nextTick()?</h3>
+<p><code>process.nextTick()</code> schedules a callback before the next event loop iteration, ahead of I/O tasks.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">process.nextTick(() =&gt; console.log(&quot;Next Tick&quot;));
+console.log(&quot;Main&quot;);
+</code></pre>
+<p>Output: <code>Main</code>, <code>Next Tick</code>.</p>
+<hr>
+<h3>19. How can you avoid callback hell in Node.js?</h3>
+<p>Use Promises, async/await, or modularize code to reduce nesting.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">async function readFiles() {
+  const fs = require(&quot;fs&quot;).promises;
+  const file1 = await fs.readFile(&quot;file1.txt&quot;);
+  const file2 = await fs.readFile(&quot;file2.txt&quot;);
+  console.log(file1.toString(), file2.toString());
+}
+readFiles();
+</code></pre>
+<hr>
+<h3>20. What are the performance implications of blocking the Event Loop?</h3>
+<p>Blocking the event loop (e.g., with heavy computation) delays async tasks, reducing throughput.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">while (Date.now() &lt; Date.now() + 1000) {} // Blocks
+setTimeout(() =&gt; console.log(&quot;Delayed&quot;), 0); // Runs late
+</code></pre>
+<hr>
+<h3>21. What is the CommonJS module system in Node.js?</h3>
+<p>CommonJS is Node.js’s default module system, using <code>require()</code> and <code>module.exports</code> for importing/exporting.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// math.js
+module.exports = { add: (a, b) =&gt; a + b };
+
+// index.js
+const { add } = require(&quot;./math&quot;);
+console.log(add(2, 3)); // 5
+</code></pre>
+<hr>
+<h3>22. How does module.exports differ from exports?</h3>
+<p><code>module.exports</code> is the actual exported object; <code>exports</code> is a shorthand alias. Assigning to <code>exports</code> breaks the reference.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Works
+module.exports = { name: &quot;test&quot; };
+
+// Breaks
+exports = { name: &quot;test&quot; }; // No effect
+</code></pre>
+<hr>
+<h3>23. Explain the ES Modules (ESM) syntax and its use in Node.js.</h3>
+<p>ESM uses <code>import</code>/<code>export</code> syntax, supported in Node.js with <code>.mjs</code> or <code>&quot;type&quot;: &quot;module&quot;</code> in <code>package.json</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// math.mjs
+export const add = (a, b) =&gt; a + b;
+
+// index.mjs
+import { add } from &quot;./math.mjs&quot;;
+console.log(add(2, 3)); // 5
+</code></pre>
+<hr>
+<h3>24. What is the difference between CommonJS and ES Modules?</h3>
+<ul>
+<li><strong>CommonJS</strong>: Synchronous <code>require()</code>, <code>module.exports</code>.</li>
+<li><strong>ES Modules</strong>: Asynchronous <code>import</code>, <code>export</code>, supports tree-shaking.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// CommonJS
+const fs = require(&quot;fs&quot;);
+
+// ESM
+import fs from &quot;fs&quot;;
+</code></pre>
+<hr>
+<h3>25. How does Node.js resolve module paths when using require()?</h3>
+<p>Node.js searches:</p>
+<ol>
+<li>Core modules (e.g., <code>fs</code>).</li>
+<li><code>node_modules</code> (local, then parent directories).</li>
+<li>File paths (relative/absolute).</li>
+</ol>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const myModule = require(&quot;./myModule&quot;); // Looks for ./myModule.js
+</code></pre>
+<hr>
+<h3>26. What is the purpose of the node_modules folder?</h3>
+<p><code>node_modules</code> stores installed dependencies for a project.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash">npm install express
+</code></pre>
+<p>Creates <code>node_modules/express</code>.</p>
+<hr>
+<h3>27. How can you create a custom module in Node.js?</h3>
+<p>Define a file with <code>module.exports</code> to expose functions or data.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// utils.js
+module.exports = { greet: () =&gt; &quot;Hello&quot; };
+
+// index.js
+const utils = require(&quot;./utils&quot;);
+console.log(utils.greet()); // Hello
+</code></pre>
+<hr>
+<h3>28. What is tree-shaking, and how does it relate to ES Modules in Node.js?</h3>
+<p>Tree-shaking eliminates unused code during bundling, supported by ESM’s static structure.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// math.mjs
+export const add = (a, b) =&gt; a + b;
+export const sub = (a, b) =&gt; a - b;
+
+// index.mjs
+import { add } from &quot;./math.mjs&quot;;
+console.log(add(2, 3)); // sub is tree-shaken
+</code></pre>
+<hr>
+<h3>29. How do you handle circular dependencies in Node.js?</h3>
+<p>Avoid tight coupling; use dependency injection or refactor. CommonJS partially supports them, ESM less so.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// a.js
+const b = require(&quot;./b&quot;);
+module.exports = { name: &quot;A&quot; };
+
+// b.js
+const a = require(&quot;./a&quot;);
+module.exports = { name: &quot;B&quot; };
+</code></pre>
+<hr>
+<h3>30. What is the __dirname and __filename variable in a Node.js module?</h3>
+<ul>
+<li><code>__dirname</code>: Directory of the current module.</li>
+<li><code>__filename</code>: Full path of the current file.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">console.log(__dirname); // /path/to/dir
+console.log(__filename); // /path/to/dir/file.js
+</code></pre>
+<hr>
+<h3>31. How do you read a file synchronously and asynchronously in Node.js?</h3>
+<ul>
+<li><strong>Sync</strong>: <code>fs.readFileSync</code>.</li>
+<li><strong>Async</strong>: <code>fs.readFile</code>.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+console.log(fs.readFileSync(&quot;file.txt&quot;).toString());
+fs.readFile(&quot;file.txt&quot;, (err, data) =&gt; console.log(data.toString()));
+</code></pre>
+<hr>
+<h3>32. What is the difference between fs.readFile and fs.readFileSync?</h3>
+<ul>
+<li><code>fs.readFile</code>: Async, non-blocking, uses callback.</li>
+<li><code>fs.readFileSync</code>: Sync, blocking, returns data directly.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+fs.readFileSync(&quot;file.txt&quot;); // Blocks
+fs.readFile(&quot;file.txt&quot;, () =&gt; {}); // Non-blocking
+</code></pre>
+<hr>
+<h3>33. How can you write to a file using the fs module?</h3>
+<p>Use <code>fs.writeFile</code> (async) or <code>fs.writeFileSync</code> (sync).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+fs.writeFile(&quot;file.txt&quot;, &quot;Hello&quot;, err =&gt; {
+  if (err) throw err;
+  console.log(&quot;Written&quot;);
+});
+</code></pre>
+<hr>
+<h3>34. What is a stream in Node.js, and how is it used with the fs module?</h3>
+<p>A stream processes data in chunks, useful for large files. <code>fs</code> provides <code>createReadStream</code> and <code>createWriteStream</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+fs.createReadStream(&quot;file.txt&quot;).pipe(fs.createWriteStream(&quot;copy.txt&quot;));
+</code></pre>
+<hr>
+<h3>35. Explain the difference between fs.createReadStream and fs.readFile.</h3>
+<ul>
+<li><code>fs.createReadStream</code>: Reads in chunks, memory-efficient.</li>
+<li><code>fs.readFile</code>: Reads entire file into memory.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+fs.createReadStream(&quot;large.txt&quot;).on(&quot;data&quot;, chunk =&gt; console.log(chunk));
+fs.readFile(&quot;large.txt&quot;, (err, data) =&gt; console.log(data));
+</code></pre>
+<hr>
+<h3>36. How do you handle file system errors in Node.js?</h3>
+<p>Use try-catch for sync or check <code>err</code> in async callbacks.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;);
+fs.readFile(&quot;missing.txt&quot;, (err, data) =&gt; {
+  if (err) console.error(&quot;Error:&quot;, err);
+  else console.log(data);
+});
+</code></pre>
+<hr>
+<h3>37. What is the purpose of fs.promises in Node.js?</h3>
+<p><code>fs.promises</code> provides Promise-based file system APIs.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;).promises;
+async function read() {
+  const data = await fs.readFile(&quot;file.txt&quot;);
+  console.log(data.toString());
+}
+read();
+</code></pre>
+<hr>
+<h3>38. How can you recursively delete a directory in Node.js?</h3>
+<p>Use <code>fs.rm</code> with <code>recursive: true</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const fs = require(&quot;fs&quot;).promises;
+async function deleteDir() {
+  await fs.rm(&quot;dir&quot;, { recursive: true });
+  console.log(&quot;Deleted&quot;);
+}
+deleteDir();
+</code></pre>
+<hr>
+<h3>39. How do you create a basic HTTP server in Node.js using the http module?</h3>
+<p>Use <code>http.createServer</code> to handle requests.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  res.write(&quot;Hello&quot;);
+  res.end();
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>40. What is the difference between http.get and http.request?</h3>
+<ul>
+<li><code>http.get</code>: Simplified GET request.</li>
+<li><code>http.request</code>: Configurable for any HTTP method.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.get(&quot;http://example.com&quot;, res =&gt; res.on(&quot;data&quot;, console.log));
+http.request({ method: &quot;POST&quot;, host: &quot;example.com&quot; }, res =&gt; {});
+</code></pre>
+<hr>
+<h3>41. How can you handle query parameters in a Node.js HTTP server?</h3>
+<p>Use <code>url.parse</code> to extract query parameters.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+const url = require(&quot;url&quot;);
+http.createServer((req, res) =&gt; {
+  const query = url.parse(req.url, true).query;
+  res.end(`Hello, ${query.name}`);
+}).listen(3000);
+// GET /?name=Alice
+</code></pre>
+<hr>
+<h3>42. What is the role of the res object in an HTTP response?</h3>
+<p>The <code>res</code> object sends data (status, headers, body) to the client.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  res.writeHead(200, { &quot;Content-Type&quot;: &quot;text/plain&quot; });
+  res.write(&quot;Hello&quot;);
+  res.end();
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>43. How do you set HTTP headers in a Node.js server?</h3>
+<p>Use <code>res.setHeader</code> or <code>res.writeHead</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  res.setHeader(&quot;Content-Type&quot;, &quot;application/json&quot;);
+  res.end(&#39;{&quot;message&quot;:&quot;Hello&quot;}&#39;);
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>44. What is the difference between http and https modules in Node.js?</h3>
+<ul>
+<li><code>http</code>: Handles unencrypted requests.</li>
+<li><code>https</code>: Handles encrypted (TLS/SSL) requests.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const https = require(&quot;https&quot;);
+const fs = require(&quot;fs&quot;);
+https.createServer({
+  cert: fs.readFileSync(&quot;cert.pem&quot;),
+  key: fs.readFileSync(&quot;key.pem&quot;)
+}, (req, res) =&gt; res.end(&quot;Secure&quot;)).listen(443);
+</code></pre>
+<hr>
+<h3>45. How can you handle POST requests in a Node.js HTTP server?</h3>
+<p>Collect data from <code>req.on(&quot;data&quot;)</code> and process on <code>req.on(&quot;end&quot;)</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  if (req.method === &quot;POST&quot;) {
+    let body = &quot;&quot;;
+    req.on(&quot;data&quot;, chunk =&gt; body += chunk);
+    req.on(&quot;end&quot;, () =&gt; res.end(`Received: ${body}`));
+  }
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>46. What is a RESTful API, and how can you build one in Node.js?</h3>
+<p>A RESTful API uses HTTP methods (GET, POST, etc.) for CRUD operations. Build with <code>http</code> or frameworks like Express.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  if (req.url === &quot;/users&quot; &amp;&amp; req.method === &quot;GET&quot;) {
+    res.end(&#39;[{&quot;id&quot;:1,&quot;name&quot;:&quot;Alice&quot;}]&#39;);
+  }
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>47. How do you implement CORS in a Node.js server?</h3>
+<p>Set CORS headers to allow cross-origin requests.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const http = require(&quot;http&quot;);
+http.createServer((req, res) =&gt; {
+  res.setHeader(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);
+  res.end(&quot;CORS enabled&quot;);
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>48. What is the purpose of the net module in Node.js?</h3>
+<p>The <code>net</code> module creates TCP servers and clients for low-level networking.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const net = require(&quot;net&quot;);
+const server = net.createServer(socket =&gt; {
+  socket.write(&quot;Hello&quot;);
+  socket.end();
+}).listen(3000);
+</code></pre>
+<hr>
+<h3>49. What is Express, and why is it popular with Node.js?</h3>
+<p>Express is a minimal web framework for Node.js, simplifying routing, middleware, and API creation. It’s popular for its ease and flexibility.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;Hello&quot;));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>50. How do you set up a basic Express server?</h3>
+<p>Install Express and create routes with <code>app.get</code>, etc.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;Hello&quot;));
+app.listen(3000, () =&gt; console.log(&quot;Server running&quot;));
+</code></pre>
+<hr>
+<h3>51. What are middleware functions in Express, and how do they work?</h3>
+<p>Middleware are functions that process requests, executed in sequence. They can modify <code>req</code>/<code>res</code> or pass control.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.use((req, res, next) =&gt; {
+  console.log(&quot;Middleware&quot;);
+  next();
+});
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;Hello&quot;));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>52. How can you handle errors in Express applications?</h3>
+<p>Use error-handling middleware with four arguments.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.get(&quot;/&quot;, (req, res) =&gt; {
+  throw new Error(&quot;Oops&quot;);
+});
+app.use((err, req, res, next) =&gt; {
+  res.status(500).send(&quot;Error: &quot; + err.message);
+});
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>53. Explain the difference between app.use and app.get in Express.</h3>
+<ul>
+<li><code>app.use</code>: Applies middleware to all routes/methods.</li>
+<li><code>app.get</code>: Handles GET requests for a specific route.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.use((req, res, next) =&gt; next());
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;GET&quot;));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>54. How do you parse JSON request bodies in Express?</h3>
+<p>Use <code>express.json()</code> middleware.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.use(express.json());
+app.post(&quot;/&quot;, (req, res) =&gt; res.send(req.body));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>55. What is the purpose of express.Router?</h3>
+<p><code>express.Router</code> creates modular route handlers.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const router = express.Router();
+router.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;Router&quot;));
+const app = express();
+app.use(&quot;/api&quot;, router);
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>56. How can you implement authentication middleware in Express?</h3>
+<p>Check credentials in middleware, calling <code>next()</code> if valid.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+const auth = (req, res, next) =&gt; {
+  if (req.headers.authorization === &quot;secret&quot;) next();
+  else res.status(401).send(&quot;Unauthorized&quot;);
+};
+app.get(&quot;/protected&quot;, auth, (req, res) =&gt; res.send(&quot;Access granted&quot;));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>57. How do you serve static files using Express?</h3>
+<p>Use <code>express.static</code> middleware.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.use(express.static(&quot;public&quot;));
+app.listen(3000); // Serves files from ./public
+</code></pre>
+<hr>
+<h3>58. What are template engines, and how can you use one (e.g., Pug) with Express?</h3>
+<p>Template engines render dynamic HTML. Pug simplifies HTML with indentation.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.set(&quot;view engine&quot;, &quot;pug&quot;);
+app.get(&quot;/&quot;, (req, res) =&gt; res.render(&quot;index&quot;, { title: &quot;Home&quot; }));
+app.listen(3000);
+</code></pre>
+<p>// index.pug</p>
+<pre><code>html
+  head
+    title= title
+  body
+    h1 Hello
+</code></pre>
+<hr>
+<h3>59. How do you connect Node.js to a MongoDB database using Mongoose?</h3>
+<p>Use Mongoose to define schemas and connect to MongoDB.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mongoose = require(&quot;mongoose&quot;);
+mongoose.connect(&quot;mongodb://localhost/test&quot;);
+const User = mongoose.model(&quot;User&quot;, { name: String });
+const user = new User({ name: &quot;Alice&quot; });
+user.save().then(() =&gt; console.log(&quot;Saved&quot;));
+</code></pre>
+<hr>
+<h3>60. What is the difference between SQL and NoSQL databases in the context of Node.js?</h3>
+<ul>
+<li><strong>SQL</strong>: Structured, relational (e.g., MySQL).</li>
+<li><strong>NoSQL</strong>: Flexible, non-relational (e.g., MongoDB).</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// SQL (mysql2)
+const mysql = require(&quot;mysql2/promise&quot;);
+const pool = mysql.createPool({ database: &quot;test&quot; });
+pool.query(&quot;SELECT * FROM users&quot;);
+
+// NoSQL (mongoose)
+const User = mongoose.model(&quot;User&quot;, { name: String });
+User.find();
+</code></pre>
+<hr>
+<h3>61. How can you perform CRUD operations with Node.js and MySQL?</h3>
+<p>Use <code>mysql2</code> for create, read, update, delete.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mysql = require(&quot;mysql2/promise&quot;);
+const pool = mysql.createPool({ database: &quot;test&quot; });
+async function crud() {
+  await pool.query(&quot;INSERT INTO users (name) VALUES (?)&quot;, [&quot;Alice&quot;]); // Create
+  const [rows] = await pool.query(&quot;SELECT * FROM users&quot;); // Read
+  await pool.query(&quot;UPDATE users SET name = ? WHERE id = ?&quot;, [&quot;Bob&quot;, 1]); // Update
+  await pool.query(&quot;DELETE FROM users WHERE id = ?&quot;, [1]); // Delete
+}
+crud();
+</code></pre>
+<hr>
+<h3>62. What is an ORM, and how does Sequelize work with Node.js?</h3>
+<p>An ORM maps database tables to objects. Sequelize simplifies SQL queries.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const { Sequelize, DataTypes } = require(&quot;sequelize&quot;);
+const sequelize = new Sequelize(&quot;sqlite::memory:&quot;);
+const User = sequelize.define(&quot;User&quot;, { name: DataTypes.STRING });
+(async () =&gt; {
+  await sequelize.sync();
+  await User.create({ name: &quot;Alice&quot; });
+  console.log(await User.findAll());
+})();
+</code></pre>
+<hr>
+<h3>63. How do you handle database connection errors in Node.js?</h3>
+<p>Use try-catch or error events.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mongoose = require(&quot;mongoose&quot;);
+mongoose.connect(&quot;mongodb://wrong&quot;).catch(err =&gt; console.error(&quot;Connection error:&quot;, err));
+</code></pre>
+<hr>
+<h3>64. What are the benefits of using connection pooling in Node.js?</h3>
+<p>Connection pooling reuses database connections, improving performance.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mysql = require(&quot;mysql2/promise&quot;);
+const pool = mysql.createPool({ database: &quot;test&quot;, connectionLimit: 10 });
+pool.query(&quot;SELECT 1&quot;); // Reuses connections
+</code></pre>
+<hr>
+<h3>65. How can you prevent SQL injection in Node.js applications?</h3>
+<p>Use parameterized queries or ORMs.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mysql = require(&quot;mysql2/promise&quot;);
+const pool = mysql.createPool({ database: &quot;test&quot; });
+pool.query(&quot;SELECT * FROM users WHERE name = ?&quot;, [&quot;Alice&quot;]); // Safe
+</code></pre>
+<hr>
+<h3>66. What is the role of schema validation in Mongoose?</h3>
+<p>Schema validation ensures data conforms to defined rules before saving.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mongoose = require(&quot;mongoose&quot;);
+const userSchema = new mongoose.Schema({ name: { type: String, required: true } });
+const User = mongoose.model(&quot;User&quot;, userSchema);
+new User({}).save().catch(err =&gt; console.log(err)); // Validation error
+</code></pre>
+<hr>
+<h3>67. How do you implement pagination in a Node.js API with a database?</h3>
+<p>Use <code>skip</code> and <code>limit</code> in queries.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const mongoose = require(&quot;mongoose&quot;);
+const User = mongoose.model(&quot;User&quot;, { name: String });
+async function getUsers(page = 1, limit = 10) {
+  return await User.find().skip((page - 1) * limit).limit(limit);
+}
+</code></pre>
+<hr>
+<h3>68. What is the difference between findOne and find in Mongoose?</h3>
+<ul>
+<li><code>findOne</code>: Returns one document or null.</li>
+<li><code>find</code>: Returns an array of documents.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const User = mongoose.model(&quot;User&quot;, { name: String });
+User.findOne({ name: &quot;Alice&quot; }); // { name: &quot;Alice&quot; } or null
+User.find({ name: &quot;Alice&quot; }); // [{ name: &quot;Alice&quot; }]
+</code></pre>
+<hr>
+<h3>69. What is XSS, and how can you prevent it in a Node.js application?</h3>
+<p>XSS (Cross-Site Scripting) injects malicious scripts. Prevent by sanitizing inputs and escaping outputs.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.get(&quot;/&quot;, (req, res) =&gt; {
+  const input = req.query.input || &quot;&quot;;
+  res.send(`&lt;p&gt;${input.replace(/&lt;/g, &quot;&amp;lt;&quot;)}&lt;/p&gt;`); // Escapes &lt;script&gt;
+});
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>70. How do you implement JWT authentication in Node.js?</h3>
+<p>Use <code>jsonwebtoken</code> to create and verify tokens.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const jwt = require(&quot;jsonwebtoken&quot;);
+const secret = &quot;secret&quot;;
+const token = jwt.sign({ userId: 1 }, secret);
+jwt.verify(token, secret, (err, decoded) =&gt; console.log(decoded)); // { userId: 1 }
+</code></pre>
+<hr>
+<h3>71. What is bcrypt, and how is it used for password hashing?</h3>
+<p><code>bcrypt</code> securely hashes passwords with salts.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const bcrypt = require(&quot;bcrypt&quot;);
+bcrypt.hash(&quot;password&quot;, 10, (err, hash) =&gt; {
+  bcrypt.compare(&quot;password&quot;, hash, (err, match) =&gt; console.log(match)); // true
+});
+</code></pre>
+<hr>
+<h3>72. How can you secure HTTP headers in a Node.js application?</h3>
+<p>Use <code>helmet</code> to set secure headers.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const helmet = require(&quot;helmet&quot;);
+const app = express();
+app.use(helmet());
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;Secure&quot;));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>73. What is CSRF, and how do you protect against it in Express?</h3>
+<p>CSRF tricks users into unwanted actions. Protect with <code>csurf</code> middleware.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const csurf = require(&quot;csurf&quot;);
+const app = express();
+app.use(csurf());
+app.get(&quot;/form&quot;, (req, res) =&gt; res.send(`&lt;form&gt;&lt;input name=&quot;_csrf&quot; value=&quot;${req.csrfToken()}&quot;&gt;&lt;/form&gt;`));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>74. How do you sanitize user input in Node.js?</h3>
+<p>Use libraries like <code>sanitize-html</code> or <code>validator</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const sanitizeHtml = require(&quot;sanitize-html&quot;);
+const input = &quot;&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;&quot;;
+console.log(sanitizeHtml(input)); // Sanitized output
+</code></pre>
+<hr>
+<h3>75. What are environment variables, and how do you use them securely in Node.js?</h3>
+<p>Environment variables store sensitive data (e.g., API keys). Use <code>dotenv</code> to load them.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">require(&quot;dotenv&quot;).config();
+console.log(process.env.API_KEY); // From .env file
+</code></pre>
+<hr>
+<h3>76. How can you rate-limit API requests in a Node.js application?</h3>
+<p>Use <code>express-rate-limit</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const rateLimit = require(&quot;express-rate-limit&quot;);
+const express = require(&quot;express&quot;);
+const app = express();
+app.use(rateLimit({ windowMs: 60000, max: 100 }));
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;OK&quot;));
+app.listen(3000);
+</code></pre>
+<hr>
+<h3>77. What is the difference between unit testing and integration testing in Node.js?</h3>
+<ul>
+<li><strong>Unit</strong>: Tests isolated functions.</li>
+<li><strong>Integration</strong>: Tests interactions between components.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Unit test
+function add(a, b) { return a + b; }
+
+// Integration test: API endpoint calling database
+</code></pre>
+<hr>
+<h3>78. How do you write a unit test for a Node.js function using Mocha?</h3>
+<p>Use Mocha and <code>assert</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const assert = require(&quot;assert&quot;);
+describe(&quot;Math&quot;, () =&gt; {
+  it(&quot;should add numbers&quot;, () =&gt; {
+    assert.strictEqual(2 + 3, 5);
+  });
+});
+</code></pre>
+<hr>
+<h3>79. What is the role of Chai in Node.js testing?</h3>
+<p>Chai provides assertion styles (e.g., expect, should).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const chai = require(&quot;chai&quot;);
+const expect = chai.expect;
+describe(&quot;Test&quot;, () =&gt; {
+  it(&quot;checks equality&quot;, () =&gt; {
+    expect(2 + 3).to.equal(5);
+  });
+});
+</code></pre>
+<hr>
+<h3>80. How can you mock dependencies in Node.js tests?</h3>
+<p>Use <code>sinon</code> to stub functions.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const sinon = require(&quot;sinon&quot;);
+const fs = require(&quot;fs&quot;);
+sinon.stub(fs, &quot;readFileSync&quot;).returns(&quot;mocked&quot;);
+console.log(fs.readFileSync(&quot;file.txt&quot;)); // mocked
+fs.readFileSync.restore();
+</code></pre>
+<hr>
+<h3>81. What is Supertest, and how is it used for testing Express APIs?</h3>
+<p>Supertest makes HTTP requests to test Express routes.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const request = require(&quot;supertest&quot;);
+const express = require(&quot;express&quot;);
+const app = express();
+app.get(&quot;/&quot;, (req, res) =&gt; res.send(&quot;OK&quot;));
+describe(&quot;GET /&quot;, () =&gt; {
+  it(&quot;responds with OK&quot;, done =&gt; {
+    request(app).get(&quot;/&quot;).expect(&quot;OK&quot;, done);
+  });
+});
+</code></pre>
+<hr>
+<h3>82. How do you measure test coverage in a Node.js project?</h3>
+<p>Use <code>nyc</code> with Mocha.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash">npx nyc mocha
+</code></pre>
+<p>Reports percentage of code covered by tests.</p>
+<hr>
+<h3>83. How can you optimize the performance of a Node.js application?</h3>
+<p>Profile, use async, cache, and cluster for multi-core.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const cache = new Map();
+function getData(key) {
+  if (cache.has(key)) return cache.get(key);
+  const result = /* compute */;
+  cache.set(key, result);
+  return result;
+}
+</code></pre>
+<hr>
+<h3>84. What is clustering in Node.js, and how does it improve scalability?</h3>
+<p>Clustering forks multiple processes to utilize CPU cores.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const cluster = require(&quot;cluster&quot;);
+const http = require(&quot;http&quot;);
+if (cluster.isMaster) {
+  cluster.fork();
+} else {
+  http.createServer((req, res) =&gt; res.end(&quot;Hello&quot;)).listen(3000);
+}
+</code></pre>
+<hr>
+<h3>85. How do you use the pm2 process manager with Node.js?</h3>
+<p><code>pm2</code> manages processes, restarts, and monitors apps.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash">pm2 start app.js
+pm2 list
+</code></pre>
+<hr>
+<h3>86. What is the difference between horizontal and vertical scaling in Node.js?</h3>
+<ul>
+<li><strong>Horizontal</strong>: Add more servers.</li>
+<li><strong>Vertical</strong>: Upgrade server resources.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Horizontal: Deploy to multiple nodes
+// Vertical: Increase CPU/memory for Node.js process
+</code></pre>
+<hr>
+<h3>87. How can you profile a Node.js application for performance bottlenecks?</h3>
+<p>Use <code>--prof</code> or Chrome DevTools.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash">node --prof app.js
+node --prof-process isolate-*.log
+</code></pre>
+<hr>
+<h3>88. What is the role of the worker_threads module in Node.js?</h3>
+<p><code>worker_threads</code> runs JavaScript in parallel threads.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const { Worker, isMainThread } = require(&quot;worker_threads&quot;);
+if (isMainThread) {
+  new Worker(__filename);
+} else {
+  console.log(&quot;Worker running&quot;);
+}
+</code></pre>
+<hr>
+<h3>89. How do you implement load balancing for a Node.js server?</h3>
+<p>Use a reverse proxy (e.g., Nginx) or <code>cluster</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Nginx config
+// server { listen 80; location / { proxy_pass http://node_app; } }
+</code></pre>
+<hr>
+<h3>90. What are the benefits of using a reverse proxy like Nginx with Node.js?</h3>
+<p>Handles static files, load balancing, and SSL termination.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Node.js serves API, Nginx serves static files
+</code></pre>
+<hr>
+<h3>91. What is GraphQL, and how can you implement it in Node.js?</h3>
+<p>GraphQL is a query language for APIs. Use <code>apollo-server</code>.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const { ApolloServer, gql } = require(&quot;apollo-server&quot;);
+const typeDefs = gql`type Query { hello: String }`;
+const resolvers = { Query: { hello: () =&gt; &quot;World&quot; } };
+const server = new ApolloServer({ typeDefs, resolvers });
+server.listen();
+</code></pre>
+<hr>
+<h3>92. How do you set up WebSocket communication in Node.js using ws?</h3>
+<p>Use the <code>ws</code> module for real-time communication.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const WebSocket = require(&quot;ws&quot;);
+const wss = new WebSocket.Server({ port: 3000 });
+wss.on(&quot;connection&quot;, ws =&gt; {
+  ws.send(&quot;Hello&quot;);
+});
+</code></pre>
+<hr>
+<h3>93. What is the role of the child_process module in Node.js?</h3>
+<p><code>child_process</code> spawns subprocesses.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const { exec } = require(&quot;child_process&quot;);
+exec(&quot;ls&quot;, (err, stdout) =&gt; console.log(stdout));
+</code></pre>
+<hr>
+<h3>94. How can you deploy a Node.js application to AWS?</h3>
+<p>Use EC2, Elastic Beanstalk, or Lambda.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash"># Deploy to Elastic Beanstalk
+eb init
+eb deploy
+</code></pre>
+<hr>
+<h3>95. What is serverless architecture, and how does Node.js fit into it?</h3>
+<p>Serverless runs functions on-demand (e.g., AWS Lambda). Node.js is lightweight, ideal for serverless.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">exports.handler = async event =&gt; {
+  return { statusCode: 200, body: &quot;Hello&quot; };
+};
+</code></pre>
+<hr>
+<h3>96. How do you handle memory leaks in Node.js?</h3>
+<p>Profile with heap snapshots, avoid global variables, clear timers.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const heapdump = require(&quot;heapdump&quot;);
+heapdump.writeSnapshot(); // Analyze in Chrome DevTools
+</code></pre>
+<hr>
+<h3>97. What is the purpose of the vm module in Node.js?</h3>
+<p>The <code>vm</code> module executes JavaScript in a sandboxed context.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const vm = require(&quot;vm&quot;);
+vm.runInNewContext(&#39;console.log(&quot;Isolated&quot;)&#39;);
+</code></pre>
+<hr>
+<h3>98. How can you implement microservices with Node.js?</h3>
+<p>Use Express for APIs, communicate via HTTP or message queues.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">const express = require(&quot;express&quot;);
+const app = express();
+app.get(&quot;/service1&quot;, (req, res) =&gt; res.send(&quot;Microservice 1&quot;));
+app.listen(3001);
+</code></pre>
+<hr>
+<h3>99. What are some common debugging techniques for Node.js applications?</h3>
+<p>Use <code>console.log</code>, <code>--inspect</code>, or VS Code debugger.</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-bash">node --inspect app.js
+</code></pre>
+<hr>
+<h3>100. How do you stay updated with the latest Node.js features and best practices?</h3>
+<p>Follow Node.js blog, GitHub, conferences, and communities (e.g., X).</p>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-javascript">// Check Node.js version for new features
+console.log(process.version);
+</code></pre>
+
+</body>
+</head>
+</html>
