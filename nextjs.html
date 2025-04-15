@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Nextjs Tutorial</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
+    }
+
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
+    pre {
+      background-color: #000;
+      padding: 20px;
+      color: #fff;
+      font-size: 16px;
+      overflow: auto
+    }
+  </style>
+</head>
+
+<body>
+
+
+<h3><strong>1. Routing in Next.js</strong></h3>
+<p>Next.js uses a file-based routing system where the folder structure in the <code>app</code> directory defines routes.</p>
+<ul>
+<li><strong>Explanation</strong>: Files like <code>page.tsx</code> in the <code>app</code> folder map to routes. For example, <code>app/about/page.tsx</code> creates the <code>/about</code> route.</li>
+<li><strong>Example 1</strong>: Basic route</li>
+</ul>
+<pre><code class="language-tsx">// app/page.tsx
+export default function Home() {
+  return &lt;h1&gt;Home Page&lt;/h1&gt;;
+}
+
+// app/about/page.tsx
+export default function About() {
+  return &lt;h1&gt;About Page&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/</code> for Home, <code>/about</code> for About.</p>
+<ul>
+<li><strong>Example 2</strong>: Folder-based routing</li>
+</ul>
+<pre><code class="language-tsx">// app/contact/page.tsx
+export default function Contact() {
+  return &lt;h1&gt;Contact Us&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/contact</code>.</p>
+<hr>
+<h3><strong>2. Nested Routes</strong></h3>
+<p>Nested routes are created by nesting folders in the <code>app</code> directory.</p>
+<ul>
+<li><strong>Explanation</strong>: A folder inside another folder creates a nested route, e.g., <code>app/dashboard/settings/page.tsx</code> maps to <code>/dashboard/settings</code>.</li>
+<li><strong>Example 1</strong>: Simple nested route</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/page.tsx
+export default function Dashboard() {
+  return &lt;h1&gt;Dashboard&lt;/h1&gt;;
+}
+
+// app/dashboard/settings/page.tsx
+export default function Settings() {
+  return &lt;h1&gt;Settings&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/dashboard</code> and <code>/dashboard/settings</code>.</p>
+<ul>
+<li><strong>Example 2</strong>: Multi-level nesting</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/users/profile/page.tsx
+export default function Profile() {
+  return &lt;h1&gt;User Profile&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/dashboard/users/profile</code>.</p>
+<hr>
+<h3><strong>3. Dynamic Routes</strong></h3>
+<p>Dynamic routes use brackets <code>[param]</code> to capture dynamic segments.</p>
+<ul>
+<li><strong>Explanation</strong>: A folder like <code>[id]</code> captures a URL segment, accessible via <code>params</code> in the page.</li>
+<li><strong>Example 1</strong>: Single dynamic route</li>
+</ul>
+<pre><code class="language-tsx">// app/blog/[id]/page.tsx
+export default function BlogPost({ params }: { params: { id: string } }) {
+  return &lt;h1&gt;Blog Post: {params.id}&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/blog/123</code> shows “Blog Post: 123”.</p>
+<ul>
+<li><strong>Example 2</strong>: Dynamic user profile</li>
+</ul>
+<pre><code class="language-tsx">// app/users/[userId]/page.tsx
+export default function UserProfile({ params }: { params: { userId: string } }) {
+  return &lt;h1&gt;User ID: {params.userId}&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/users/abc</code> shows “User ID: abc”.</p>
+<hr>
+<h3><strong>4. Nested Dynamic Routes</strong></h3>
+<p>Dynamic routes can be nested for complex URL structures.</p>
+<ul>
+<li><strong>Explanation</strong>: Combine static and dynamic segments, e.g., <code>app/shop/[category]/[productId]</code>.</li>
+<li><strong>Example 1</strong>: Nested dynamic route</li>
+</ul>
+<pre><code class="language-tsx">// app/shop/[category]/[productId]/page.tsx
+export default function Product({
+  params,
+}: {
+  params: { category: string; productId: string };
+}) {
+  return (
+    &lt;h1&gt;
+      Category: {params.category}, Product: {params.productId}
+    &lt;/h1&gt;
+  );
+}
+</code></pre>
+<p><em>Access</em>: <code>/shop/electronics/456</code> shows “Category: electronics, Product: 456”.</p>
+<ul>
+<li><strong>Example 2</strong>: Multi-level dynamic</li>
+</ul>
+<pre><code class="language-tsx">// app/courses/[courseId]/lessons/[lessonId]/page.tsx
+export default function Lesson({
+  params,
+}: {
+  params: { courseId: string; lessonId: string };
+}) {
+  return (
+    &lt;h1&gt;
+      Course: {params.courseId}, Lesson: {params.lessonId}
+    &lt;/h1&gt;
+  );
+}
+</code></pre>
+<p><em>Access</em>: <code>/courses/math/lesson1</code> shows “Course: math, Lesson: lesson1”.</p>
+<hr>
+<h3><strong>5. Catch-All Segments</strong></h3>
+<p>Catch-all routes use <code>[...slug]</code> to capture all segments after a path.</p>
+<ul>
+<li><strong>Explanation</strong>: Useful for flexible URLs like <code>/docs/a/b/c</code>.</li>
+<li><strong>Example 1</strong>: Basic catch-all</li>
+</ul>
+<pre><code class="language-tsx">// app/docs/[...slug]/page.tsx
+export default function Docs({ params }: { params: { slug: string[] } }) {
+  return &lt;h1&gt;Docs Path: {params.slug.join(&quot;/&quot;)}&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/docs/a/b/c</code> shows “Docs Path: a/b/c”.</p>
+<ul>
+<li><strong>Example 2</strong>: Optional catch-all</li>
+</ul>
+<pre><code class="language-tsx">// app/wiki/[...path]/page.tsx
+export default function Wiki({ params }: { params: { path?: string[] } }) {
+  return &lt;h1&gt;Wiki: {params.path ? params.path.join(&quot;/&quot;) : &quot;Home&quot;}&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/wiki</code> shows “Wiki: Home”, <code>/wiki/a/b</code> shows “Wiki: a/b”.</p>
+<hr>
+<h3><strong>6. Not Found Page</strong></h3>
+<p>Custom 404 pages are created with <code>not-found.tsx</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Define a <code>not-found.tsx</code> file to handle unmatched routes.</li>
+<li><strong>Example 1</strong>: Global not-found</li>
+</ul>
+<pre><code class="language-tsx">// app/not-found.tsx
+export default function NotFound() {
+  return &lt;h1&gt;404 - Page Not Found&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: Any invalid route shows this page.</p>
+<ul>
+<li><strong>Example 2</strong>: Route-specific not-found</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/not-found.tsx
+export default function DashboardNotFound() {
+  return &lt;h1&gt;404 - Dashboard Resource Not Found&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: Invalid routes under <code>/dashboard</code> show this.</p>
+<hr>
+<h3><strong>7. File Colocation</strong></h3>
+<p>Non-route files (components, utilities) can coexist with route files in <code>app</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Files like <code>utils.ts</code> or <code>Component.tsx</code> don’t affect routing.</li>
+<li><strong>Example 1</strong>: Colocated component</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/MyChart.tsx
+export default function MyChart() {
+  return &lt;div&gt;Chart Component&lt;/div&gt;;
+}
+
+// app/dashboard/page.tsx
+import MyChart from &quot;./MyChart&quot;;
+
+export default function Dashboard() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Dashboard&lt;/h1&gt;
+      &lt;MyChart /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Utility function</li>
+</ul>
+<pre><code class="language-tsx">// app/lib/utils.ts
+export function formatDate(date: Date) {
+  return date.toLocaleDateString();
+}
+
+// app/blog/page.tsx
+import { formatDate } from &quot;../lib/utils&quot;;
+
+export default function Blog() {
+  return &lt;p&gt;Posted on: {formatDate(new Date())}&lt;/p&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>8. Private Folders</strong></h3>
+<p>Private folders start with <code>_</code> (e.g., <code>_utils</code>) and are excluded from routing.</p>
+<ul>
+<li><strong>Explanation</strong>: Useful for organizing code without exposing routes.</li>
+<li><strong>Example 1</strong>: Private utilities</li>
+</ul>
+<pre><code class="language-tsx">// app/_utils/helpers.ts
+export function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// app/page.tsx
+import { capitalize } from &quot;./_utils/helpers&quot;;
+
+export default function Home() {
+  return &lt;h1&gt;{capitalize(&quot;hello&quot;)}&lt;/h1&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Private components</li>
+</ul>
+<pre><code class="language-tsx">// app/_components/Button.tsx
+export default function Button() {
+  return &lt;button&gt;Click Me&lt;/button&gt;;
+}
+
+// app/page.tsx
+import Button from &quot;./_components/Button&quot;;
+
+export default function Home() {
+  return &lt;Button /&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>9. Route Groups</strong></h3>
+<p>Route groups use <code>(group)</code> folders to organize routes without affecting URLs.</p>
+<ul>
+<li><strong>Explanation</strong>: <code>(auth)</code> groups routes like <code>login</code> and <code>signup</code> without adding <code>/auth</code> to the URL.</li>
+<li><strong>Example 1</strong>: Basic route group</li>
+</ul>
+<pre><code class="language-tsx">// app/(auth)/login/page.tsx
+export default function Login() {
+  return &lt;h1&gt;Login Page&lt;/h1&gt;;
+}
+
+// app/(auth)/signup/page.tsx
+export default function Signup() {
+  return &lt;h1&gt;Signup Page&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/login</code>, <code>/signup</code>.</p>
+<ul>
+<li><strong>Example 2</strong>: Multiple groups</li>
+</ul>
+<pre><code class="language-tsx">// app/(marketing)/about/page.tsx
+export default function About() {
+  return &lt;h1&gt;About&lt;/h1&gt;;
+}
+
+// app/(dashboard)/profile/page.tsx
+export default function Profile() {
+  return &lt;h1&gt;Profile&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/about</code>, <code>/profile</code>.</p>
+<hr>
+<h3><strong>10. Layouts</strong></h3>
+<p>Layouts wrap pages and nested routes with shared UI.</p>
+<ul>
+<li><strong>Explanation</strong>: A <code>layout.tsx</code> file applies to all pages in its folder and subfolders.</li>
+<li><strong>Example 1</strong>: Root layout</li>
+</ul>
+<pre><code class="language-tsx">// app/layout.tsx
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;nav&gt;Navbar&lt;/nav&gt;
+        {children}
+        &lt;footer&gt;Footer&lt;/footer&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Nested layout</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/layout.tsx
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Dashboard Header&lt;/h1&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}
+
+// app/dashboard/page.tsx
+export default function Dashboard() {
+  return &lt;p&gt;Dashboard Content&lt;/p&gt;;
+}
+</code></pre>
+<p><em>Output</em>: Dashboard page wrapped with “Dashboard Header”.</p>
+<hr>
+<h3><strong>11. Nested Layouts</strong></h3>
+<p>Layouts can be nested for hierarchical UI.</p>
+<ul>
+<li><strong>Explanation</strong>: Each folder can have its own <code>layout.tsx</code>, composing with parent layouts.</li>
+<li><strong>Example 1</strong>: Nested layout</li>
+</ul>
+<pre><code class="language-tsx">// app/layout.tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;header&gt;Site Header&lt;/header&gt;
+        {children}
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+
+// app/shop/layout.tsx
+export default function ShopLayout({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Shop Sidebar&lt;/h2&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}
+
+// app/shop/page.tsx
+export default function Shop() {
+  return &lt;p&gt;Shop Content&lt;/p&gt;;
+}
+</code></pre>
+<p><em>Output</em>: Shop page with “Site Header” and “Shop Sidebar”.</p>
+<ul>
+<li><strong>Example 2</strong>: Deep nesting</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/users/layout.tsx
+export default function UsersLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;Users Menu&lt;/h3&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}
+
+// app/dashboard/users/profile/page.tsx
+export default function Profile() {
+  return &lt;p&gt;Profile Page&lt;/p&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>12. Multiple Root Layouts</strong></h3>
+<p>Route groups can have separate root layouts.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>(group)</code> folders to define distinct layouts for different sections.</li>
+<li><strong>Example 1</strong>: Marketing vs. App layouts</li>
+</ul>
+<pre><code class="language-tsx">// app/(marketing)/layout.tsx
+export default function MarketingLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;header&gt;Marketing Header&lt;/header&gt;
+        {children}
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+
+// app/(app)/layout.tsx
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;header&gt;App Header&lt;/header&gt;
+        {children}
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>13. Routing Metadata</strong></h3>
+<p>Metadata configures SEO and page settings.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>metadata</code> object or <code>generateMetadata</code> for dynamic metadata.</li>
+<li><strong>Example 1</strong>: Static metadata</li>
+</ul>
+<pre><code class="language-tsx">// app/page.tsx
+export const metadata = {
+  title: &quot;Home Page&quot;,
+  description: &quot;Welcome to our site&quot;,
+};
+
+export default function Home() {
+  return &lt;h1&gt;Home&lt;/h1&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Dynamic metadata</li>
+</ul>
+<pre><code class="language-tsx">// app/blog/[id]/page.tsx
+import { Metadata } from &quot;next&quot;;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise&lt;Metadata&gt; {
+  const post = await fetchPost(params.id); // Assume fetchPost exists
+  return {
+    title: post.title,
+    description: post.excerpt,
+  };
+}
+
+export default function BlogPost({ params }: { params: { id: string } }) {
+  return &lt;h1&gt;Blog Post: {params.id}&lt;/h1&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>14. Title Metadata</strong></h3>
+<p>Set page titles dynamically or statically.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>title</code> in <code>metadata</code> or <code>generateMetadata</code>.</li>
+<li><strong>Example 1</strong>: Static title</li>
+</ul>
+<pre><code class="language-tsx">// app/about/page.tsx
+export const metadata = {
+  title: &quot;About Us&quot;,
+};
+
+export default function About() {
+  return &lt;h1&gt;About&lt;/h1&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Dynamic title</li>
+</ul>
+<pre><code class="language-tsx">// app/users/[id]/page.tsx
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}) {
+  return { title: `User ${params.id}` };
+}
+
+export default function User({ params }: { params: { id: string } }) {
+  return &lt;h1&gt;User: {params.id}&lt;/h1&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>15. Link Component</strong></h3>
+<p>Next.js <code>&lt;Link&gt;</code> enables client-side navigation.</p>
+<ul>
+<li><strong>Explanation</strong>: Prevents full page reloads for faster navigation.</li>
+<li><strong>Example 1</strong>: Basic Link</li>
+</ul>
+<pre><code class="language-tsx">// app/page.tsx
+import Link from &quot;next/link&quot;;
+
+export default function Home() {
+  return (
+    &lt;div&gt;
+      &lt;Link href=&quot;/about&quot;&gt;Go to About&lt;/Link&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Link with dynamic route</li>
+</ul>
+<pre><code class="language-tsx">// app/users/page.tsx
+import Link from &quot;next/link&quot;;
+
+export default function Users() {
+  const users = [&quot;alice&quot;, &quot;bob&quot;];
+  return (
+    &lt;ul&gt;
+      {users.map((user) =&gt; (
+        &lt;li key={user}&gt;
+          &lt;Link href={`/users/${user}`}&gt;{user}&lt;/Link&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>16. Active Links</strong></h3>
+<p>Highlight active links based on the current route.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>usePathname</code> to check the current route.</li>
+<li><strong>Example 1</strong>: Active link with class</li>
+</ul>
+<pre><code class="language-tsx">// app/components/Nav.tsx
+&quot;use client&quot;;
+import Link from &quot;next/link&quot;;
+import { usePathname } from &quot;next/navigation&quot;;
+
+export default function Nav() {
+  const pathname = usePathname();
+  return (
+    &lt;nav&gt;
+      &lt;Link href=&quot;/&quot; className={pathname === &quot;/&quot; ? &quot;active&quot; : &quot;&quot;}&gt;
+        Home
+      &lt;/Link&gt;
+      &lt;Link href=&quot;/about&quot; className={pathname === &quot;/about&quot; ? &quot;active&quot; : &quot;&quot;}&gt;
+        About
+      &lt;/Link&gt;
+    &lt;/nav&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Reusable active link component</li>
+</ul>
+<pre><code class="language-tsx">// app/components/ActiveLink.tsx
+&quot;use client&quot;;
+import Link from &quot;next/link&quot;;
+import { usePathname } from &quot;next/navigation&quot;;
+
+export default function ActiveLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  return (
+    &lt;Link href={href} className={pathname === href ? &quot;active&quot; : &quot;&quot;}&gt;
+      {children}
+    &lt;/Link&gt;
+  );
+}
+
+// app/page.tsx
+import ActiveLink from &quot;./components/ActiveLink&quot;;
+
+export default function Home() {
+  return (
+    &lt;div&gt;
+      &lt;ActiveLink href=&quot;/about&quot;&gt;About&lt;/ActiveLink&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>17. Params and Search Params</strong></h3>
+<p>Access URL parameters and query strings.</p>
+<ul>
+<li><strong>Explanation</strong>: <code>params</code> for dynamic routes, <code>searchParams</code> for query strings.</li>
+<li><strong>Example 1</strong>: Dynamic params</li>
+</ul>
+<pre><code class="language-tsx">// app/products/[id]/page.tsx
+export default function Product({
+  params,
+}: {
+  params: { id: string };
+}) {
+  return &lt;h1&gt;Product ID: {params.id}&lt;/h1&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Search params</li>
+</ul>
+<pre><code class="language-tsx">// app/search/page.tsx
+export default function Search({
+  searchParams,
+}: {
+  searchParams: { query?: string };
+}) {
+  return &lt;h1&gt;Search Query: {searchParams.query || &quot;None&quot;}&lt;/h1&gt;;
+}
+</code></pre>
+<p><em>Access</em>: <code>/search?query=nextjs</code> shows “Search Query: nextjs”.</p>
+<hr>
+<h3><strong>18. Navigating Programmatically</strong></h3>
+<p>Navigate without <code>&lt;Link&gt;</code> using <code>useRouter</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>useRouter</code> for dynamic navigation in client components.</li>
+<li><strong>Example 1</strong>: Basic navigation</li>
+</ul>
+<pre><code class="language-tsx">// app/components/RedirectButton.tsx
+&quot;use client&quot;;
+import { useRouter } from &quot;next/navigation&quot;;
+
+export default function RedirectButton() {
+  const router = useRouter();
+  return (
+    &lt;button onClick={() =&gt; router.push(&quot;/about&quot;)}&gt;Go to About&lt;/button&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Dynamic navigation</li>
+</ul>
+<pre><code class="language-tsx">// app/components/UserButton.tsx
+&quot;use client&quot;;
+import { useRouter } from &quot;next/navigation&quot;;
+
+export default function UserButton({ userId }: { userId: string }) {
+  const router = useRouter();
+  return (
+    &lt;button onClick={() =&gt; router.push(`/users/${userId}`)}&gt;
+      View User
+    &lt;/button&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>19. Templates</strong></h3>
+<p>Templates are similar to layouts but re-render on navigation.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>template.tsx</code> for fresh instances per navigation.</li>
+<li><strong>Example 1</strong>: Basic template</li>
+</ul>
+<pre><code class="language-tsx">// app/template.tsx
+export default function Template({ children }: { children: React.ReactNode }) {
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Template Rendered at {new Date().toISOString()}&lt;/p&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Nested template</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/template.tsx
+export default function DashboardTemplate({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Dashboard Template: {Math.random()}&lt;/p&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>20. Loading UI</strong></h3>
+<p>Show loading states with <code>loading.tsx</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Automatically displayed during data fetching or navigation.</li>
+<li><strong>Example 1</strong>: Global loading</li>
+</ul>
+<pre><code class="language-tsx">// app/loading.tsx
+export default function Loading() {
+  return &lt;p&gt;Loading...&lt;/p&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Route-specific loading</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/loading.tsx
+export default function DashboardLoading() {
+  return &lt;div&gt;Dashboard Loading...&lt;/div&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>21. Error Handling</strong></h3>
+<p>Handle errors with <code>error.tsx</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Catches errors in a route segment.</li>
+<li><strong>Example 1</strong>: Basic error</li>
+</ul>
+<pre><code class="language-tsx">// app/error.tsx
+&quot;use client&quot;;
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () =&gt; void;
+}) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Error: {error.message}&lt;/h1&gt;
+      &lt;button onClick={reset}&gt;Try Again&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<ul>
+<li><strong>Example 2</strong>: Route-specific error</li>
+</ul>
+<pre><code class="language-tsx">// app/dashboard/error.tsx
+&quot;use client&quot;;
+export default function DashboardError({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () =&gt; void;
+}) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Dashboard Error: {error.message}&lt;/h1&gt;
+      &lt;button onClick={reset}&gt;Retry&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>22. Recovering from Errors</strong></h3>
+<p>Use <code>reset</code> to retry rendering after an error.</p>
+<ul>
+<li><strong>Explanation</strong>: Provided in <code>error.tsx</code> to re-render the component.</li>
+<li><strong>Example</strong>: See <code>error.tsx</code> examples above (reset button).</li>
+</ul>
+<hr>
+<h3><strong>23. Handling Errors in Nested Routes</strong></h3>
+<p>Nested <code>error.tsx</code> files catch errors in specific segments.</p>
+<ul>
+<li><strong>Explanation</strong>: Each folder can have its own error boundary.</li>
+<li><strong>Example 1</strong>: Nested error</li>
+</ul>
+<pre><code class="language-tsx">// app/shop/[id]/error.tsx
+&quot;use client&quot;;
+export default function ShopError({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () =&gt; void;
+}) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Shop Error: {error.message}&lt;/h1&gt;
+      &lt;button onClick={reset}&gt;Retry&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>24. Handling Errors in Layouts</strong></h3>
+<p>Errors in layouts are caught by the nearest <code>error.tsx</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Layout errors bubble up to the closest error boundary.</li>
+<li><strong>Example</strong>: Use <code>error.tsx</code> in the same or parent folder as the layout.</li>
+</ul>
+<hr>
+<h3><strong>25. Handling Global Errors</strong></h3>
+<p>Global errors are caught by <code>app/global-error.tsx</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Handles errors in the root layout or app.</li>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/global-error.tsx
+&quot;use client&quot;;
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () =&gt; void;
+}) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;h1&gt;Global Error: {error.message}&lt;/h1&gt;
+        &lt;button onClick={reset}&gt;Retry&lt;/button&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>26. Parallel Routes</strong></h3>
+<p>Parallel routes render multiple pages simultaneously.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>@slot</code> folders to define parallel routes.</li>
+<li><strong>Example 1</strong>: Basic parallel route</li>
+</ul>
+<pre><code class="language-tsx">// app/layout.tsx
+export default function RootLayout({
+  children,
+  @dashboard,
+}: {
+  children: React.ReactNode;
+  dashboard: React.ReactNode;
+}) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;div&gt;{children}&lt;/div&gt;
+        &lt;div&gt;{dashboard}&lt;/div&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+
+// app/@dashboard/page.tsx
+export default function Dashboard() {
+  return &lt;h1&gt;Dashboard Slot&lt;/h1&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>27. Unmatched Routes</strong></h3>
+<p>Handle unmatched parallel routes with <code>default.tsx</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Renders when no route matches in a slot.</li>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/@dashboard/default.tsx
+export default function DefaultDashboard() {
+  return &lt;p&gt;No dashboard content&lt;/p&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>28. Conditional Routes</strong></h3>
+<p>Conditionally render routes based on logic.</p>
+<ul>
+<li><strong>Explanation</strong>: Use server-side logic in layouts or pages.</li>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/page.tsx
+export default function Home({ searchParams }: { searchParams: { mode?: string } }) {
+  if (searchParams.mode === &quot;admin&quot;) {
+    return &lt;h1&gt;Admin Dashboard&lt;/h1&gt;;
+  }
+  return &lt;h1&gt;Public Home&lt;/h1&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>29. Intercepting Routes</strong></h3>
+<p>Intercept routes to override default rendering.</p>
+<ul>
+<li><strong>Explanation</strong>: Use <code>(.)</code> or <code>(..)</code> to intercept routes.</li>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/(.)login/page.tsx
+export default function InterceptedLogin() {
+  return &lt;h1&gt;Intercepted Login Page&lt;/h1&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>30. Parallel Intercepting Routes</strong></h3>
+<p>Combine parallel routes with interception.</p>
+<ul>
+<li><strong>Explanation</strong>: Intercept a slot in a parallel route setup.</li>
+<li><strong>Example</strong>: Extend parallel route example with <code>(.)</code> interception.</li>
+</ul>
+<hr>
+<h3><strong>31. Route Handlers</strong></h3>
+<p>Handle HTTP requests with <code>route.ts</code>.</p>
+<ul>
+<li><strong>Explanation</strong>: Define API-like endpoints in <code>app</code>.</li>
+<li><strong>Example 1</strong>: GET handler</li>
+</ul>
+<pre><code class="language-tsx">// app/api/hello/route.ts
+import { NextResponse } from &quot;next/server&quot;;
+
+export async function GET() {
+  return NextResponse.json({ message: &quot;Hello, World!&quot; });
+}
+</code></pre>
+<p><em>Access</em>: <code>/api/hello</code>.</p>
+<ul>
+<li><strong>Example 2</strong>: POST handler</li>
+</ul>
+<pre><code class="language-tsx">// app/api/users/route.ts
+import { NextResponse } from &quot;next/server&quot;;
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  return NextResponse.json({ name: body.name });
+}
+</code></pre>
+<hr>
+<h3><strong>32. Dynamic Route Handlers</strong></h3>
+<p>Handle dynamic routes in <code>route.ts</code>.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/api/users/[id]/route.ts
+import { NextResponse } from &quot;next/server&quot;;
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  return NextResponse.json({ userId: params.id });
+}
+</code></pre>
+<hr>
+<h3><strong>33. Handling PATCH, DELETE Requests</strong></h3>
+<p>Extend route handlers for other HTTP methods.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/api/users/[id]/route.ts
+import { NextResponse } from &quot;next/server&quot;;
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const body = await request.json();
+  return NextResponse.json({ id: params.id, updated: body });
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  return NextResponse.json({ message: `Deleted user ${params.id}` });
+}
+</code></pre>
+<hr>
+<h3><strong>34. URL Query Parameters, Headers, Cookies, Redirects, Caching</strong></h3>
+<p>Handle advanced request features in route handlers.</p>
+<ul>
+<li><strong>Example</strong>: Combined features</li>
+</ul>
+<pre><code class="language-tsx">// app/api/data/route.ts
+import { NextResponse } from &quot;next/server&quot;;
+import { cookies, headers } from &quot;next/headers&quot;;
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get(&quot;q&quot;);
+  const authHeader = headers().get(&quot;authorization&quot;);
+  const session = cookies().get(&quot;session&quot;)?.value;
+
+  if (!session) {
+    return NextResponse.redirect(&quot;/login&quot;);
+  }
+
+  return NextResponse.json(
+    { query, authHeader, session },
+    { headers: { &quot;Cache-Control&quot;: &quot;s-maxage=3600&quot; } }
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>35. Middleware</strong></h3>
+<p>Run code before requests are processed.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// middleware.ts
+import { NextResponse } from &quot;next/server&quot;;
+
+export function middleware(request: Request) {
+  const { pathname } = new URL(request.url);
+  if (pathname.startsWith(&quot;/admin&quot;) &amp;&amp; !request.headers.get(&quot;authorization&quot;)) {
+    return NextResponse.redirect(new URL(&quot;/login&quot;, request.url));
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [&quot;/admin/:path*&quot;],
+};
+</code></pre>
+<hr>
+<h3><strong>36. Rendering (Client-Side, Server-Side, Suspense SSR, React Server Components)</strong></h3>
+<p>Next.js supports multiple rendering strategies.</p>
+<ul>
+<li><strong>Client-Side Rendering (CSR)</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/client-page.tsx
+&quot;use client&quot;;
+import { useState, useEffect } from &quot;react&quot;;
+
+export default function ClientPage() {
+  const [data, setData] = useState(null);
+  useEffect(() =&gt; {
+    fetch(&quot;/api/data&quot;)
+      .then((res) =&gt; res.json())
+      .then(setData);
+  }, []);
+  return &lt;div&gt;{data ? JSON.stringify(data) : &quot;Loading...&quot;}&lt;/div&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Server-Side Rendering (SSR)</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/ssr-page.tsx
+export default async function SSRPage() {
+  const data = await fetch(&quot;https://api.example.com/data&quot;).then((res) =&gt;
+    res.json()
+  );
+  return &lt;div&gt;{JSON.stringify(data)}&lt;/div&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>React Server Components (RSC)</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/rsc-page.tsx
+async function fetchData() {
+  return await fetch(&quot;https://api.example.com/data&quot;).then((res) =&gt; res.json());
+}
+
+export default async function RSCPage() {
+  const data = await fetchData();
+  return &lt;div&gt;{JSON.stringify(data)}&lt;/div&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>37. Static and Dynamic Rendering</strong></h3>
+<p>Control rendering at build time or request time.</p>
+<ul>
+<li><strong>Static</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/static-page.tsx
+export default function StaticPage() {
+  return &lt;h1&gt;Statically Rendered&lt;/h1&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Dynamic</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/dynamic-page.tsx
+export const dynamic = &quot;force-dynamic&quot;;
+
+export default async function DynamicPage() {
+  const data = await fetch(&quot;https://api.example.com/data&quot;).then((res) =&gt;
+    res.json()
+  );
+  return &lt;div&gt;{JSON.stringify(data)}&lt;/div&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>38. generateStaticParams</strong></h3>
+<p>Pre-render dynamic routes at build time.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/blog/[id]/page.tsx
+export async function generateStaticParams() {
+  const posts = await fetchPosts(); // Assume fetchPosts exists
+  return posts.map((post) =&gt; ({ id: post.id }));
+}
+
+export default function BlogPost({ params }: { params: { id: string } }) {
+  return &lt;h1&gt;Post: {params.id}&lt;/h1&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>39. Streaming</strong></h3>
+<p>Stream content to the client incrementally.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/streaming-page.tsx
+import { Suspense } from &quot;react&quot;;
+
+async function SlowComponent() {
+  await new Promise((resolve) =&gt; setTimeout(resolve, 3000));
+  return &lt;p&gt;Loaded!&lt;/p&gt;;
+}
+
+export default function StreamingPage() {
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Instant Content&lt;/p&gt;
+      &lt;Suspense fallback={&lt;p&gt;Loading...&lt;/p&gt;}&gt;
+        &lt;SlowComponent /&gt;
+      &lt;/Suspense&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>40. Server and Client Composition Patterns</strong></h3>
+<p>Combine server and client components effectively.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/page.tsx
+import ClientComponent from &quot;./ClientComponent&quot;;
+
+async function fetchData() {
+  return { message: &quot;Hello from Server&quot; };
+}
+
+export default async function Page() {
+  const data = await fetchData();
+  return (
+    &lt;div&gt;
+      &lt;p&gt;{data.message}&lt;/p&gt;
+      &lt;ClientComponent /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// app/ClientComponent.tsx
+&quot;use client&quot;;
+import { useState } from &quot;react&quot;;
+
+export default function ClientComponent() {
+  const [count, setCount] = useState(0);
+  return &lt;button onClick={() =&gt; setCount(count + 1)}&gt;Count: {count}&lt;/button&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>41. Server-Only and Client-Only Code</strong></h3>
+<p>Segregate code for server or client execution.</p>
+<ul>
+<li><strong>Server-Only</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/lib/server-only.ts
+import &quot;server-only&quot;;
+
+export async function getServerData() {
+  return { secret: &quot;Server Secret&quot; };
+}
+</code></pre>
+<ul>
+<li><strong>Client-Only</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/components/client-only.tsx
+import &quot;client-only&quot;;
+
+export default function ClientOnly() {
+  return &lt;p&gt;Client-side only&lt;/p&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>42. Context Provider</strong></h3>
+<p>Share state across components.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/context/ThemeContext.tsx
+&quot;use client&quot;;
+import { createContext, useContext, useState } from &quot;react&quot;;
+
+const ThemeContext = createContext({ theme: &quot;light&quot;, toggleTheme: () =&gt; {} });
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState(&quot;light&quot;);
+  const toggleTheme = () =&gt; setTheme(theme === &quot;light&quot; ? &quot;dark&quot; : &quot;light&quot;);
+  return (
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme }}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+
+// app/page.tsx
+import { ThemeProvider, useTheme } from &quot;./context/ThemeContext&quot;;
+
+export default function Page() {
+  return (
+    &lt;ThemeProvider&gt;
+      &lt;ThemeToggle /&gt;
+    &lt;/ThemeProvider&gt;
+  );
+}
+
+// app/ThemeToggle.tsx
+&quot;use client&quot;;
+import { useTheme } from &quot;./context/ThemeContext&quot;;
+
+export default function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Current Theme: {theme}&lt;/p&gt;
+      &lt;button onClick={toggleTheme}&gt;Toggle Theme&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>43. Data Fetching</strong></h3>
+<p>Fetch data in client and server components.</p>
+<ul>
+<li><strong>Client Component</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/client-fetch.tsx
+&quot;use client&quot;;
+import { useState, useEffect } from &quot;react&quot;;
+
+export default function ClientFetch() {
+  const [data, setData] = useState(null);
+  useEffect(() =&gt; {
+    fetch(&quot;/api/data&quot;)
+      .then((res) =&gt; res.json())
+      .then(setData);
+  }, []);
+  return &lt;div&gt;{data ? JSON.stringify(data) : &quot;Loading...&quot;}&lt;/div&gt;;
+}
+</code></pre>
+<ul>
+<li><strong>Server Component</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/server-fetch.tsx
+async function fetchData() {
+  const res = await fetch(&quot;https://api.example.com/data&quot;);
+  return res.json();
+}
+
+export default async function ServerFetch() {
+  const data = await fetchData();
+  return &lt;div&gt;{JSON.stringify(data)}&lt;/div&gt;;
+}
+</code></pre>
+<hr>
+<h3><strong>44. Fetching from a Database</strong></h3>
+<p>Use ORMs like Prisma for database queries.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/lib/db.ts
+import { PrismaClient } from &quot;@prisma/client&quot;;
+
+const prisma = new PrismaClient();
+
+export async function getUsers() {
+  return prisma.user.findMany();
+}
+
+// app/users/page.tsx
+import { getUsers } from &quot;../lib/db&quot;;
+
+export default async function Users() {
+  const users = await getUsers();
+  return (
+    &lt;ul&gt;
+      {users.map((user) =&gt; (
+        &lt;li key={user.id}&gt;{user.name}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>45. Data Mutations</strong></h3>
+<p>Mutate data with server actions.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/actions.ts
+&quot;use server&quot;;
+import { prisma } from &quot;./lib/db&quot;;
+
+export async function createUser(data: { name: string }) {
+  return prisma.user.create({ data });
+}
+
+// app/users/new/page.tsx
+import { createUser } from &quot;../../actions&quot;;
+
+export default function NewUser() {
+  async function handleSubmit(formData: FormData) {
+    &quot;use server&quot;;
+    const name = formData.get(&quot;name&quot;) as string;
+    await createUser({ name });
+  }
+
+  return (
+    &lt;form action={handleSubmit}&gt;
+      &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+      &lt;button type=&quot;submit&quot;&gt;Create User&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>46. Forms with Server Actions</strong></h3>
+<p>Handle form submissions server-side.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/form/page.tsx
+&quot;use server&quot;;
+import { redirect } from &quot;next/navigation&quot;;
+
+export default function FormPage() {
+  async function handleSubmit(formData: FormData) {
+    &quot;use server&quot;;
+    const name = formData.get(&quot;name&quot;) as string;
+    // Save to DB
+    redirect(&quot;/success&quot;);
+  }
+
+  return (
+    &lt;form action={handleSubmit}&gt;
+      &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+      &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>47. Form Validation with useActionState</strong></h3>
+<p>Validate forms with server feedback.</p>
+<ul>
+<li><strong>Example</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/form/page.tsx
+&quot;use client&quot;;
+import { useActionState } from &quot;react&quot;;
+
+async function submitForm(_: any, formData: FormData) {
+  const name = formData.get(&quot;name&quot;) as string;
+  if (!name) return { error: &quot;Name is required&quot; };
+  return { success: true };
+}
+
+export default function FormPage() {
+  const [state, action] = useActionState(submitForm, null);
+  return (
+    &lt;form action={action}&gt;
+      &lt;input type=&quot;text&quot; name=&quot;name&quot; /&gt;
+      {state?.error &amp;&amp; &lt;p&gt;{state.error}&lt;/p&gt;}
+      &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+<hr>
+<h3><strong>48. Authentication with Various Data Providers</strong></h3>
+<p>Implement auth with NextAuth.js and databases (e.g., PostgreSQL, MongoDB).</p>
+<ul>
+<li><strong>Example (NextAuth with Prisma)</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/api/auth/[...nextauth]/route.ts
+import NextAuth from &quot;next-auth&quot;;
+import { PrismaAdapter } from &quot;@auth/prisma-adapter&quot;;
+import { prisma } from &quot;../../../lib/db&quot;;
+
+export const { handlers, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    {
+      id: &quot;google&quot;,
+      name: &quot;Google&quot;,
+      type: &quot;oauth&quot;,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: &quot;https://accounts.google.com/o/oauth2/auth&quot;,
+    },
+  ],
+});
+</code></pre>
+<ul>
+<li><strong>Example (MongoDB with Credentials)</strong>:</li>
+</ul>
+<pre><code class="language-tsx">// app/api/auth/[...nextauth]/route.ts
+import NextAuth from &quot;next-auth&quot;;
+import CredentialsProvider from &quot;next-auth/providers/credentials&quot;;
+import { MongoClient } from &quot;mongodb&quot;;
+
+export const { handlers, auth } = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: &quot;Credentials&quot;,
+      credentials: {
+        username: { label: &quot;Username&quot;, type: &quot;text&quot; },
+        password: { label: &quot;Password&quot;, type: &quot;password&quot; },
+      },
+      async authorize(credentials) {
+        const client = new MongoClient(process.env.MONGODB_URI!);
+        const db = client.db(&quot;mydb&quot;);
+        const user = await db
+          .collection(&quot;users&quot;)
+          .findOne({ username: credentials.username });
+        if (user &amp;&amp; credentials.password === user.password) {
+          return { id: user._id, name: user.username };
+        }
+        return null;
+      },
+    }),
+  ],
+});
+</code></pre>
+
+</body>
+</html>
