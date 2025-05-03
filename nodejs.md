@@ -17,7 +17,12 @@ Node.js is an open-source, cross-platform Javascript runtime environment.
 
 - **Open Source** : source code is publicly available for sharing and modification
 - **Cross Platform** : Available on Mac, Windows and Linux
-- **JavaScript runtime Environment** : ?
+- **JavaScript runtime Environment** : 
+    - JavaScript runtime is an environment which provides all the necessary components in order to use and run a JavaScript program.
+    - Every browser has a JavaScript Engine
+    - A ***JavaScript Engine*** is one component in the JavaScript runtime.
+    - What else does the JavaScript runtime consist of?
+        - ![ overview of Javascript runtime](./img/Node-js-avaScript-Runtime.png)
 
 ### Why learn Node.js?
 - Build end to end javascript applications.
@@ -70,6 +75,38 @@ One version every year since 2015
 
 ### JavaScript Engine
 JavaScript code we write cannot be understand by the computer.
-A JavaScript engine is a program that converts javascript code that developers write into machine code that allows a computer to perform specific tasks
+A ***JavaScript engine*** is a program that converts javascript code that developers write into machine code that allows a computer to perform specific tasks
 - JavaScript engines are typically developed by web browser vendor
     - V8 - Open source JavaScript engine developed by Google for Chrome
+    - SpiderMonkey - The JavaScript engine powering Mozilla Firefox
+    - JavaScriptCore - Open source javascript engine developed by Apple for Safari.
+    - Chakra - A javascript engine for the original Microsoft Edge (The latest version of edge uses V8)
+
+**V8 JavaScript Engine**
+- V8 is Google's open source JavaScript engine
+- V8 implements ECMAScript as specified in ECMA-262
+- V8 is written in C++ and is used in Google Chrome, the open source browser from Google.
+- V8 can run standalone, or can be embedded into any c++ application
+- source link: [https://github.com/v8/v8] and [https://v8.dev/docs]
+
+**Chrome's V8 & JavaScript Engine**
+- Chrome's V8 engine by Google sits at the core of Node.js
+- By embedding V8 into your own C++ application, you can write C++ code that gets executed when a user writes javascript code.
+- You can add new features to Javascript itself.
+- Since C++ is great for lower level operations like file handling, database connections and network operations, by embedding V8 into your own C++ program, you have the power to add all of that functionality in Javascript.
+- The C++ program we're talking about is Node.js (Node.js is a lot more than just a C++ program)
+
+
+**Chrome's V8 Engine Summary**
+
+- A JavaScript engine is a program that executes JavaScript code.
+- In 2008, Google created its own JavaScript engine called V8.
+- V8 is written in C++ and can be used independently or can be embedded into other C++ programs.
+- That allows you to write your own C++ programs which can do everything that V8 can do and more.
+- Your C++ program can run ECMAScript and additional features that you choose to incorporate.
+- For example, features that are available in C++ but not available with JavaScript.
+
+
+
+
+
