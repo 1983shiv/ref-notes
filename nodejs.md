@@ -62,3 +62,14 @@ Node.js is an open-source, cross-platform Javascript runtime environment.
 
 One version every year since 2015
 
+**ECMAScript summary**
+- ECMA-262 is the language specification
+- ECMAScript is the language taht implements ECMA-262
+- JavaScript is basically ECMAScript at its core but builds on top of that.
+
+
+### JavaScript Engine
+JavaScript code we write cannot be understand by the computer.
+A JavaScript engine is a program that converts javascript code that developers write into machine code that allows a computer to perform specific tasks
+- JavaScript engines are typically developed by web browser vendor
+    - V8 - Open source JavaScript engine developed by Google for Chrome
