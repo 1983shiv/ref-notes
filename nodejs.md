@@ -124,7 +124,7 @@ A ***JavaScript engine*** is a program that converts javascript code that develo
 - src folder which contain the C++ src code.
 
 
-**Important** : unlime browser runtime, node js runtime does not have access to webAPI.
+**Important** : unlike browser runtime, node js runtime does not have access to webAPI.
 
 **Node.js Summary**
 - Node.js is an open-source, cross-platform Javascript runtime environment
@@ -134,7 +134,50 @@ A ***JavaScript engine*** is a program that converts javascript code that develo
 - It consists of C++ files which form the core features and JavaScript files which expose common utilities and some of C++ features for easier consumption.
 - - ![ Node.js JavaScript Runtime](./img/Node-js-avaScript-Runtime2.png)
 
+### Executing JavaScript with Node
+1. Node **REPL**
+    - **R**ead
+    - **E**valuate
+    - **P**rint
+    - **L**oop
+
+2. Executing code in a JavaScript file in the command line.
+
+### Browser vs Node.js
+- In the browser, most of the time what you are doing is interacting with the DOM, or other Web Platform APIs like Cookies. You don't have the document, windows and all the other objects that are provided by the browser.
+- In the browser, we don't have all the nice API that Node.js provides through its modules. For example the filesystem access functionality.
+- With node.js, you control the environment
+- With a browser, you are at the mercy of what the user choose.
 
 
+## Modules 
+- A module is an encapsulated and reusable chunk of code that has its own context
+- In Node.js, each file is treated as a separated module.
+- Types of Modules
+    1. Local Modules - Modules that we create in our application
+    2. Built-in Modules - Modules that Node.js ships with out of the box.
+    3. Third party Modules - Modules written by other developers that we can use in our applicatoin.
+
+### Local Modules
+**CommonJS**
+- CommonJS is a standard taht states how a module should be structured and shared
+- Node.js adopted CommonJS when it started out and is what you will see in code bases
+
+**Local Modules Summary**
+- In node.js, each file is a module that is isolated by default.
+- To load a module into another file, we use the requier function.
+
+```js (add.js)
+const add = (a, b) => {
+    return a+b;
+}
+const sum = add(2,4)
+console.log(sum)
+```
+
+```js (index.js)
+requier(./add)
+console.log("the output of add function will display above.")
+```
 
 
