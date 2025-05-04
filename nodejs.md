@@ -18,11 +18,13 @@ Node.js is an open-source, cross-platform Javascript runtime environment.
 - **Open Source** : source code is publicly available for sharing and modification
 - **Cross Platform** : Available on Mac, Windows and Linux
 - **JavaScript runtime Environment** : 
-    - JavaScript runtime is an environment which provides all the necessary components in order to use and run a JavaScript program.
+    - JavaScript runtime is an environment which provides all the necessary components in order to use and run a JavaScript program ***outside the browser***.
     - Every browser has a JavaScript Engine
     - A ***JavaScript Engine*** is one component in the JavaScript runtime.
     - What else does the JavaScript runtime consist of?
         - ![ overview of Javascript runtime](./img/Node-js-avaScript-Runtime.png)
+
+    - ECMAScript >> JavaScript Engine (V8) >> JavaScript runtime
 
 ### Why learn Node.js?
 - Build end to end javascript applications.
@@ -105,6 +107,32 @@ A ***JavaScript engine*** is a program that converts javascript code that develo
 - That allows you to write your own C++ programs which can do everything that V8 can do and more.
 - Your C++ program can run ECMAScript and additional features that you choose to incorporate.
 - For example, features that are available in C++ but not available with JavaScript.
+
+**What can you build with Node.js**
+- Traditional Websites
+- Backend services like APIs
+- Real time applications
+- Streaming services
+- CLI tools
+- Multiplayer games
+
+**Source Code studying**
+- [https://github.com/nodejs/node/tree/main/deps]
+- deps folder highlights all the dependancies a nodejs have including V8
+- uv for accessing os related system such as file system, networking etc.
+- [https://github.com/nodejs/node/tree/main/deps]
+- src folder which contain the C++ src code.
+
+
+**Important** : unlime browser runtime, node js runtime does not have access to webAPI.
+
+**Node.js Summary**
+- Node.js is an open-source, cross-platform Javascript runtime environment
+- It is not a language, it is not a framework
+- Capable of executing JavaScript code outside of browser
+- It can execute not only the standard ECMAScript language but also new features that are made available through C++ binding using the V8 engine.
+- It consists of C++ files which form the core features and JavaScript files which expose common utilities and some of C++ features for easier consumption.
+- - ![ Node.js JavaScript Runtime](./img/Node-js-avaScript-Runtime2.png)
 
 
 
