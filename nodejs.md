@@ -132,7 +132,7 @@ A ***JavaScript engine*** is a program that converts javascript code that develo
 - Capable of executing JavaScript code outside of browser
 - It can execute not only the standard ECMAScript language but also new features that are made available through C++ binding using the V8 engine.
 - It consists of C++ files which form the core features and JavaScript files which expose common utilities and some of C++ features for easier consumption.
-- - ![ Node.js JavaScript Runtime](./img/Node-js-avaScript-Runtime2.png)
+- ![ Node.js JavaScript Runtime](./img/Node-js-avaScript-Runtime2.png)
 
 ### Executing JavaScript with Node
 1. Node **REPL**
@@ -167,7 +167,8 @@ A ***JavaScript engine*** is a program that converts javascript code that develo
 - In node.js, each file is a module that is isolated by default.
 - To load a module into another file, we use the requier function.
 
-```js (add.js)
+(add.js)
+```js 
 const add = (a, b) => {
     return a+b;
 }
@@ -175,9 +176,139 @@ const sum = add(2,4)
 console.log(sum)
 ```
 
-```js (index.js)
+(index.js)
+```js 
 requier(./add)
 console.log("the output of add function will display above.")
 ```
 
+### Module Exports
+
+(add.js)
+```js 
+const add = (a, b) => {
+    return a+b;
+}
+
+module.exports = add;
+// it is similar to export default add;
+```
+
+(index.js)
+```js 
+const addFn = requier(./add)
+
+const sum = addFn(2,4)
+console.log(sum)
+
+const sum2 = addFn(3,4)
+console.log(sum2)
+
+```
+
+### Module Scope
+- In node.js each module has own scope, so if we are importing two files that has same function with same name, it will still run, as each module has it's own scope and local function define and execute in same scope.
+
+- Each loaded module in node.js is wrapped with an IIFE that provides private scoping of code.
+- IIFE allows you to repeat variable of function names without any conflicts
+
+iife.js
+```js
+(function() {
+    const superHero = "Batman"
+    console.log(superHero)
+})()
+
+(function() {
+    const superHero = "Superman"
+    console.log(superHero)
+})()
+
+```
+### Immediately invoked function Expression (IIFE) in Node.js
+- Before a module's code is executed, Node.js will wrap it with a function wrapper that provides module scope.
+- this save us from having to worry about conflicting variables or functions.
+- There is proper encapsulation and reusability is unaffected.
+
+### Module Wrapper
+- Every module in node.js gets wrapped in an IIFE before being loaded
+- IIFE helps keep top-level variables scoped to the module rather than the global object.
+- The IIFE that wraps with every module contains 5 parameters which are pretty important for the functioning of a module.
+
+![ Module Wrapper](./img/module-wrapper.png)
+
+
+```js
+(function(exports, require, module, __filename, __dirname){
+    const superHero = "Batman";
+    console.log(superHero);
+})
+
+```
+
+### Module Caching
+
+```js
+//superhero.js
+
+class SuperHero{
+    constructor(name){
+        this.name = name
+    }
+
+    getName (){
+        return this.name
+    }
+
+    setName(name){
+        this.name = name;
+    }
+}
+
+module.exports = new SuperHero("Batman")
+
+// index.js
+const superHero = require("./superhero")
+console.log(superHero.getName())
+
+superHero.setName("Superman")
+console.log(superHero.getName())
+
+const newSuperHero = require("./superhero")
+console.log(superHero.getName())
+
+```
+- to avoid unnecessary bug, export the class not a instance of the class.
+
+```js
+//superhero.js
+
+class SuperHero{
+    constructor(name){
+        this.name = name
+    }
+
+    getName (){
+        return this.name
+    }
+
+    setName(name){
+        this.name = name;
+    }
+}
+
+module.exports = SuperHero;
+
+// index.js
+const superHero = require("./superhero")
+const batman = new SuperHero("Batman")
+console.log(batman.getName())
+
+batman.setName("New Batman")
+console.log(batman.getName())
+
+const superman = new SuperHero("SuperMan")
+console.log(superman.getName())
+
+```
 
