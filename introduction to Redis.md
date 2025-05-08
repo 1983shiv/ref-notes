@@ -16,7 +16,8 @@ redis_db = container name
 --appendonly yes = it will allow to store data on disk
 
 
-// installing redis insight, which is gui for redis
+installing redis insight, which is gui for redis
+redis.js
 ```bash
 docker run -d -p 5540:5540 --name redis_gui redislabs/redisinsight:latest
 ```
@@ -30,10 +31,10 @@ mkdir redisdemo
 npm init -y
 npm i dotenv ioredis
 
-```
+```bash
 .env {
     REDIS_HOST=139.59.9.128
-    REDIST_PORT=6379
+    REDIS_PORT=6379
     REDIS_PSWD_123456
 }
 
@@ -96,5 +97,37 @@ const getExpiry = async (key) => client.ttl(key);
 const getAllKeys = async () => client.keys("*");
 
 export default { initialize, setKeyValue, getKeyValue, deleteKeyValue, checkIfKeyExists, setExpiry, getExpiry, getAllKeys };
+
+```
+
+
+index.js
+```bash
+import dotenv from "dotenv";
+import redisService from "./redis.js"
+
+# IIFE PATTERN
+(async () => {
+    dotenv.config();
+
+    const {REDIS_HOST, REDIS_PORT, REDIS_PSWD } = process.env;
+    redisService.initialize({
+        host: REDIS_HOST,
+        port: REDIS_PORT,
+        password: REDIS_PSWD
+    });
+
+    setTimeout(() => {
+        redisService.setKeyValue("test", "connection works");
+    }, 2000)
+
+
+    setTimeout(() => {
+        redisService.getKeyValue("test").then((res) => {
+            console.log(res)
+        });
+    }, 5000)
+
+})();
 
 ```
