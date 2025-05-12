@@ -11,13 +11,14 @@ Why?
 
 
 **Client vs Server State**
-**Client State** : Persisted in your app memory and accessing or updating it is synchronous.
-**Server Sate** : 
-- Persisted remotely and requires asynchronous APIs for fetching or updating.
-- Has shared ownership
-- Data can be updated by someone else without your knowledge
-- UI data may not be in sync with the remote data
-- Challenging when you have to deal with caching, deduping multiple requests for the same data, updating stale data in the background, performance optimization etc.
+
+- **Client State** : Persisted in your app memory and accessing or updating it is synchronous.
+- **Server Sate** : 
+  - Persisted remotely and requires asynchronous APIs for fetching or updating.
+  - Has shared ownership
+  - Data can be updated by someone else without your knowledge
+  - UI data may not be in sync with the remote data
+  - Challenging when you have to deal with caching, deduping multiple requests for the same data, updating stale data in the background, performance optimization etc.
 
 
 ### Course Content
