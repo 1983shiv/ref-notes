@@ -88,7 +88,7 @@ export const SuperHeroesPage = () => {
 ### Fetching data with useQuery
 
 ```bash
-npm i react-qery
+npm i react-query
 ```
 
 ```js
@@ -386,7 +386,6 @@ In React Query, you can transform the fetched data using the select option insid
 - Great for filtering, mapping, grouping, or formatting
 
 ```js
-
 const { data, isLoading, isError, error } = useQuery(
     "super-heros", 
     fetchSuperHeros,
@@ -479,3 +478,542 @@ return (
 
 ```
 
+### Query by Id
+If you want to fetch a specific item by its ID using React Query, you can create a custom hook like useSuperHero(id) to query that individual hero.
+
+```js
+
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+
+const fetchSuperHero = async ({ queryKey }) => {
+  const [_key, id] = queryKey;
+  const response = await axios.get(`/api/super-heroes/${id}`);
+  return response.data;
+};
+
+export const useSuperHero = (id) => {
+  return useQuery(['super-hero', id], fetchSuperHero, {
+    enabled: !!id, // ensures the query only runs if id is truthy
+  });
+};
+
+```
+
+```js
+
+import React from 'react';
+import { useParams } from "react-router-dom"
+import { useSuperHero } from '../hooks/useSuperHero';
+
+const HeroDetails = () => {
+    const { heroId } = useParams()
+    const { data, isLoading, isError, error } = useSuperHero(heroId);
+
+    if (isLoading) return <p>Loading...</p>;
+    if (isError) return <p>Error: {error.message}</p>;
+
+    return (
+        <div>
+        <h2>{data.name}</h2>
+        <p>Power: {data.power}</p>
+        </div>
+    );
+};
+
+export default HeroDetails;
+```
+
+### ✅ Parallel Queries in React Query
+Parallel queries are used when you want to fetch multiple independent resources at the same time — and wait for all of them to complete.
+
+🧠 When to Use Which?
+✅ Use multiple useQuery if the number of queries is small and fixed.
+✅ Use useQueries if you have:
+    - A dynamic number of queries (e.g., loop over an array of IDs)
+    - Need batch handling or more control
+
+below we are using alias, like data: user => data as user and data: posts => data as posts
+```js
+const { data: user, isLoading: isUserLoading } = useQuery(['user', userId], () => fetchUser(userId));
+const { data: posts, isLoading: isPostsLoading } = useQuery(['posts'], fetchPosts);
+```
+🧩 Method 2: useQueries (Array of Queries)
+For better scalability or dynamic queries, use useQueries:
+
+```js
+import { useQueries } from 'react-query';
+
+const results = useQueries({
+  queries: [
+    {
+      queryKey: ['user', userId],
+      queryFn: () => fetchUser(userId),
+    },
+    {
+      queryKey: ['posts'],
+      queryFn: fetchPosts,
+    },
+  ]
+});
+
+
+// or
+
+// Where query are dynamic, means, we don't know which and how many ids are going to fetch
+// like a UI is asking to User to select the 4 cards out of 9 available, so selection would be dynamic as we // 
+// don't know what user will select.
+
+<Switch>
+    <Route path='/rq-dynamic-parallel'>
+        <DynamicParallelPage heroIds={[1,4,6]} />
+    </Route>
+</Switch>
+
+const fetchSuperHero = (heroId) => {
+    return axios.get(`api/superheroes/${heroId}`)
+}
+
+export const DynamicParallelPage = ({ heroIds}) => {
+    const queryResults = useQueries(
+        heroIds.map((id) => {
+            return {
+                queryKey: ["super-hero", id],
+                queryFn: () => fetchSuperHero(id)
+            }
+        })
+    );
+}
+
+// Access results
+const user = results[0].data;
+const posts = results[1].data;
+```
+
+
+### 🔄 Dependent Queries in React Query
+Dependent queries are useful when one query depends on the result of another — for example, you first fetch a user, then fetch that user’s projects.
+
+React Query handles this with the enabled option in useQuery.
+
+🧠 Key Concepts:
+- enabled: !!userEmail: prevents the second query from running until the first one has valid data.
+- Keeps everything reactive — once user is loaded, the dependent query fires automatically.
+
+✅ Real-World Use Cases
+- Fetch order details → then fetch shipping status
+- Get logged-in user → then fetch permissions
+- Get category → then fetch related products
+
+```js
+const { data: user, isLoading: userLoading } = useQuery(
+  ['user', userId],
+  () => fetchUser(userId)
+);
+
+const userEmail = user?.email;
+
+const { data: projects, isLoading: projectsLoading } = useQuery(
+  ['projects', userEmail],
+  () => fetchProjectsByEmail(userEmail),
+  {
+    enabled: !!userEmail, // Only run this query if email exists
+  }
+);
+
+
+```
+
+
+### ⚡ Initial Query Data in React Query
+You can use initialData to preload data in a query before the fetch happens — useful for:
+
+- Instant UI rendering with cached/expected data
+- Prefetching or passing server-fetched data to the client (like in SSR or Next.js)
+
+```js
+import { useQuery, useQueryClient } from "react-query"
+
+const fetchSuperHero = (heroId) => {
+    return axios.get(`api/superheroes/${heroId}`)
+}
+
+export const useSuperHeroData = (heroId) => {
+    const queryClient = useQueryClient()
+    return useQuery(['super-heroes', heroId], () => fetchSuperHero(heroId),
+        {
+            initialData: () => {
+                const hero = queryClient.getQueryData('super-heroes')?.data?.find((hero) => hero.id === parseInt(heroId))
+                if(hero){
+                    return { data: hero}
+                } else {
+                    return undefined
+                }        
+            }
+        }
+    );
+}
+
+
+
+```
+
+
+Paginated Queries
+React Query makes it easy to implement pagination by using a page parameter in the query key and fetch function.
+
+🧠 Key Options Explained:
+- ['projects', page]: unique query key per page
+- keepPreviousData: true: prevents blank UI while switching pages
+- data.hasMore: a flag returned from your API to disable "Next" when done
+
+```js
+import { useState } from 'react'
+import { useQuery } from 'react-query'
+import axios from 'axios'
+
+const fetchColors = pageNumber => {
+  return axios.get(`http://localhost:4000/colors?_limit=2&_page=${pageNumber}`)
+}
+
+export const PaginatedQueriesPage = () => {
+  const [pageNumber, setPageNumber] = useState(1)
+  const { isLoading, isError, error, data, isFetching } = useQuery(
+    ['colors', pageNumber],
+    () => fetchColors(pageNumber),
+    {
+      keepPreviousData: true
+    }
+  )
+
+  if (isLoading) {
+    return <h2>Loading...</h2>
+  }
+
+  if (isError) {
+    return <h2>{error.message}</h2>
+  }
+
+  return (
+    <>
+      <div>
+        {data?.data.map(color => {
+          return (
+            <div key={color.id}>
+              <h2>
+                {color.id}. {color.label}
+              </h2>
+            </div>
+          )
+        })}
+      </div>
+      <div>
+        <button
+          onClick={() => setPageNumber(page => page - 1)}
+          disabled={pageNumber === 1}>
+          Prev Page
+        </button>
+        <button
+          onClick={() => setPageNumber(page => page + 1)}
+          disabled={pageNumber === 4}>
+          Next Page
+        </button>
+      </div>
+      {isFetching && 'Loading'}
+    </>
+  )
+}
+
+```
+
+
+
+### 🔁 Infinite Queries in React Query
+Infinite queries are used when you want to load more data page by page — perfect for infinite scroll, "Load More" buttons, or lazy loading.
+
+React Query provides this via the useInfiniteQuery hook.
+
+```js
+import { Fragment } from 'react'
+import { useInfiniteQuery } from 'react-query'
+import axios from 'axios'
+
+const fetchColors = ({ pageParam = 1 }) => {
+  return axios.get(`http://localhost:4000/colors?_limit=2&_page=${pageParam}`)
+}
+
+export const InfiniteQueriesPage = () => {
+  const { 
+    isLoading,
+    isError,
+    error,
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage
+  } = useInfiniteQuery(['colors'], fetchColors, {
+    getNextPageParam: (_lastPage, pages) => {
+      if (pages.length < 4) {
+        return pages.length + 1
+      } else {
+        return undefined
+      }
+    }
+  })
+
+  if (isLoading) {
+    return <h2>Loading...</h2>
+  }
+
+  if (isError) {
+    return <h2>{error.message}</h2>
+  }
+
+  return (
+    <>
+      <div>
+        {data?.pages.map((group, i) => {
+          return (
+            <Fragment key={i}>
+              {group.data.map(color => (
+                <h2 key={color.id}>
+                  {color.id} {color.label}
+                </h2>
+              ))}
+            </Fragment>
+          )
+        })}
+      </div>
+      <div>
+        <button onClick={() => fetchNextPage()} disabled={!hasNextPage}>
+          Load more
+        </button>
+      </div>
+      <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
+    </>
+  )
+}
+
+```
+
+
+### Mutations
+
+Mutations are used in React Query when you want to create, update, or delete data — anything that causes a side effect on the server.
+
+You use the useMutation hook to handle these operations.
+🧠 Summary
+- useMutation() is for POST, PUT, PATCH, DELETE operations.
+- Use queryClient.invalidateQueries() to refresh affected data.
+- Supports onSuccess, onError, and onSettled callbacks for side effects.
+- You can also use optimistic updates for instant UI feedback.
+
+```js
+import { useMutation, useQueryClient } from 'react-query'
+const addSuperHero = hero => {
+  return request({ url: '/superheroes', method: 'post', data: hero })
+}
+
+export const useAddSuperHeroData = () => {
+  return useMutation(addSuperHero)
+}
+
+```
+
+```js
+const AddHeroForm = () => {
+  // const { mutate, isLoading, isSuccess } = useAddSuperHeroData();
+  // or
+  const { mutate: addHero, isLoading, isSuccess } = useAddSuperHeroData();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newHero = {
+      name: e.target.name.value,
+      power: e.target.power.value,
+    };
+    // mutate(newHero); // triggers the POST request
+    // or
+    addHero(newHero)
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" placeholder="Hero Name" />
+      <input name="power" placeholder="Super Power" />
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Adding...' : 'Add Hero'}
+      </button>
+      {isSuccess && <p>Hero added successfully!</p>}
+    </form>
+  );
+};
+
+
+```
+
+### Query Invalidation
+
+```js
+import { useMutation, useQueryClient, useQueryClient } from 'react-query'
+
+const addSuperHero = hero => {
+  return request({ url: '/superheroes', method: 'post', data: hero })
+}
+
+export const useAddSuperHeroData = () => {
+  const queryClient = useQueryClient()
+  return useMutation(addSuperHero, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('super-heros')
+      // here "super-heros" is the key that is used in useQuery method to fetch the data. so UI update with latest data. invalidateQueries will be a additional get request to update the UI data of given key: super-heros
+    }
+  })
+}
+
+```
+
+### Handling Mutation Response
+
+When you perform a mutation using useMutation, you can capture and handle the response (e.g., newly created item, status, or server message) easily in your component using the mutation result or callbacks.
+
+
+```js
+import { useMutation, useQueryClient, useQueryClient } from 'react-query'
+
+const addSuperHero = hero => {
+  return request({ url: '/superheroes', method: 'post', data: hero })
+}
+
+export const useAddSuperHeroData = () => {
+  const queryClient = useQueryClient()
+  return useMutation(addSuperHero, {
+    onSuccess: (data) => {
+      // queryClient.invalidateQueries('super-heros')
+      queryClient.setQueryData('super-heros', (oldQueryData) => {
+        return {
+          ...oldQueryData,
+          data: [...oldQueryData.data, data.data]
+        }
+      })
+    }
+  })
+  // this way, it will not make additional get network call to update the UI and UI get update as well.
+}
+
+```
+
+**Accessing the Response Directly**
+```js
+const mutation = useMutation(addHero);
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const newHero = { name: 'Shiv', power: 'Speed coding' };
+  
+  const response = await mutation.mutateAsync(newHero); // Waits for result
+  console.log('New hero added:', response); // Response from server
+};
+
+```
+
+When to Use Which
+- Use mutateAsync() if you want to handle success/failure with try/catch or async/await.
+- Use onSuccess/onError inside useMutation for side effects or UI updates right after the mutation.
+
+### ⚡ Optimistic Updates in React Query
+Optimistic updates let you immediately update the UI before the server confirms the mutation — creating a snappy, real-time user experience.
+
+React Query provides full support for this via the **onMutate**, **onError**, and **onSettled** mutation lifecycle callbacks.
+
+```js
+export const useAddSuperHeroData = () => {
+  const queryClient = useQueryClient()
+  return useMutation(addSuperHero, {
+    onMutate: async (newHero) => {
+      await queryClient.cancleQueries('super-heroes')
+      const prevHeroData = queryClient.getQueryData('super-heroes')
+      queryClient.setQueryData('super-heroes', (oldQueryData) => {
+        return {
+          ...oldQueryData,
+          data: [
+            ...oldQueryData,
+            { id: oldQueryData?.data?.length + 1, ...newHero}
+          ]
+        }
+      }),
+      return {
+        prevHeroData
+      }
+      // this will update UI before making actual mutate call and update the data. if anything goes wrong, we can rollback with the help of return value of prevHeroData.
+    },
+    onError: (_error, _hero, context) => {
+      queryClient.setQueryData('super-heroes', context.prevHeroData)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries('super-heroes')
+    }
+  })
+}
+
+```
+
+### 🔐 Axios Interceptors in React (and React Query)
+Axios interceptors let you globally handle requests or responses, such as:
+
+- Attaching auth tokens
+- Logging or transforming responses
+- Handling errors globally (e.g. redirecting on 401)
+
+
+```js
+// utils/axiosInstance.js
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: 'https://api.example.com',
+});
+
+// 🔐 Request Interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 🚨 Response Interceptor
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.warn('Unauthorized, redirecting...');
+      // e.g., window.location = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosInstance;
+
+```
+
+✅ Using with React Query
+Use this Axios instance inside your React Query fetchers:
+
+
+```js
+import axiosInstance from '../utils/axiosInstance';
+
+const fetchUsers = () => axiosInstance.get('/users').then(res => res.data);
+
+const useUsers = () => {
+  return useQuery(['users'], fetchUsers);
+};
+
+```
