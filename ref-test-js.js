@@ -1,23 +1,31 @@
-// Re-assignment and Re-declaration with var
-var x = 10;
-var x = 20; // Re-declaration allowed
-x = 30; // Re-assignment allowed
-console.log("var x:", x); // Output: 30
+function simpleCounter(count){
+    count++;
+    return count;
+}
 
-// Re-assignment and Re-declaration with let
-let y = 10;
-// let y = 20; // SyntaxError: Identifier 'y' has already been declared
-y = 30; // Re-assignment allowed
-console.log("let y:", y); // Output: 30
+function createCounter() {
+  let count = 0; // Private variable in the outer function's scope
 
-// Re-assignment and Re-declaration with const
-const z = 10;
-// const z = 20; // SyntaxError: Identifier 'z' has already been declared
-// z = 30; // TypeError: Assignment to constant variable
-console.log("const z:", z); // Output: 10
+  // Inner function that forms a closure over 'count'
+  function counter() {
+    count++; // Accesses and modifies the outer function's variable
+    return count;
+  }
 
-// Modifying const object (contents, not reference)
-const obj = { value: 10 };
-obj.value = 20; // Allowed: modifying object properties
-console.log("const obj:", obj); // Output: { value: 20 }
-// obj = { value: 30 }; // TypeError: Assignment to constant variable
+  return counter; // Return the inner function
+}
+
+// Create two independent counters
+const counter1 = createCounter();
+const counter2 = createCounter();
+
+console.log("counter1 :", counter1()); // Output: 1
+console.log("counter1 :", counter1()); // Output: 2
+console.log("counter2 :", counter2()); // Output: 1 (independent state)
+console.log("counter2 :", counter2()); // Output: 2
+console.log("counter1 :", counter1()); // Output: 3 (counter1's state is preserved)
+
+// const counter3 = simpleCounter(1)
+// console.log(counter3)
+// console.log(counter3)
+// console.log(counter3)
