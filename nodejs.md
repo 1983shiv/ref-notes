@@ -332,7 +332,7 @@ console.log(superman.getName())
 
 ![ Event Loop in Node.js](./img/event-loop-2.png)
 
-Event Loop - Execution Order
+**Event Loop - Execution Order**
 1. Any callbacks in the micro task queues are executed. First, task in the nextTick queue and only then task in the promise queue.
 2. All callbacks within the timer queue are executed, then, 
     - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.
@@ -342,4 +342,19 @@ Event Loop - Execution Order
     - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.   
 5. All callbacks within the close queue are executed. then, 
     - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.   
-6. For one final time in the same loop, the micro task queue are executed. nextTick queuce followed by promise queue.         
+6. For one final time in the same loop, the micro task queue are executed. nextTick queuce followed by promise queue.    
+
+if there are more callbacks to be processed, the loop is kept alive for one more run and the same steps are repeated.
+On the other hand, if all callbacks are executed and there is no more code to process, the event loop exists.
+
+
+**Answer's of Questions**
+- Whenever an async task completes in libuv, at what point does Node decide to run the associated callback function on the call stack?
+    - Callback fn are executed only when the call stack empty. The normal flow of execution fill not be interrupted to run a callback fn.
+- What about async methods like setTimeout and setInterval which also delay the execution of a callback function?
+    - setTimeout and setInterval callbacks are given first priority.
+- If two async task such as setTimeout and readFile complete at the same time, how does Node decide which callback function to run first on the call stack?
+    - Timer callbacks are executed before I/O callbacks even if both are ready at the exact same time.
+
+
+    
