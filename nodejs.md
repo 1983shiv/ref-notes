@@ -312,3 +312,34 @@ console.log(superman.getName())
 
 ```
 
+
+
+### Event Loop
+
+**Async Code Execution**
+- Javascript is a synchronous, blocking, single-threaded language
+- To Make async programming possible, we need the help of libuv 
+![ Asynchronous Code Execution in Node.js](./img/event-loop-1.png)
+
+**Few Questions**
+- Whenever an async task completes in libuv, at what point does Node decide to run the associated callback function on the call stack?
+- What about async methods like setTimeout and setInterval which also delay the execution of a callback function?
+- If two async task such as setTimeout and readFile complete at the same time, how does Node decide which callback function to run first on the call stack?
+
+**Event Loop**
+- It is a C program and is part of libuv
+- A design pattern that orchestrate or co-ordinates the execution of synchronous and asynchronous code in Node.js
+
+![ Event Loop in Node.js](./img/event-loop-2.png)
+
+Event Loop - Execution Order
+1. Any callbacks in the micro task queues are executed. First, task in the nextTick queue and only then task in the promise queue.
+2. All callbacks within the timer queue are executed, then, 
+    - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.
+3. All callbacks within the I/O queue are executed.  then, 
+    - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.
+4. All callbacks within the check queue are executed. then, 
+    - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.   
+5. All callbacks within the close queue are executed. then, 
+    - Callbacks in the micro task queues if present are executed. Again, first tasks in the nextTick queue and then task in the promise queue.   
+6. For one final time in the same loop, the micro task queue are executed. nextTick queuce followed by promise queue.         
