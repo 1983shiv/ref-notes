@@ -112,7 +112,7 @@ export class MyCdkAppStack extends cdk.Stack {
 ### What this command will do : 
 ```npm run cdk diff <stackname>```
 
-**Answer** : if your appis app.synth() in main file, then it will synthe the app and let you know if there is any error, else it will list all the resources and permissions that you are going to create. Also you can check entire cloudformation template.
+**Answer** : if your app is app.synth() in main file, then it will synthe the app and let you know if there is any error, else it will list all the resources and permissions that you are going to create. Also you can check entire cloudformation template.
 
 
 

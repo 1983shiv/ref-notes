@@ -10,9 +10,31 @@
 ## Prerequisities:
 - Modern Javascript
 
-## Term and concepts to understand what is node.js
-### What is Node.js?
+Table of Content:
 
+1. [Introduction](#introduction)
+2. [ECMAScript](#ecmascript)
+3. [Chrome's V8 Engine](#chrome-v8-engine)
+4. [JavaScript Runtime](#javascript-engine)
+5. [What is Nodejs](#introduction)
+6. [Browser vs Node.js](#browsers-vs-nodejs)
+7. [Modules](#modules)
+8. [Local Modules](#local-modules)
+9. [Module Exports](#module-exports)
+10. [Module Scope](#module-scope)
+11. [Module Wrapper](#module-wrapper)
+12. [Module Caching](#module-caching)
+13. [Import Export Patterns](#import-export-pattern)
+20. [Callback Pattern](#callback-pattern)
+
+
+
+
+
+## Term and concepts to understand what is node.js
+
+### Introduction
+**What is Node.js**?
 Node.js is an open-source, cross-platform Javascript runtime environment.
 
 - **Open Source** : source code is publicly available for sharing and modification
@@ -90,6 +112,8 @@ A ***JavaScript engine*** is a program that converts javascript code that develo
 - V8 is written in C++ and is used in Google Chrome, the open source browser from Google.
 - V8 can run standalone, or can be embedded into any c++ application
 - source link: [https://github.com/v8/v8] and [https://v8.dev/docs]
+
+### Chrome V8 Engine
 
 **Chrome's V8 & JavaScript Engine**
 - Chrome's V8 engine by Google sits at the core of Node.js
@@ -312,6 +336,22 @@ console.log(superman.getName())
 
 ```
 
+### Callback Pattern
+
+```js
+function greet(name){
+    console.log(`Hello ${name}`);
+}
+
+function HighOrderFn(callback){
+    const name = "Shiv";
+    callback(name);
+}
+
+```
+**Callback**: A fn that is used as a argument (or passed as argument) in another fn is called callback fn.
+**HighOrderFunction**: A fn that accept fn as argument is called HighOrderFunction.
+
 
 
 ### Event Loop
@@ -325,6 +365,8 @@ console.log(superman.getName())
 - Whenever an async task completes in libuv, at what point does Node decide to run the associated callback function on the call stack?
 - What about async methods like setTimeout and setInterval which also delay the execution of a callback function?
 - If two async task such as setTimeout and readFile complete at the same time, how does Node decide which callback function to run first on the call stack?
+
+
 
 **Event Loop**
 - It is a C program and is part of libuv
