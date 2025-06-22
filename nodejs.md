@@ -26,6 +26,14 @@ Table of Content:
 - [Callback Pattern](#callback-pattern)
 - [Character Sets and Encoding](#character-sets-and-encoding)
 - [Asynchronous JavaScript](#asynchronous-javascript)
+- [fs Module](#fs-module)
+- [Steams](#steams)
+- [Pipes](#pipes)
+- [HTTP Module](#http-module)
+
+
+
+
  
 
 
@@ -608,6 +616,175 @@ Codi
 
 ---
 ### fs Module
+
+The file system (fs) module allows you to work with the file system on your computer.
+
+```js
+const fs = require("fs");
+
+console.log("First");
+// sync approach
+const fileContents = fs.readFileSync("./file.txt");  // will output buffer data in hexadecimal
+const fileContents = fs.readFileSync("./file.txt", "utf8");
+console.log(fileContents);
+
+console.log("Second");
+// async approach
+fs.readFile("./file.txt", "utf-8", (err, data) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log(data);
+  }
+});
+
+console.log("Third");
+
+// file writing
+
+// sync approach
+fs.writeFileSync("./greet.txt", "Hello World");
+// async approach
+fs.writeFile(
+  "./greet.txt",
+  " Hello Shiv",
+  {
+    flag: "a",
+  },
+  (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("File written");
+    }
+  }
+);
+
+```
+---
+### fs Promise Module
+
+```js
+const fs = require("node:fs/promises")
+
+console.log("First");
+
+async function readFile() {
+  try {
+    const data = await fs.readFile("file.txt", "utf8");
+    console.log(data);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+readFile();
+
+// fs.readFile("file.txt", "utf8")
+//   .then((data) => console.log(data))
+//   .catch((err) => console.log(err));
+
+console.log("Second");
+
+```
+--- 
+### Streams
+
+**Streams recap**
+- A stream is a sequence of data that is being moved from one point to another over time
+- Ex: a stream of data being transferred from one file to another within the same computer
+- Work with data in chunks instead of waiting for the entire data to be available at once.
+- If you're transfering file contents from fileA to fileB, you don't wait for entire fileA content to be saved in temporary memory before moving it into fileB
+- Instead, the content is transferred in chunks over time which prevents unnecessary memory usage.
+- Stream is infact a built-in node module that inherits from the event emitter class
+- Other modules internally use streams for their functioning.
+
+**Types of Streams**
+- Readable streams from which data can be read
+    - Ex: Reading from a file as readable stream
+- Writable streams to which we can write data
+    - Ex: Writing to a file as writable stream
+- Duplex streams that are both Readable and Writable
+    - Ex: Sockets as a duplex stream
+- Transform streams that can modify or transform the data as it is written and read.
+    - Ex: File compression where you can write compressed data and read de-compressed data to and from a file as a transform stream.
+
+```js
+const fs = require("fs");
+
+const readableStream = fs.createReadStream("./file1.txt", {
+  encoding: "utf8",
+  highWaterMark: 2,
+});
+
+const writeableStream = fs.createWriteStream("./file2.txt");
+
+
+readableStream.on("data", (chunk) => {
+  console.log(chunk);
+  writeableStream.write(chunk);
+});
+
+
+```
+---
+### Pipes
+
+```js
+const fs = require("fs");
+const zlib = require("zlib");
+
+const readableStream = fs.createReadStream("./file.txt", {
+  encoding: "utf8",
+  highWaterMark: 2,
+});
+
+const writeableStream = fs.createWriteStream("./file2.txt");
+
+readableStream.pipe(writeableStream);
+// readableStream.on("data", (chunk) => {
+//   console.log(chunk);
+//   writeableStream.write(chunk);
+// });
+
+const gzip = zlib.createGzip();
+readableStream.pipe(gzip).pipe(fs.createWriteStream("./file2.txt.gz"));
+
+readableStream.on("end", () => {
+  console.log("Done reading");
+});
+
+readableStream.on("error", (err) => {
+  console.log(err);
+});
+
+```
+---
+### HTTP Module
+
+**How the web works**
+- Computers connected to the internet are called clients and servers
+- Clients are internet-connected devices such as computers or mobile phones along with web accessing software available on those devices such as a web browser
+- Servers on the other hand are computers that store web pages, sites and apps.
+
+                    Request             
+        ------------------------------->
+Client                                       Server
+        <-------------------------------
+                    Response
+
+**HTTP**
+- HypderText Transfer Protocol
+- A protocol that defines a format for clients and servers to speak to each other
+- The client sends an HTTP request and the server responds with an HTTP response
+
+
+**HTTP and Node**
+- We can create a web server using Node.js
+- Node.js has access to os functionalities like networking
+- Node has an event loop to run tasks asynchronously and is perfect for creating web servers that can simultaneously handle large volumes of requests
+- The Node server we create should still respect the HTTP format
+- The HTTP module allows creation of web servers that can transfer data over HTTP.
 
 
 ---
