@@ -24,9 +24,8 @@ Table of Content:
 - [Module Wrapper](#module-wrapper)
 - [Module Caching](#module-caching)
 - [Callback Pattern](#callback-pattern)
-
-
-
+- [Character Sets and Encoding](#character-sets-and-encoding)
+ 
 
 
 ## Term and concepts to understand what is node.js
@@ -334,7 +333,9 @@ console.log(superman.getName())
 
 ```
 
+--- 
 ### Callback Pattern
+
 
 ```js
 function greet(name){
@@ -347,8 +348,8 @@ function HighOrderFn(callback){
 }
 
 ```
-**Callback**: A fn that is used as a argument (or passed as argument) in another fn is called callback fn.
-**HighOrderFunction**: A fn that accept fn as argument is called HighOrderFunction.
+- **Callback**: A fn that is used as a argument (or passed as argument) in another fn is called callback fn.
+- **HighOrderFunction**: A fn that accept fn as argument is called HighOrderFunction.
 
 Callback fn are two types
 1. Synchronous Callbacks
@@ -407,9 +408,90 @@ Callback fn are two types
                 });
     ```
 
+---
+
+### Events Module
+- The events module allows us to work with events in Node.js
+- An event is an action or an occurance that has happened in our application that we can respond to.
+- Using the events module, we can dispatch our own custom events and respond to those custom events in a non-blocking manner.
+
+```js
+const EventEmitter = require("node:events");
+
+const emitter = new EventEmitter();
+
+emitter.on("order-pizza", (size, topping) => {
+    console.log(`Order received, Baking a ${size} pizza with ${ topping }`);
+})
+
+emitter.on("order-pizza", (size) => {
+    if(size === "large"){
+        console.log(`Serving complimentary drink`);
+    }
+})
+
+emitter.emit("order-pizza", "large", "mushrooms");
+
+```
+
+### Extending from EventEmitter
+```js
+
+const EventEmitter = require("events");
+
+class PizzaShop extends EventEmitter {
+    constructor() {
+        super();
+        this.orderNumber = 0;
+    }
+
+    order(size, topping) {
+        this.orderNumber++;
+        this.emit("order", size, topping);
+    }
+
+    displayOrderNumber() {
+        console.log(`Current order number: ${this.orderNumber}`);
+    }
+}
+
+module.exports = Pizzashop;
+
+```
+
+```js
+class DrinkMachine {
+    serveDrink(size) {
+        if (size === "large") {
+        console.log("Serving complimentary drink");
+        }
+    }
+}
+module.exports = DrinkMachine
+```
+
+```js
+const Pizzashop = require("./pizza-shop")
+const DrinkMachine = require("./drink-machine")
+
+const pizzaShop = new PizzaShop();
+const drinkMachine = new DrinkMachine();
+
+pizzaShop.on("order", (size, topping) => {
+  console.log(`Order received! Baking a ${size} pizza with ${topping}`);
+  drinkMachine.serveDrink(size);
+});
+
+pizzaShop.order("large", "mushrooms");
+
+```
+
+---
+### Character Sets and Encoding
+![ Binary Data](./img/character-sets-and-encoding.png)
 
 
-
+---
 ### Event Loop
 
 **Async Code Execution**
