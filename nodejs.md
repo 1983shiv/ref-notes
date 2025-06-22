@@ -12,20 +12,18 @@
 
 Table of Content:
 
-1. [Introduction](#introduction)
-2. [ECMAScript](#ecmascript)
-3. [Chrome's V8 Engine](#chrome-v8-engine)
-4. [JavaScript Runtime](#javascript-engine)
-5. [What is Nodejs](#introduction)
-6. [Browser vs Node.js](#browsers-vs-nodejs)
-7. [Modules](#modules)
-8. [Local Modules](#local-modules)
-9. [Module Exports](#module-exports)
-10. [Module Scope](#module-scope)
-11. [Module Wrapper](#module-wrapper)
-12. [Module Caching](#module-caching)
-13. [Import Export Patterns](#import-export-pattern)
-20. [Callback Pattern](#callback-pattern)
+- [Introduction](#introduction)
+- [ECMAScript](#ecmascript)
+- [Chrome's V8 Engine](#chrome-v8-engine)
+- [JavaScript Runtime](#javascript-engine)
+- [Browser vs Node.js](#browser-vs-nodejs)
+- [Modules](#modules)
+- [Local Modules](#local-modules)
+- [Module Exports](#module-exports)
+- [Module Scope](#module-scope)
+- [Module Wrapper](#module-wrapper)
+- [Module Caching](#module-caching)
+- [Callback Pattern](#callback-pattern)
 
 
 
@@ -351,6 +349,64 @@ function HighOrderFn(callback){
 ```
 **Callback**: A fn that is used as a argument (or passed as argument) in another fn is called callback fn.
 **HighOrderFunction**: A fn that accept fn as argument is called HighOrderFunction.
+
+Callback fn are two types
+1. Synchronous Callbacks
+    - A callback which is executed immediately is called a synchronous callback.
+    - Examples includes:
+        ```js
+            let numbers = [1,2,3,4,5,6]
+            numbers.sort((a,b) => a-b)
+            numbers.filter( n => n%2 === 0)
+            numbers.map(n => n/2)
+        ```
+2. Asynchronous Callbacks
+    - A callback that is often used to continue or resume code execution after an asynchronous operations has completed.
+    - Callbacks are used to delay the execution of a function until a particular time or event has occured.
+    - In node.js have an async nature to prevent blocking of execution.
+    - Ex: reading data from a file, fetching data from a database or handling a network request.
+    ```js
+        function callbackfn(){
+            document.getElementById("demo").innerHTML = "hello shiv"
+        }
+        document.getElementById("btn").addEventListener("click", callbackfn)
+
+        <!-- data fetching ex -->
+        fetch("url")
+            .then(response => {
+                if (!response.ok) {
+                throw new Error("Network response was not ok");
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.querySelector(".result").innerHTML = data;
+                alert("Load was performed");
+            })
+            .catch(error => {
+                console.error("There was a problem with the fetch operation:", error);
+            });
+
+            <!-- typescrpt ex -->
+            fetch("url")
+                .then((response: Response) => {
+                    if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                    }
+                    return response.text();
+                })
+                .then((data: string) => {
+                    const resultElement = document.querySelector(".result") as HTMLElement;
+                    if (resultElement) {
+                    resultElement.innerHTML = data;
+                    }
+                    alert("Load was performed");
+                })
+                .catch((error: Error) => {
+                    console.error("There was a problem with the fetch operation:", error);
+                });
+    ```
+
 
 
 
