@@ -25,6 +25,7 @@ Table of Content:
 - [Module Caching](#module-caching)
 - [Callback Pattern](#callback-pattern)
 - [Character Sets and Encoding](#character-sets-and-encoding)
+- [Asynchronous JavaScript](#asynchronous-javascript)
  
 
 
@@ -541,10 +542,73 @@ pizzaShop.order("large", "mushrooms");
 - It can only decide when is the right time to send the data for processing
 - If there is data already processed or too little data to process, Node puts the arriving data in a buffer 
 - It is an intentionally small area that Node maintains in the runtime to process a stream of data.
+- Ex: streaming a video online
+- If your internet connection is fast enough, the speed of the stream will be fast enough to instantly fill up the buffer and send it out for processing
+- That will repeat till the stream is finished
+- If your connection is slow, after processing the first chunk of data that arrived, the video player will display a loading spinner which indicates it is waiting for more data to arrive.
+- once the buffer is filled up and the data is processed, the video player shows the video
+- While the video is playing, more data will continue to arrive and wait in the buffer
+- Binary data, character sets and encoding < = > Buffers?
 
+```js
+const buffer = new Buffer.from("Shiv")
 
+buffer.write("Coding")
+console.log(buffer.toString())
+console.log(buffer)
+console.log(buffer.toJSON())
+
+```
+```bash
+> node ref-test-js.js
+
+Codi
+<Buffer 73 68 69 76>
+{ type: 'Buffer', data: [ 115, 104, 105, 118 ] }
+```
 
 #https://unicode-table.com/en/
+
+---
+### Asynchronous JavaScript
+
+![ Synchronous ](./img/synchronous.png)
+
+- Blocking
+    - No matter how long a previous process takes, the subsequent processes won't kickoff until the former is completed.
+    - Web app runs in a browser and it executes an intensive chunk of code without returning control to the browser, the browser can appear to be frozen.
+
+- Single-threaded
+    - A thread is simply a process that your javascript program can use to run a task.
+    - Each thread can only do one task at a time.
+    - Javascript has just the one thread called the main thread for executing any code.
+
+- Problem
+    - Problem with synchronous, blocking, single-threaded model of Javascript
+    ```js
+    let response = fetchDataFromDB("URLENDPOINT")
+    displayDataFromDB(response)
+    ```
+    - fetchDataFromDB could take 1 sec. or even more
+    - During that time, we can't run any further code 
+    - JavaScript, if it simply proceeds to the next line without waiting, we have an error because data is not what we expected it to be.
+    - Just JavaScript is not enough
+    - We need new pieces which are outside of JavaScript to help us write asynchronous code.
+    - For front-end, this is where web browsers come into play. 
+    - For Back-end, this is where Node.js comes into play.
+    - Web browsers and Node.js define functions and APIs that allow us to register functions that should not be executed synchronously, and should instead be invoked asynchronously when some kind of event occurs.
+    - For example, that could be the passage of time (setTimeout or setInterval), the user's interaction with the mouse(addEventListener), data being read from a file system or the arrival of data over the network (callbacks, Promises, async-await)
+    - You can let your code do several things at the same time without stopping or blocking your main thread.
+
+- Summary 
+    - JavaScript is a Synchronous, blocking, single-threaded language
+    - This nature however is not beneficial for writing apps
+    - We want non-blocking asynchronous behavious which is made possible by a browser for FE and Node.js for BE.
+    - This style of programming where we don't block the main JavaScript thread is fundamental to Node.js and is at the heart of how some of the built-in module code is written.    
+
+---
+### fs Module
+
 
 ---
 ### Event Loop
