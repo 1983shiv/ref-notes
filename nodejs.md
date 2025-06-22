@@ -490,6 +490,61 @@ pizzaShop.order("large", "mushrooms");
 ### Character Sets and Encoding
 ![ Binary Data](./img/character-sets-and-encoding.png)
 
+**Character in binary format**
+- V?
+- Computers will first convert (v) the character to a number, then convert that number to its binary representation.
+- Computers will first convert V to a number that represents V
+- for learning, get any character number by type in browser console "V".charCodeAt()
+- 86 is the numeric representation of the character V.
+- It is also called character code
+- How does the computer know V should be represented as 86
+
+**Character Sets**
+- Character Sets are predefined lists of characters represented by numbers
+- Popular character sets
+    - Unicode 
+    - ASCII
+- Unicode character set dictates that 86 should represent character V
+
+**Character Encoding**
+- Character encoding dictates how to represent a number in a character set as binary data before it can be stored in a computer.
+- It dictates how many bits to use to represent the number
+- Example of a character encoding system is UTF-8
+- UTF-8 states that characters should be encoded in bytes (8 bits)
+- 4 => 100 => 00000100
+- V => 86 => 01010110
+- Similar guidelines also exist on how images and videos should be encoded and stored in binary format.
+
+**Summary*
+- Binary Data - 0s and 1s that computers can understand
+- Character Sets - Predefined lists of characters represented by numbers
+- Character Encoding - Dictates how to represent a number in a character set as binary data
+
+--- 
+### Streams and Buffers
+
+**Streams**
+- A stream is a sequence of data that is being moved from one point to another over time
+- Ex: a stream of data over the internet being moved from one computer to another
+- Ex: a stream of data being transferred from one file to another within the same computer
+- Process streams of data in chunks as they arrive instead of waiting for the entire data to be available before processing.
+- Ex: watching a video on YouTube
+- The data arrives in chunks and you watch in chunks while the rest of data arrives over time.
+- Ex: transfering file contents from fileA to fileB
+- The contents arrive in chunks and you transfer in chunks while the remaining content arrive over time
+- Prevents unnecessary data downloads and memory usage.
+
+**Buffers**
+![ Buffers ](./img/buffers.png)
+- Area where people wait is nothing but the buffer
+- Node.js cannot control the pace at which data arrives in the steam
+- It can only decide when is the right time to send the data for processing
+- If there is data already processed or too little data to process, Node puts the arriving data in a buffer 
+- It is an intentionally small area that Node maintains in the runtime to process a stream of data.
+
+
+
+#https://unicode-table.com/en/
 
 ---
 ### Event Loop
