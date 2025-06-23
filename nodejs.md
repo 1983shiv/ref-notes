@@ -27,9 +27,10 @@ Table of Content:
 - [Character Sets and Encoding](#character-sets-and-encoding)
 - [Asynchronous JavaScript](#asynchronous-javascript)
 - [fs Module](#fs-module)
-- [Steams](#steams)
+- [Streams](#streams)
 - [Pipes](#pipes)
 - [HTTP Module](#http-module)
+- [Node Runtime Recap](#node-runtime-recap)
 
 
 
@@ -594,7 +595,7 @@ Codi
 - Problem
     - Problem with synchronous, blocking, single-threaded model of Javascript
     ```js
-    let response = fetchDataFromDB("URLENDPOINT")
+    let response = fetchDataFromDB("URL_END_POINT")
     displayDataFromDB(response)
     ```
     - fetchDataFromDB could take 1 sec. or even more
@@ -767,11 +768,7 @@ readableStream.on("error", (err) => {
 - Clients are internet-connected devices such as computers or mobile phones along with web accessing software available on those devices such as a web browser
 - Servers on the other hand are computers that store web pages, sites and apps.
 
-                    Request             
-        ------------------------------->
-Client                                       Server
-        <-------------------------------
-                    Response
+![ How the web works ](./img/client-server-model.png)
 
 **HTTP**
 - HypderText Transfer Protocol
@@ -785,7 +782,209 @@ Client                                       Server
 - Node has an event loop to run tasks asynchronously and is perfect for creating web servers that can simultaneously handle large volumes of requests
 - The Node server we create should still respect the HTTP format
 - The HTTP module allows creation of web servers that can transfer data over HTTP.
+---
+### Creating a Node Server
 
+```js
+const http = require("node:http")
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "text/plain"
+  });
+  res.end("hello Shiv srivastava")
+});
+
+server.listen(3000, () => {
+  console.log("Server is running on port 3000")
+})
+```
+---
+### JSON Response
+```js
+const http = require("node:http")
+
+const server = http.createServer((req, res) => {
+    const superHero = {
+        firstName:"Shiv",
+        lastName:"Srivastava"
+    }
+    res.writeHead(200, {
+      "content-type": "application/json"
+    });
+    res.end(JSON.stringify(superHero))
+});
+
+server.listen(3000, () => {
+  console.log("Server is running on port 3000")
+})
+```
+res.end() only accepts strings or Buffer objects, not JavaScript objects.
+
+JSON.stringify() converts the JavaScript object superHero into a JSON string format that can be sent over HTTP. Without it, you'd get an error or unexpected behavior when trying to send a raw object through the response.
+---
+
+### HTML Response
+
+```js
+const http = require("node:http");
+const fs = require("node:fs");
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+//   res.end("<h1>Hello World</h1>");
+  res.writeHead(200, { "Content-Type": "text/html" });
+  fs.createReadStream(__dirname + "/index.html").pipe(res);
+//   const html = fs.readFileSync("./index.html", "utf-8")
+//   res.end(html)
+});
+
+server.listen(3000, () => {
+  console.log("Server is running on port 3000")
+})
+
+```
+---
+### HTML Template
+```js
+const http = require("node:http");
+const fs = require("node:fs");
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/html" });
+  
+  const name = "Shiv Srivastava";
+  let html = fs.readFileSync(`${__dirname}/index.html`, "utf8");
+  html = html.replace("{{name}}", name);
+  res.end(html);
+});
+
+server.listen(3000, () => {
+  console.log("Server is running on port 3000")
+})
+
+// index.html
+<html>
+   <head>
+    <title>Node.js</title>
+  </head>
+  <body>
+    <h1>Welcome to Node.js</h1>
+    <h1>Hello {{name}}, welcome to Node.js</h1>
+  </body>
+</html>
+
+```
+---
+### HTTP Routing
+```js
+const http = require("node:http");
+const fs = require("node:fs");
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/html" });
+  //   req.method GET, POST, PUT, DELETE
+  if (req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Home page");
+  } else if (req.url === "/about") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("About Page");
+  } else if (req.url === "/api") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        firstName: "Bruce",
+        lastName: "Wayne",
+      })
+    );
+  } else {
+    res.writeHead(404);
+    res.end("Page not found");
+  }
+});
+
+server.listen(3000, () => {
+  console.log("Server is running on port 3000")
+})
+
+```
+---
+### Web Framework
+
+**HTTP Module so far**
+- How to create a server
+- How to access the request information
+- How to send a response
+- How to modify the response header
+- How to set a response status
+- How to respond with plain text, html (templates), JSON
+
+**Web Framework**
+- A framework simply abstracts the lower level code allowing you to focus on the requirements than the code itself
+- For example, Angular, React, Vue are all framework/libraries that help you to build UI without having to reply on the lower level DOM API in Javascript
+- There are frameworks to build web and mobile apps without having to rely on the HTTP module in node.js
+- Ex: express, nest, hapi, koa and sails
+- They build on top of the HTTP module taking it easier for you to implement all the features.
+---
+
+### Node Runtime Recap
+Node.js is a JavaScript runtime environment that allows JavaScript to run outside the browser:
+
+- Runtime Environment: Provides all necessary components to execute JavaScript programs
+- Built on Chrome's V8 Engine: Uses Google's high-performance JavaScript engine
+- C++ Foundation: Core features written in C++ for system-level operations
+- libuv Integration: Handles asynchronous I/O operations, file system, networking
+
+```js
+// Node.js runtime architecture
+ECMAScript → V8 Engine → Node.js Runtime (with C++ bindings)
+```
+Key Differences from Browser Runtime:
+
+❌ No DOM, window objects, or Web APIs
+✅ File system access, networking, OS operations
+✅ Control over the environment
+
+**Asynchronous JavaScript in Node.js**
+The Problem with Synchronous JavaScript
+JavaScript is naturally synchronous, blocking, single-threaded.
+
+```js
+// Blocking example
+let response = fetchDataFromDB("URL_END_POINT") // Could take 1+ seconds
+displayDataFromDB(response) // Everything waits
+```
+
+The Solution: Event Loop & libuv
+Event Loop Architecture:
+
+- Call Stack: Executes synchronous code
+- libuv: Handles async operations (C++ layer)
+- Event Loop: Coordinates sync/async execution
+
+```js
+// Asynchronous example
+fs.readFile("file.txt", (err, data) => {
+  console.log(data) // Executes when file is read
+})
+console.log("This runs immediately") // Doesn't wait
+```
+
+**Event Loop Execution Order**
+- Microtask Queues (highest priority)
+    - process.nextTick() queue
+    - Promise queue
+- Timer Queue - setTimeout, setInterval
+- I/O Queue - File operations, network requests
+- Check Queue - setImmediate
+- Close Queue - Cleanup operations
+
+**Key Points:**
+- Microtasks execute before each phase
+- Timer callbacks have priority over I/O callbacks
+- Call stack must be empty for callbacks to execute
+This asynchronous model makes Node.js perfect for I/O-intensive applications like web servers, handling thousands of concurrent requests without blocking.
 
 ---
 ### Event Loop

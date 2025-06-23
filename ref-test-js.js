@@ -1,8 +1,44 @@
-const buffer = new Buffer.from("shiv")
-buffer.write("Coding")
-console.log(buffer.toString())
-console.log(buffer)
-console.log(buffer.toJSON())
+const http = require("node:http")
+
+const server = http.createServer((req, res) => {
+    const superHero = {
+        firstName:"Shiv",
+        lastName:"Srivastava"
+    }
+    res.writeHead(200, {
+      "content-type": "application/json"
+    });
+    res.end(JSON.stringify(superHero))
+});
+
+server.listen(3000, () => {
+  console.log("Server is running on port 3000")
+})
+
+
+// const http = require("node:http")
+
+// const server = http.createServer((req, res) => {
+//   console.log({req})
+//   res.writeHead(200, {
+//     "Content-Type": "text/plain"
+//   });
+//   res.end("hello Shiv srivastava")
+// });
+
+// server.on("close", () => {
+//   console.log("Server is closed")
+// });
+// server.listen(3000, () => {
+//   console.log("Server is running on port 3000")
+// })
+
+
+// const buffer = new Buffer.from("shiv")
+// buffer.write("Coding")
+// console.log(buffer.toString())
+// console.log(buffer)
+// console.log(buffer.toJSON())
 
 
 
