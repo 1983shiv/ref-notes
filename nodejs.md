@@ -1540,3 +1540,154 @@ for (let i = 0; i < 1000000000; i++) {}
 
 ### Check Queue
 
+
+```js
+// Experiment 9
+const fs = require("fs");
+
+fs.readFile(__filename, () => {
+  console.log("this is readFile 1");
+  setImmediate(() => console.log("this is inner setImmediate inside readFile"));
+});
+
+process.nextTick(() => console.log("this is process.nextTick 1"));
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+
+
+for (let i = 0; i < 1000000000; i++) {}
+
+// output
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is setTimeout 1
+// this is readFile 1
+// this is this is inner setImmediate inside readFile
+
+```
+
+**Experiment 9 Inference**
+- Check queue callbacks are executed after Microtask queues callbacks, Timer queue callbacks and I/O queue callbacks are executed.
+
+
+
+
+```js
+// Experiment 10
+const fs = require("fs");
+
+fs.readFile(__filename, () => {
+  console.log("this is readFile 1");
+  setImmediate(() => console.log("this is inner setImmediate inside readFile"));
+  process.nextTick(() => console.log("this is inner process.nextTick inside readFile"));
+  Promise.resolve().then(() => console.log("this is inner Promise.resolve inside readFile"));
+});
+
+process.nextTick(() => console.log("this is process.nextTick 1"));
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+
+
+for (let i = 0; i < 1000000000; i++) {}
+
+// output
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is setTimeout 1
+// this is readFile 1
+// this is inner process.nextTick inside readFile
+// this is inner Promise.resolve inside readFile
+// this is inner setImmediate inside readFile
+
+```
+
+**Experiment 10 Inference**
+- Microtask queue callbacks aer executed after I/O callbacks and before check queue callbacks.
+
+
+
+```js
+// Experiment 11
+setImmediate(() => console.log("this is setImmediate 1"));
+setImmediate(() => {
+  console.log("this is setImmediate 2");
+  process.nextTick(() => console.log("this is process.nextTick 1"));
+  Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+});
+setImmediate(() => console.log("this is setImmediate 3"));
+
+// output
+// this is setImmediate 1
+// this is setImmediate 2
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is setImmediate 3
+
+```
+
+**Experiment 11 Inference**
+- Microtask queues callbacks are executed inbetween check queue callbacks.
+
+
+```js
+// Experiment 12
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+setImmediate(() => console.log("this is setImmediate 1"));
+// Uncomment below to guarantee order
+for (let i = 0; i < 1000000000; i++) {}
+
+// output
+// this is setImmediate 1
+// this is setImmediate 1
+
+```
+
+**Experiment 12 Inference**
+- When running setTimeout with delay 0ms and setImmediate method, the order of execution can never be guaranteed.
+- Or Timer anamoly. Order of execution can never be guaranteed
+---
+
+### Close Queue
+
+
+```js
+// Experiment 13
+const fs = require("fs");
+
+const readableStream = fs.createReadStream(__filename);
+readableStream.close();
+
+readableStream.on("close", () => {
+  console.log("this is from readableStream close event callback");
+});
+setImmediate(() => console.log("this is setImmediate 1"));
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+process.nextTick(() => console.log("this is process.nextTick 1"));
+
+// output
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is setTimeout 1
+// this is from readableStream close event callback
+
+```
+**Experiment 13 Inference**
+- Close queue callbacks are executed after all other queues callbacks
+
+**Event Loop Summary**
+- The event loop is a C program that orchestrates or co-ordinates the execution of synchronous and asynchronous code in Node.js
+- It co-ordinates the execution of callbacks in six different queues.
+- The are nextTick, Promise, timer, I/O, check and close queue
+
+- We use process.nextTick() method to queue into the nextTick queue
+- We resolve or reject a Promise to queue into the Promise queue
+- We use setTimeout or setInterval to queue into the timer queue
+- Execute an async method to queue into the I/O queue
+- Use setImmediate function to queue into the check queue and finally
+- Attach close event listeners to queue into the close queue.
+- The order of execution follows the same order listed here
+- nextTick and Promise queues are executed in between each queue and also in between each callback execution in the timer and check queues.
+
+
+
