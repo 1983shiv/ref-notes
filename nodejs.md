@@ -39,7 +39,7 @@ Table of Content:
 -   [Event Loop](#event-loop)
 -   [Microtask Queues](#microtask-queues)
 -   [What is npm](#what-is-npm)
--   [Installing Packages & package-lock.json](#installing-packages-package-lock-json)
+-   [Installing Packages & package-lock.json](#installing-packages)
 
 
 ## Term and concepts to understand what is node.js
@@ -1770,7 +1770,7 @@ npm init --y
 ```
 ---
 
-### Installing Packages & package-lock.json
+### Installing Packages
 
 ```bash
 
