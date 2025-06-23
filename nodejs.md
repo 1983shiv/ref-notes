@@ -33,6 +33,12 @@ Table of Content:
 -   [Pipes](#pipes)
 -   [HTTP Module](#http-module)
 -   [Node Runtime Recap](#node-runtime-recap)
+-   [Libuv](#livuv)
+-   [Thread Pool](#thread-pool)
+-   [Network I/O](#network-io)
+-   [Event Loop](#event-loop)
+-   [Microtask Queues](#microtask-queues)
+
 
 ## Term and concepts to understand what is node.js
 
@@ -1222,7 +1228,6 @@ for (let i = 0; i < MAX_CALLS; i++) {
 - If there is no native async support and the task is file I/O or CPU intensive, libuv uses the thread pool to avoid blcoking the main thread.
 - Although the thread pool preserves asynchronicity with respect to Node's main thread, it can still become a bottleneck if all threads are busy.
 
-
 ---
 ### Event Loop
 
@@ -1269,3 +1274,72 @@ On the other hand, if all callbacks are executed and there is no more code to pr
     -   setTimeout and setInterval callbacks are given first priority.
 -   If two async task such as setTimeout and readFile complete at the same time, how does Node decide which callback function to run first on the call stack?
     -   Timer callbacks are executed before I/O callbacks even if both are ready at the exact same time.
+
+---
+### Microtask Queues
+
+```js
+// Experiment 1
+console.log("Clg 1")    // synchronous call
+process.nextTick(() => console.log("This is process.nextTick 1 async callback"))
+console.log("Clg 2")    // synchronous call
+
+// Output
+// Clg 1
+// Clg 2
+// This is process.nextTick 1 async callback
+```
+
+**Experiment 1 Inference**
+- All user written synchronous JavaScript code takes priority over async code that the runtime would like to eventually execute
+
+```js
+// Experiment 2
+Promise.resolve().then(() => console.log("This is Promise.resolve 1"))
+process.nextTick(() => console.log("This is process.nextTick 2 async callback"))
+console.log("Clg 2")    // synchronous call
+
+// Output
+// Clg 2
+// This is process.nextTick 2 async callback
+// This is Promise.resolve 1
+```
+
+**Experiment 2 Inference**
+- All callbacks in nextTick queue aer executed before callbacks in promise queue.
+
+
+```js
+// Experiment 2.1
+process.nextTick(() => console.log("this is process.nextTick 1"));Add commentMore actions
+process.nextTick(() => {
+  console.log("this is process.nextTick 2");
+  process.nextTick(() => console.log("this is the inner next tick inside next tick"));
+});
+process.nextTick(() => console.log("this is process.nextTick 3"));
+
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));Add commentMore actions
+Promise.resolve().then(() => {
+  console.log("this is Promise.resolve 2");
+  process.nextTick(() => console.log("this is the inner next tick inside Promise then block"));
+});
+Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
+
+// Output
+// this is process.nextTick 1
+// this is process.nextTick 2
+// this is process.nextTick 3
+// this is the inner next tick inside next tick
+// this is Promise.resolve 1
+// this is Promise.resolve 2
+// this is Promise.resolve 3
+// this is the inner next tick inside Promise then block
+```
+
+**Experiment 2.1 Inference**
+**process.nextTick()**
+- Use of process.nextTick() is discouraged as it can cause the rest of the event loop to starve
+- If you endlessly call process.nextTick(), the control will never make it past the microtask queue
+- Two main reasons to use process.nextTick()
+    1. To allow users to handle errors, cleanup any then unneeded resources, or perhaps try the request again before the event loop continues.
+    2. To allow a callback to run after the call stack has unwound but before the event loop continue
