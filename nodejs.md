@@ -1830,3 +1830,24 @@ rm package-lock.json && npm install
 The lock file ensures deterministic builds - same code, same dependencies, every time.
 
 ---
+### Versioning
+**Semantic Versioning**
+- SemVer - is one of the most widely adopted versioning systems
+- A simple set of rules and requirements that dictate how version numbers are assigned adn incremented.
+- It is crucial to keep a semantic and historical track of changes
+- Version numbers and the way they change convey meaning about the underlying code and what has been modified from one version to the next.
+
+![ Semantic Versioning](./img/semantic-versioning.png)
+
+**Versioning Rules**
+- When you fix a bug and the code stays backwards-compatiable you increment the patch version.
+    - For Ex: 1.1.1 to 1.1.2
+- When you add new functionality but the code still stays backwards-compatible, you increment the minor version. You also reset the patch version to zero.
+    - For Ex: 1.1.1 to 1.2.0    
+- When you make changes and the code is no more backwards compatible, you increment the major version. You have to reset the minor and patch version to zero
+    - For Ex: 1.1.1 to 2.0.0 
+
+**Few more points**
+- 0.Y.Z (a major version of zero) is used for initial development
+- When the code is production-ready, you increment to versoin 1.0.0
+- Even the simplest of changes has to be done with an increase in the version number.       
