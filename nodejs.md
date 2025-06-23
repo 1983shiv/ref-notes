@@ -38,6 +38,8 @@ Table of Content:
 -   [Network I/O](#network-io)
 -   [Event Loop](#event-loop)
 -   [Microtask Queues](#microtask-queues)
+-   [What is npm](#what-is-npm)
+-   [Installing Packages & package-lock.json](#installing-packages-package-lock-json)
 
 
 ## Term and concepts to understand what is node.js
@@ -1689,5 +1691,142 @@ process.nextTick(() => console.log("this is process.nextTick 1"));
 - The order of execution follows the same order listed here
 - nextTick and Promise queues are executed in between each queue and also in between each callback execution in the timer and check queues.
 
+---
+
+### What is npm?
+- It is the world's largest software library (registery)
+- It is a software package manager
+
+**npm is a software library**
+- A book library contains books written by various authors.
+- npm is a library or a registery which contains code packages written by various developers
+- it is a large public database of JavaScript code that developers from all over the world can use to share and borrow code.
+- If you author a "code package", you can publish it to the npm registery for others to use.
+- If you come across a code package that is authored by someone else and solves the problem you have at hand, you can borrow that code without having to reinvent the wheel.
+
+**nps is a software package manager**
+- Developers publish and consume code packages
+- How does a developer publish a package?
+- How does a developer consume a package?
+- What happens if the code package author decides to change a function name in a package?
+- How would one update an already installed package?
+- What if the package I am consuming is dependant on another package?
+- A command line interface tool that lets us manage packages in a project
+
+**npm and Other Package Manager**
+- Other package managers such as pnpm and Yarn
+- npm is the default package manager for Node.js
+- You can check the npm version by typing >> node -v
+
+**npm**
+- npm did stand for node package manager when it first started out
+- Now, it is a package manager for the JavaScript programming language
+
+**Why learn about npm?**
+- When building enterprises scale applications, we often need to rely on code written by other developers, we need npm
+
+### package.json
+
+**What?**
+- package.json is npm's configuration file
+- It is a json file that typically lives in the root directory of your package and holds various metadata relevant to the package.
+
+**Why?** 
+- package.json is the central place to configure and describe how to interact with and run your package
+- It is primarily used by the npm CLI
 
 
+```js
+const upperCase = require("upper-case").upperCase;
+
+function greet(name) {
+  console.log(upperCase(`Hello ${name}, welcome to Codevolution`));
+}
+
+module.exports = greet;
+```
+
+
+```bash
+# to create package json file using npm cli, use the following commands
+npm init --y
+
+```
+
+
+```js
+{
+  "name": "my-custom-package-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+```
+---
+
+### Installing Packages & package-lock.json
+
+```bash
+
+npm i <package_name>
+npm install <package_name>
+npm i -D <package_name>
+
+# to uninstall
+npm uninstall <package_name>
+
+```
+
+**Package-lock.json**
+- An automatically generated file that describes the exact dependency tree that was installed.
+- Created when npm install is run and a package.json file is present
+- Contains detailed information about every package installed, including nested dependencies
+
+Key Purposes:
+
+1. Dependency Locking
+- Locks the exact versions of all packages and their dependencies
+- Ensures consistent installations across different environments
+
+2. Version Control Benefits
+- Should be committed to version control (Git)
+- Ensures all team members get identical dependency versions
+- Prevents "works on my machine" issues
+3. Security & Integrity
+- Contains integrity hashes for each package
+- Verifies packages haven't been tampered with
+- Includes resolved URLs for package sources
+4. Performance Optimization
+- Speeds up subsequent npm install commands
+- npm can skip dependency resolution using the lock file
+- Reduces network requests by using cached information
+
+Best Practices:
+- ✅ Always commit package-lock.json to version control
+- ✅ Don't manually edit the lock file
+- ✅ Update using npm commands like npm update
+- ❌ Don't delete unless troubleshooting dependency issues
+
+
+```bash
+
+# Install from lock file (faster)
+npm ci
+
+# Update lock file
+npm install <package>
+
+# Regenerate lock file
+rm package-lock.json && npm install
+
+```
+
+The lock file ensures deterministic builds - same code, same dependencies, every time.
+
+---
