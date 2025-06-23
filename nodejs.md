@@ -33,7 +33,7 @@ Table of Content:
 -   [Pipes](#pipes)
 -   [HTTP Module](#http-module)
 -   [Node Runtime Recap](#node-runtime-recap)
--   [Libuv](#livuv)
+-   [Libuv](#libuv)
 -   [Thread Pool](#thread-pool)
 -   [Network I/O](#network-io)
 -   [Event Loop](#event-loop)
@@ -1052,7 +1052,7 @@ console.log('This runs immediately'); // Doesn't wait
 
 ---
 
-### libuv
+### Libuv
 
 **What**? : libuv is a cross platform, open source library written in C language
 **Why**? : handles asynchronous non-blocking operations in Node.js
@@ -1311,14 +1311,14 @@ console.log("Clg 2")    // synchronous call
 
 ```js
 // Experiment 2.1
-process.nextTick(() => console.log("this is process.nextTick 1"));Add commentMore actions
+process.nextTick(() => console.log("this is process.nextTick 1"));
 process.nextTick(() => {
   console.log("this is process.nextTick 2");
   process.nextTick(() => console.log("this is the inner next tick inside next tick"));
 });
 process.nextTick(() => console.log("this is process.nextTick 3"));
 
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));Add commentMore actions
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
 Promise.resolve().then(() => {
   console.log("this is Promise.resolve 2");
   process.nextTick(() => console.log("this is the inner next tick inside Promise then block"));
@@ -1343,3 +1343,200 @@ Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
 - Two main reasons to use process.nextTick()
     1. To allow users to handle errors, cleanup any then unneeded resources, or perhaps try the request again before the event loop continues.
     2. To allow a callback to run after the call stack has unwound but before the event loop continue
+
+---
+### Timer Queue
+
+**setTimeout()**
+```js
+setTimeout(() => console.log("this is setTimeOut"), 0)
+```
+
+
+```js
+// Experiment 3
+
+setTimeout(() => console.log("this is setTimeOut 1"), 0)
+setTimeout(() => {
+    console.log("this is clg inside setTimout 2");
+    process.nextTick(() => console.log("this is the next tick inside setTimout 2"));
+}, 0)
+setTimeout(() => console.log("this is setTimeOut 3"), 0)
+
+process.nextTick(() => console.log("this is process.nextTick 1"));
+process.nextTick(() => {
+  console.log("this is process.nextTick 2");
+  process.nextTick(() => console.log("this is the inner next tick inside next tick"));
+});
+process.nextTick(() => console.log("this is process.nextTick 3"));
+
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+Promise.resolve().then(() => {
+  console.log("this is Promise.resolve 2");
+  process.nextTick(() => console.log("this is the inner next tick inside Promise then block"));
+});
+Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
+
+// Output
+// this is process.nextTick 1
+// this is process.nextTick 2
+// this is process.nextTick 3
+// this is the inner next tick inside next tick
+// this is Promise.resolve 1
+// this is Promise.resolve 2
+// this is Promise.resolve 3
+// this is the inner next tick inside Promise then block
+// this is setTimeOut 1
+// this is clg inside setTimout 2
+// this is the next tick inside setTimout 2
+// this is setTimeOut 3
+```
+
+
+**Experiment 3 Inference**
+- Callbacks in the microtask queues are executed before callbacks in the timer queue.
+- Callbacks in microtask queues are executed in between the execution of callbacks in the timer queue
+    - i.e microtask -> timer queue -> microtask -> back to timer queue (if timer queue is callbacks left to executes)
+
+
+```js
+// experiment 4
+setTimeout(() => console.log("this is setTimeout 1"), 1000)
+setTimeout(() => console.log("this is setTimeout 2"), 500)
+setTimeout(() => console.log("this is setTimeout 3"), 0)
+
+// output
+// this is setTimeout 3
+// this is setTimeout 2
+// this is setTimeout 1
+
+```
+
+**Experiment 4 Inference**
+- Timer queue callbacks are executed in FIFO Order.
+- Timer queue is Minheap Data structure which make process similar, it is not queue
+
+---
+### I/O Queue
+
+- Most of the async methods from the built in modules queue the callback function in the I/O queue
+- fs.readFile()
+
+
+```js
+// Experiment 5
+
+const fs = require("fs");
+
+fs.readFile(__filename, () => {
+  console.log("this is readFile 1");
+});
+
+process.nextTick(() => console.log("this is process.nextTick 1"));
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+
+// output
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is readFile 1
+
+```
+
+
+
+```js
+// Experiment 6
+const fs = require("fs");
+
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+
+fs.readFile(__filename, () => {
+  console.log("this is readFile 1");
+});
+
+// output
+// this is readFile 1
+// this is setTimeout 1
+
+// output
+// this is setTimeout 1
+// this is readFile 1
+
+```
+**Experiment 6 Inference**
+- Timer anamoly. Order of execution can never be guaranteed
+- When running setTimeout with delay 0ms and an I/O async method, the order of execution can never be guaranteed.
+
+- Why can the order of execution never be guaranteed ?
+
+
+
+```js
+// Experiment 7
+const fs = require("fs");
+
+fs.readFile(__filename, () => {
+  console.log("this is readFile 1");
+});
+
+process.nextTick(() => console.log("this is process.nextTick 1"));
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+
+for (let i = 0; i < 1000000000; i++) {}
+
+// output
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is setTimeout 1
+// this is readFile 1
+
+```
+
+**Experiment 7 Inference**
+- I/O queue callbacks are executed after Microtask queues callbacks and Timer queue callbacks.
+
+---
+### I/O Polling
+
+**Check Queue**
+- To queue a callback function into the check queue, we can use a function called setImmediate()
+
+```js
+setImmediaet(() => {
+    console.log("this is setImmediate - check queue")
+})
+
+```
+
+```js
+// Experiment 8
+const fs = require("fs");
+
+fs.readFile(__filename, () => {
+  console.log("this is readFile 1");
+});
+
+process.nextTick(() => console.log("this is process.nextTick 1"));
+Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+setTimeout(() => console.log("this is setTimeout 1"), 0);
+setImmediate(() => console.log("this is setImmediate 1"));
+
+for (let i = 0; i < 1000000000; i++) {}
+
+// output
+// this is process.nextTick 1
+// this is Promise.resolve 1
+// this is setTimeout 1
+// this is setImmediate 1
+// this is readFile 1
+
+```
+
+**Experiment 8 Inference**
+- I/O events are polled and callbacks are added only after I/O is complete.
+
+---
+
+### Check Queue
+
