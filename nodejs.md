@@ -1105,9 +1105,71 @@ for (let i = 0; i < MAX_CALLS; i++) {
     });
 }
 ```
-![ Asynchronous Code Execution Experiment 2 Time Graph](./img/experiement-1.png)
+![ Asynchronous Code Execution Experiment 2 Time Graph](./img/experiement-2.png)
 **Experiment 2 Inference**
 - A few async methods like fs.readFile and crypto.pbkdf2 run on a separate thread in libuv's thread pool. They do run synchronously in their own thread but as far as the main thread is concerned, it appear as if the method is running asynchronously.
+
+```js
+// Experiment 3 
+const crypto = require('crypto');
+
+const MAX_CALLS = 5;
+
+const start = Date.now();
+
+for (let i = 0; i < MAX_CALLS; i++) {
+    crypto.pbkdf2('password', 'salt', 100000, 512, 'sha512', () => {
+        console.log(`Hash: ${i + 1}`, Date.now() - start);
+    });
+}
+```
+![ Max Thread Pool Size Experiment 3 Time Graph](./img/experiement-3.png)
+**Experiment 3 Inference**
+- Libuv's thread pool size is 4 threads
+
+
+```js
+// Experiment 5 
+const crypto = require('crypto');
+
+process.env.UV_THREADPOOL_SIZE = 6;
+const MAX_CALLS = 6;
+
+const start = Date.now();
+
+for (let i = 0; i < MAX_CALLS; i++) {
+    crypto.pbkdf2('password', 'salt', 100000, 512, 'sha512', () => {
+        console.log(`Hash: ${i + 1}`, Date.now() - start);
+    });
+}
+```
+
+**Experiment 4 Inference**
+- By increasing the thread pool size, we are able to improve the total time taken to run multiple calls of an asynchronous method like pbkdf2
+
+
+
+```js
+// Experiment 5 
+const crypto = require('crypto');
+
+process.env.UV_THREADPOOL_SIZE = 16;
+const MAX_CALLS = 16;
+
+const start = Date.now();
+
+for (let i = 0; i < MAX_CALLS; i++) {
+    crypto.pbkdf2('password', 'salt', 100000, 512, 'sha512', () => {
+        console.log(`Hash: ${i + 1}`, Date.now() - start);
+    });
+}
+```
+![ Max Thread Pool Size Experiment 5-3 Time Graph](./img/experiement-5-3.png)
+![ Max Thread Pool Size Experiment 5-2 Time Graph](./img/experiement-5-2.png)
+![ Max Thread Pool Size Experiment 5-1 Time Graph](./img/experiement-5-1.png)
+
+**Experiment 5 Inference**
+- Increasing the thread pool size can help with performance but that is limited by the number of available CPU cores.
 
 ---
 ### Event Loop
