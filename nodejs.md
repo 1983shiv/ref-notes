@@ -1085,8 +1085,8 @@ crypto.pbkdf2Sync('password', 'salt', 100000, 512, 'sha512');
 crypto.pbkdf2Sync('password', 'salt', 100000, 512, 'sha512');
 crypto.pbkdf2Sync('password', 'salt', 100000, 512, 'sha512');
 console.log(`Hash: `, Date.now() - start, ` ms`);
-
 ```
+
 **Experiment 1 Inference**
 - Every method in node.js that has the "sync" suffix always runs on the main thread and is blocking.
 
@@ -1105,7 +1105,9 @@ for (let i = 0; i < MAX_CALLS; i++) {
     });
 }
 ```
+
 ![ Asynchronous Code Execution Experiment 2 Time Graph](./img/experiement-2.png)
+
 **Experiment 2 Inference**
 - A few async methods like fs.readFile and crypto.pbkdf2 run on a separate thread in libuv's thread pool. They do run synchronously in their own thread but as far as the main thread is concerned, it appear as if the method is running asynchronously.
 
@@ -1123,7 +1125,9 @@ for (let i = 0; i < MAX_CALLS; i++) {
     });
 }
 ```
+
 ![ Max Thread Pool Size Experiment 3 Time Graph](./img/experiement-3.png)
+
 **Experiment 3 Inference**
 - Libuv's thread pool size is 4 threads
 
@@ -1148,7 +1152,6 @@ for (let i = 0; i < MAX_CALLS; i++) {
 - By increasing the thread pool size, we are able to improve the total time taken to run multiple calls of an asynchronous method like pbkdf2
 
 
-
 ```js
 // Experiment 5 
 const crypto = require('crypto');
@@ -1164,12 +1167,61 @@ for (let i = 0; i < MAX_CALLS; i++) {
     });
 }
 ```
+
 ![ Max Thread Pool Size Experiment 5-3 Time Graph](./img/experiement-5-3.png)
 ![ Max Thread Pool Size Experiment 5-2 Time Graph](./img/experiement-5-2.png)
 ![ Max Thread Pool Size Experiment 5-1 Time Graph](./img/experiement-5-1.png)
 
 **Experiment 5 Inference**
 - Increasing the thread pool size can help with performance but that is limited by the number of available CPU cores.
+---
+### Network I/O
+
+
+```js
+// Experiment 5 
+const https = require('node:https');
+
+const MAX_CALLS = 12;
+
+const start = Date.now();
+
+for (let i = 0; i < MAX_CALLS; i++) {
+    https
+        .request("https://google.com", (res) => {
+            res.on("data", () => {});
+            res.on("end", () => {
+                console.log(`Request: ${i + 1}`, Date.now() - start)
+            });
+            .end()
+        })
+}
+```
+
+**Experiment 6 Inference**
+
+- Although both crypto.pbkdf2 and https.request aer asynchronous, https.request method does not seem to use the thread pool.
+- https.request does not seem to be affected by the number of CPU cores either.
+
+
+**Network IO**
+
+- https.request is a network input/output operation and not a CPU bound operation
+- It does not use the thread pool
+- Libuv instead delegates the work to the operating system kernel and whenever possible, it will poll the kernel and see if the request has completed.
+
+**Libuv and Async Methods Summary**
+
+- In Node.js, async methods are handled by libuv.
+- They are handled in two different ways
+    1. Native async mechanism
+    2. Thread Pool
+- Whenever possible, Libuv will use native async mechanism in the OS so as to avoid blocking the main thread.
+- Since this is part of the kernal, there is different mechanism for each OS. We have epoll for Linux, Kqueue for MacOS and IO Completion Port on Windows.
+- Replying on native async mechanism makes Node scalable as the only limitation is the operating system kernal.
+- If there is no native async support and the task is file I/O or CPU intensive, libuv uses the thread pool to avoid blcoking the main thread.
+- Although the thread pool preserves asynchronicity with respect to Node's main thread, it can still become a bottleneck if all threads are busy.
+
 
 ---
 ### Event Loop
