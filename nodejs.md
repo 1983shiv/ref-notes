@@ -2130,3 +2130,47 @@ Key Features:
 - Easy Scaling: Scale up/down instances on demand
 - Automatic Recovery: Restarts failed processes instantly
 
+
+### Worker Thread Module
+- The worker_threads module enables the use of threads that execute JavaScript in parallel
+- Code executed in a worker thread runs in a separate child process, preventing it from blocking your main application.
+- The cluster module can be used to run multiple instances of Node.js that can distribute workloads
+- worker_threads module allows running multiple application threads within a single Node.js instance
+- When process isolation is not needed, that is no separate instance ov V8, event loop and memory are needed, you should use worker_threads
+
+```js
+
+const { Worker } = require("worker_threads");
+const http = require("http");
+
+const server = http.createServer((req, res) => {
+  if (req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Home page");
+  } else if (req.url === "/slow-page") {
+    const worker = new Worker("./worker-thread.js");
+
+    worker.on("message", (j) => {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end(`Slow Page ${j}`);
+    });
+
+    worker.on("error", (err) => {
+      console.log(err);
+    });
+  }
+});
+
+```
+
+```js
+const { parentPort } = require("worker_threads");
+
+let j = 0;
+for (let i = 0; i < 6000000000; i++) {
+  j++;
+}
+
+parentPort.postMessage(j);
+
+```
