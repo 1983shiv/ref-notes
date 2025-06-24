@@ -41,7 +41,6 @@ Table of Content:
 -   [What is npm](#what-is-npm)
 -   [Installing Packages & package-lock.json](#installing-packages)
 
-
 ## Term and concepts to understand what is node.js
 
 ### Introduction
@@ -1085,7 +1084,7 @@ fs.readFile('file.txt', (err, data) => {
 ### Thread Pool
 
 ```js
-// Experiment 2 
+// Experiment 2
 const crypto = require('crypto');
 
 const start = Date.now();
@@ -1096,12 +1095,13 @@ console.log(`Hash: `, Date.now() - start, ` ms`);
 ```
 
 **Experiment 1 Inference**
-- Every method in node.js that has the "sync" suffix always runs on the main thread and is blocking.
+
+-   Every method in node.js that has the "sync" suffix always runs on the main thread and is blocking.
 
 ![ Synchronous Code Execution Experiment 1 Time Graph](./img/experiement-1.png)
 
 ```js
-// Experiment 2 
+// Experiment 2
 const crypto = require('crypto');
 
 const start = Date.now();
@@ -1117,10 +1117,11 @@ for (let i = 0; i < MAX_CALLS; i++) {
 ![ Asynchronous Code Execution Experiment 2 Time Graph](./img/experiement-2.png)
 
 **Experiment 2 Inference**
-- A few async methods like fs.readFile and crypto.pbkdf2 run on a separate thread in libuv's thread pool. They do run synchronously in their own thread but as far as the main thread is concerned, it appear as if the method is running asynchronously.
+
+-   A few async methods like fs.readFile and crypto.pbkdf2 run on a separate thread in libuv's thread pool. They do run synchronously in their own thread but as far as the main thread is concerned, it appear as if the method is running asynchronously.
 
 ```js
-// Experiment 3 
+// Experiment 3
 const crypto = require('crypto');
 
 const MAX_CALLS = 5;
@@ -1137,11 +1138,11 @@ for (let i = 0; i < MAX_CALLS; i++) {
 ![ Max Thread Pool Size Experiment 3 Time Graph](./img/experiement-3.png)
 
 **Experiment 3 Inference**
-- Libuv's thread pool size is 4 threads
 
+-   Libuv's thread pool size is 4 threads
 
 ```js
-// Experiment 5 
+// Experiment 5
 const crypto = require('crypto');
 
 process.env.UV_THREADPOOL_SIZE = 6;
@@ -1157,11 +1158,11 @@ for (let i = 0; i < MAX_CALLS; i++) {
 ```
 
 **Experiment 4 Inference**
-- By increasing the thread pool size, we are able to improve the total time taken to run multiple calls of an asynchronous method like pbkdf2
 
+-   By increasing the thread pool size, we are able to improve the total time taken to run multiple calls of an asynchronous method like pbkdf2
 
 ```js
-// Experiment 5 
+// Experiment 5
 const crypto = require('crypto');
 
 process.env.UV_THREADPOOL_SIZE = 16;
@@ -1181,13 +1182,15 @@ for (let i = 0; i < MAX_CALLS; i++) {
 ![ Max Thread Pool Size Experiment 5-1 Time Graph](./img/experiement-5-1.png)
 
 **Experiment 5 Inference**
-- Increasing the thread pool size can help with performance but that is limited by the number of available CPU cores.
+
+-   Increasing the thread pool size can help with performance but that is limited by the number of available CPU cores.
+
 ---
+
 ### Network I/O
 
-
 ```js
-// Experiment 5 
+// Experiment 5
 const https = require('node:https');
 
 const MAX_CALLS = 12;
@@ -1208,29 +1211,29 @@ for (let i = 0; i < MAX_CALLS; i++) {
 
 **Experiment 6 Inference**
 
-- Although both crypto.pbkdf2 and https.request aer asynchronous, https.request method does not seem to use the thread pool.
-- https.request does not seem to be affected by the number of CPU cores either.
-
+-   Although both crypto.pbkdf2 and https.request aer asynchronous, https.request method does not seem to use the thread pool.
+-   https.request does not seem to be affected by the number of CPU cores either.
 
 **Network IO**
 
-- https.request is a network input/output operation and not a CPU bound operation
-- It does not use the thread pool
-- Libuv instead delegates the work to the operating system kernel and whenever possible, it will poll the kernel and see if the request has completed.
+-   https.request is a network input/output operation and not a CPU bound operation
+-   It does not use the thread pool
+-   Libuv instead delegates the work to the operating system kernel and whenever possible, it will poll the kernel and see if the request has completed.
 
 **Libuv and Async Methods Summary**
 
-- In Node.js, async methods are handled by libuv.
-- They are handled in two different ways
+-   In Node.js, async methods are handled by libuv.
+-   They are handled in two different ways
     1. Native async mechanism
     2. Thread Pool
-- Whenever possible, Libuv will use native async mechanism in the OS so as to avoid blocking the main thread.
-- Since this is part of the kernal, there is different mechanism for each OS. We have epoll for Linux, Kqueue for MacOS and IO Completion Port on Windows.
-- Replying on native async mechanism makes Node scalable as the only limitation is the operating system kernal.
-- If there is no native async support and the task is file I/O or CPU intensive, libuv uses the thread pool to avoid blcoking the main thread.
-- Although the thread pool preserves asynchronicity with respect to Node's main thread, it can still become a bottleneck if all threads are busy.
+-   Whenever possible, Libuv will use native async mechanism in the OS so as to avoid blocking the main thread.
+-   Since this is part of the kernal, there is different mechanism for each OS. We have epoll for Linux, Kqueue for MacOS and IO Completion Port on Windows.
+-   Replying on native async mechanism makes Node scalable as the only limitation is the operating system kernal.
+-   If there is no native async support and the task is file I/O or CPU intensive, libuv uses the thread pool to avoid blcoking the main thread.
+-   Although the thread pool preserves asynchronicity with respect to Node's main thread, it can still become a bottleneck if all threads are busy.
 
 ---
+
 ### Event Loop
 
 **Async Code Execution**
@@ -1278,13 +1281,16 @@ On the other hand, if all callbacks are executed and there is no more code to pr
     -   Timer callbacks are executed before I/O callbacks even if both are ready at the exact same time.
 
 ---
+
 ### Microtask Queues
 
 ```js
 // Experiment 1
-console.log("Clg 1")    // synchronous call
-process.nextTick(() => console.log("This is process.nextTick 1 async callback"))
-console.log("Clg 2")    // synchronous call
+console.log('Clg 1'); // synchronous call
+process.nextTick(() =>
+    console.log('This is process.nextTick 1 async callback')
+);
+console.log('Clg 2'); // synchronous call
 
 // Output
 // Clg 1
@@ -1293,13 +1299,16 @@ console.log("Clg 2")    // synchronous call
 ```
 
 **Experiment 1 Inference**
-- All user written synchronous JavaScript code takes priority over async code that the runtime would like to eventually execute
+
+-   All user written synchronous JavaScript code takes priority over async code that the runtime would like to eventually execute
 
 ```js
 // Experiment 2
-Promise.resolve().then(() => console.log("This is Promise.resolve 1"))
-process.nextTick(() => console.log("This is process.nextTick 2 async callback"))
-console.log("Clg 2")    // synchronous call
+Promise.resolve().then(() => console.log('This is Promise.resolve 1'));
+process.nextTick(() =>
+    console.log('This is process.nextTick 2 async callback')
+);
+console.log('Clg 2'); // synchronous call
 
 // Output
 // Clg 2
@@ -1308,24 +1317,28 @@ console.log("Clg 2")    // synchronous call
 ```
 
 **Experiment 2 Inference**
-- All callbacks in nextTick queue aer executed before callbacks in promise queue.
 
+-   All callbacks in nextTick queue aer executed before callbacks in promise queue.
 
 ```js
 // Experiment 2.1
-process.nextTick(() => console.log("this is process.nextTick 1"));
+process.nextTick(() => console.log('this is process.nextTick 1'));
 process.nextTick(() => {
-  console.log("this is process.nextTick 2");
-  process.nextTick(() => console.log("this is the inner next tick inside next tick"));
+    console.log('this is process.nextTick 2');
+    process.nextTick(() =>
+        console.log('this is the inner next tick inside next tick')
+    );
 });
-process.nextTick(() => console.log("this is process.nextTick 3"));
+process.nextTick(() => console.log('this is process.nextTick 3'));
 
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
 Promise.resolve().then(() => {
-  console.log("this is Promise.resolve 2");
-  process.nextTick(() => console.log("this is the inner next tick inside Promise then block"));
+    console.log('this is Promise.resolve 2');
+    process.nextTick(() =>
+        console.log('this is the inner next tick inside Promise then block')
+    );
 });
-Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
+Promise.resolve().then(() => console.log('this is Promise.resolve 3'));
 
 // Output
 // this is process.nextTick 1
@@ -1340,44 +1353,52 @@ Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
 
 **Experiment 2.1 Inference**
 **process.nextTick()**
-- Use of process.nextTick() is discouraged as it can cause the rest of the event loop to starve
-- If you endlessly call process.nextTick(), the control will never make it past the microtask queue
-- Two main reasons to use process.nextTick()
+
+-   Use of process.nextTick() is discouraged as it can cause the rest of the event loop to starve
+-   If you endlessly call process.nextTick(), the control will never make it past the microtask queue
+-   Two main reasons to use process.nextTick()
     1. To allow users to handle errors, cleanup any then unneeded resources, or perhaps try the request again before the event loop continues.
     2. To allow a callback to run after the call stack has unwound but before the event loop continue
 
 ---
+
 ### Timer Queue
 
 **setTimeout()**
-```js
-setTimeout(() => console.log("this is setTimeOut"), 0)
-```
 
+```js
+setTimeout(() => console.log('this is setTimeOut'), 0);
+```
 
 ```js
 // Experiment 3
 
-setTimeout(() => console.log("this is setTimeOut 1"), 0)
+setTimeout(() => console.log('this is setTimeOut 1'), 0);
 setTimeout(() => {
-    console.log("this is clg inside setTimout 2");
-    process.nextTick(() => console.log("this is the next tick inside setTimout 2"));
-}, 0)
-setTimeout(() => console.log("this is setTimeOut 3"), 0)
+    console.log('this is clg inside setTimout 2');
+    process.nextTick(() =>
+        console.log('this is the next tick inside setTimout 2')
+    );
+}, 0);
+setTimeout(() => console.log('this is setTimeOut 3'), 0);
 
-process.nextTick(() => console.log("this is process.nextTick 1"));
+process.nextTick(() => console.log('this is process.nextTick 1'));
 process.nextTick(() => {
-  console.log("this is process.nextTick 2");
-  process.nextTick(() => console.log("this is the inner next tick inside next tick"));
+    console.log('this is process.nextTick 2');
+    process.nextTick(() =>
+        console.log('this is the inner next tick inside next tick')
+    );
 });
-process.nextTick(() => console.log("this is process.nextTick 3"));
+process.nextTick(() => console.log('this is process.nextTick 3'));
 
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
 Promise.resolve().then(() => {
-  console.log("this is Promise.resolve 2");
-  process.nextTick(() => console.log("this is the inner next tick inside Promise then block"));
+    console.log('this is Promise.resolve 2');
+    process.nextTick(() =>
+        console.log('this is the inner next tick inside Promise then block')
+    );
 });
-Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
+Promise.resolve().then(() => console.log('this is Promise.resolve 3'));
 
 // Output
 // this is process.nextTick 1
@@ -1394,66 +1415,62 @@ Promise.resolve().then(() => console.log("this is Promise.resolve 3"));
 // this is setTimeOut 3
 ```
 
-
 **Experiment 3 Inference**
-- Callbacks in the microtask queues are executed before callbacks in the timer queue.
-- Callbacks in microtask queues are executed in between the execution of callbacks in the timer queue
-    - i.e microtask -> timer queue -> microtask -> back to timer queue (if timer queue is callbacks left to executes)
 
+-   Callbacks in the microtask queues are executed before callbacks in the timer queue.
+-   Callbacks in microtask queues are executed in between the execution of callbacks in the timer queue
+    -   i.e microtask -> timer queue -> microtask -> back to timer queue (if timer queue is callbacks left to executes)
 
 ```js
 // experiment 4
-setTimeout(() => console.log("this is setTimeout 1"), 1000)
-setTimeout(() => console.log("this is setTimeout 2"), 500)
-setTimeout(() => console.log("this is setTimeout 3"), 0)
+setTimeout(() => console.log('this is setTimeout 1'), 1000);
+setTimeout(() => console.log('this is setTimeout 2'), 500);
+setTimeout(() => console.log('this is setTimeout 3'), 0);
 
 // output
 // this is setTimeout 3
 // this is setTimeout 2
 // this is setTimeout 1
-
 ```
 
 **Experiment 4 Inference**
-- Timer queue callbacks are executed in FIFO Order.
-- Timer queue is Minheap Data structure which make process similar, it is not queue
+
+-   Timer queue callbacks are executed in FIFO Order.
+-   Timer queue is Minheap Data structure which make process similar, it is not queue
 
 ---
+
 ### I/O Queue
 
-- Most of the async methods from the built in modules queue the callback function in the I/O queue
-- fs.readFile()
-
+-   Most of the async methods from the built in modules queue the callback function in the I/O queue
+-   fs.readFile()
 
 ```js
 // Experiment 5
 
-const fs = require("fs");
+const fs = require('fs');
 
 fs.readFile(__filename, () => {
-  console.log("this is readFile 1");
+    console.log('this is readFile 1');
 });
 
-process.nextTick(() => console.log("this is process.nextTick 1"));
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+process.nextTick(() => console.log('this is process.nextTick 1'));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
 
 // output
 // this is process.nextTick 1
 // this is Promise.resolve 1
 // this is readFile 1
-
 ```
-
-
 
 ```js
 // Experiment 6
-const fs = require("fs");
+const fs = require('fs');
 
-setTimeout(() => console.log("this is setTimeout 1"), 0);
+setTimeout(() => console.log('this is setTimeout 1'), 0);
 
 fs.readFile(__filename, () => {
-  console.log("this is readFile 1");
+    console.log('this is readFile 1');
 });
 
 // output
@@ -1463,27 +1480,26 @@ fs.readFile(__filename, () => {
 // output
 // this is setTimeout 1
 // this is readFile 1
-
 ```
+
 **Experiment 6 Inference**
-- Timer anamoly. Order of execution can never be guaranteed
-- When running setTimeout with delay 0ms and an I/O async method, the order of execution can never be guaranteed.
 
-- Why can the order of execution never be guaranteed ?
+-   Timer anamoly. Order of execution can never be guaranteed
+-   When running setTimeout with delay 0ms and an I/O async method, the order of execution can never be guaranteed.
 
-
+-   Why can the order of execution never be guaranteed ?
 
 ```js
 // Experiment 7
-const fs = require("fs");
+const fs = require('fs');
 
 fs.readFile(__filename, () => {
-  console.log("this is readFile 1");
+    console.log('this is readFile 1');
 });
 
-process.nextTick(() => console.log("this is process.nextTick 1"));
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
-setTimeout(() => console.log("this is setTimeout 1"), 0);
+process.nextTick(() => console.log('this is process.nextTick 1'));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
+setTimeout(() => console.log('this is setTimeout 1'), 0);
 
 for (let i = 0; i < 1000000000; i++) {}
 
@@ -1492,37 +1508,38 @@ for (let i = 0; i < 1000000000; i++) {}
 // this is Promise.resolve 1
 // this is setTimeout 1
 // this is readFile 1
-
 ```
 
 **Experiment 7 Inference**
-- I/O queue callbacks are executed after Microtask queues callbacks and Timer queue callbacks.
+
+-   I/O queue callbacks are executed after Microtask queues callbacks and Timer queue callbacks.
 
 ---
+
 ### I/O Polling
 
 **Check Queue**
-- To queue a callback function into the check queue, we can use a function called setImmediate()
+
+-   To queue a callback function into the check queue, we can use a function called setImmediate()
 
 ```js
 setImmediaet(() => {
-    console.log("this is setImmediate - check queue")
-})
-
+    console.log('this is setImmediate - check queue');
+});
 ```
 
 ```js
 // Experiment 8
-const fs = require("fs");
+const fs = require('fs');
 
 fs.readFile(__filename, () => {
-  console.log("this is readFile 1");
+    console.log('this is readFile 1');
 });
 
-process.nextTick(() => console.log("this is process.nextTick 1"));
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
-setTimeout(() => console.log("this is setTimeout 1"), 0);
-setImmediate(() => console.log("this is setImmediate 1"));
+process.nextTick(() => console.log('this is process.nextTick 1'));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
+setTimeout(() => console.log('this is setTimeout 1'), 0);
+setImmediate(() => console.log('this is setImmediate 1'));
 
 for (let i = 0; i < 1000000000; i++) {}
 
@@ -1532,30 +1549,30 @@ for (let i = 0; i < 1000000000; i++) {}
 // this is setTimeout 1
 // this is setImmediate 1
 // this is readFile 1
-
 ```
 
 **Experiment 8 Inference**
-- I/O events are polled and callbacks are added only after I/O is complete.
+
+-   I/O events are polled and callbacks are added only after I/O is complete.
 
 ---
 
 ### Check Queue
 
-
 ```js
 // Experiment 9
-const fs = require("fs");
+const fs = require('fs');
 
 fs.readFile(__filename, () => {
-  console.log("this is readFile 1");
-  setImmediate(() => console.log("this is inner setImmediate inside readFile"));
+    console.log('this is readFile 1');
+    setImmediate(() =>
+        console.log('this is inner setImmediate inside readFile')
+    );
 });
 
-process.nextTick(() => console.log("this is process.nextTick 1"));
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
-setTimeout(() => console.log("this is setTimeout 1"), 0);
-
+process.nextTick(() => console.log('this is process.nextTick 1'));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
+setTimeout(() => console.log('this is setTimeout 1'), 0);
 
 for (let i = 0; i < 1000000000; i++) {}
 
@@ -1565,30 +1582,32 @@ for (let i = 0; i < 1000000000; i++) {}
 // this is setTimeout 1
 // this is readFile 1
 // this is this is inner setImmediate inside readFile
-
 ```
 
 **Experiment 9 Inference**
-- Check queue callbacks are executed after Microtask queues callbacks, Timer queue callbacks and I/O queue callbacks are executed.
 
-
-
+-   Check queue callbacks are executed after Microtask queues callbacks, Timer queue callbacks and I/O queue callbacks are executed.
 
 ```js
 // Experiment 10
-const fs = require("fs");
+const fs = require('fs');
 
 fs.readFile(__filename, () => {
-  console.log("this is readFile 1");
-  setImmediate(() => console.log("this is inner setImmediate inside readFile"));
-  process.nextTick(() => console.log("this is inner process.nextTick inside readFile"));
-  Promise.resolve().then(() => console.log("this is inner Promise.resolve inside readFile"));
+    console.log('this is readFile 1');
+    setImmediate(() =>
+        console.log('this is inner setImmediate inside readFile')
+    );
+    process.nextTick(() =>
+        console.log('this is inner process.nextTick inside readFile')
+    );
+    Promise.resolve().then(() =>
+        console.log('this is inner Promise.resolve inside readFile')
+    );
 });
 
-process.nextTick(() => console.log("this is process.nextTick 1"));
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
-setTimeout(() => console.log("this is setTimeout 1"), 0);
-
+process.nextTick(() => console.log('this is process.nextTick 1'));
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
+setTimeout(() => console.log('this is setTimeout 1'), 0);
 
 for (let i = 0; i < 1000000000; i++) {}
 
@@ -1600,23 +1619,21 @@ for (let i = 0; i < 1000000000; i++) {}
 // this is inner process.nextTick inside readFile
 // this is inner Promise.resolve inside readFile
 // this is inner setImmediate inside readFile
-
 ```
 
 **Experiment 10 Inference**
-- Microtask queue callbacks aer executed after I/O callbacks and before check queue callbacks.
 
-
+-   Microtask queue callbacks aer executed after I/O callbacks and before check queue callbacks.
 
 ```js
 // Experiment 11
-setImmediate(() => console.log("this is setImmediate 1"));
+setImmediate(() => console.log('this is setImmediate 1'));
 setImmediate(() => {
-  console.log("this is setImmediate 2");
-  process.nextTick(() => console.log("this is process.nextTick 1"));
-  Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
+    console.log('this is setImmediate 2');
+    process.nextTick(() => console.log('this is process.nextTick 1'));
+    Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
 });
-setImmediate(() => console.log("this is setImmediate 3"));
+setImmediate(() => console.log('this is setImmediate 3'));
 
 // output
 // this is setImmediate 1
@@ -1624,135 +1641,141 @@ setImmediate(() => console.log("this is setImmediate 3"));
 // this is process.nextTick 1
 // this is Promise.resolve 1
 // this is setImmediate 3
-
 ```
 
 **Experiment 11 Inference**
-- Microtask queues callbacks are executed inbetween check queue callbacks.
 
+-   Microtask queues callbacks are executed inbetween check queue callbacks.
 
 ```js
 // Experiment 12
-setTimeout(() => console.log("this is setTimeout 1"), 0);
-setImmediate(() => console.log("this is setImmediate 1"));
+setTimeout(() => console.log('this is setTimeout 1'), 0);
+setImmediate(() => console.log('this is setImmediate 1'));
 // Uncomment below to guarantee order
 for (let i = 0; i < 1000000000; i++) {}
 
 // output
 // this is setImmediate 1
 // this is setImmediate 1
-
 ```
 
 **Experiment 12 Inference**
-- When running setTimeout with delay 0ms and setImmediate method, the order of execution can never be guaranteed.
-- Or Timer anamoly. Order of execution can never be guaranteed
+
+-   When running setTimeout with delay 0ms and setImmediate method, the order of execution can never be guaranteed.
+-   Or Timer anamoly. Order of execution can never be guaranteed
+
 ---
 
 ### Close Queue
 
-
 ```js
 // Experiment 13
-const fs = require("fs");
+const fs = require('fs');
 
 const readableStream = fs.createReadStream(__filename);
 readableStream.close();
 
-readableStream.on("close", () => {
-  console.log("this is from readableStream close event callback");
+readableStream.on('close', () => {
+    console.log('this is from readableStream close event callback');
 });
-setImmediate(() => console.log("this is setImmediate 1"));
-setTimeout(() => console.log("this is setTimeout 1"), 0);
-Promise.resolve().then(() => console.log("this is Promise.resolve 1"));
-process.nextTick(() => console.log("this is process.nextTick 1"));
+setImmediate(() => console.log('this is setImmediate 1'));
+setTimeout(() => console.log('this is setTimeout 1'), 0);
+Promise.resolve().then(() => console.log('this is Promise.resolve 1'));
+process.nextTick(() => console.log('this is process.nextTick 1'));
 
 // output
 // this is process.nextTick 1
 // this is Promise.resolve 1
 // this is setTimeout 1
 // this is from readableStream close event callback
-
 ```
+
 **Experiment 13 Inference**
-- Close queue callbacks are executed after all other queues callbacks
+
+-   Close queue callbacks are executed after all other queues callbacks
 
 **Event Loop Summary**
-- The event loop is a C program that orchestrates or co-ordinates the execution of synchronous and asynchronous code in Node.js
-- It co-ordinates the execution of callbacks in six different queues.
-- The are nextTick, Promise, timer, I/O, check and close queue
 
-- We use process.nextTick() method to queue into the nextTick queue
-- We resolve or reject a Promise to queue into the Promise queue
-- We use setTimeout or setInterval to queue into the timer queue
-- Execute an async method to queue into the I/O queue
-- Use setImmediate function to queue into the check queue and finally
-- Attach close event listeners to queue into the close queue.
-- The order of execution follows the same order listed here
-- nextTick and Promise queues are executed in between each queue and also in between each callback execution in the timer and check queues.
+-   The event loop is a C program that orchestrates or co-ordinates the execution of synchronous and asynchronous code in Node.js
+-   It co-ordinates the execution of callbacks in six different queues.
+-   The are nextTick, Promise, timer, I/O, check and close queue
+
+-   We use process.nextTick() method to queue into the nextTick queue
+-   We resolve or reject a Promise to queue into the Promise queue
+-   We use setTimeout or setInterval to queue into the timer queue
+-   Execute an async method to queue into the I/O queue
+-   Use setImmediate function to queue into the check queue and finally
+-   Attach close event listeners to queue into the close queue.
+-   The order of execution follows the same order listed here
+-   nextTick and Promise queues are executed in between each queue and also in between each callback execution in the timer and check queues.
 
 ---
 
 ### What is npm?
-- It is the world's largest software library (registery)
-- It is a software package manager
+
+-   It is the world's largest software library (registery)
+-   It is a software package manager
 
 **npm is a software library**
-- A book library contains books written by various authors.
-- npm is a library or a registery which contains code packages written by various developers
-- it is a large public database of JavaScript code that developers from all over the world can use to share and borrow code.
-- If you author a "code package", you can publish it to the npm registery for others to use.
-- If you come across a code package that is authored by someone else and solves the problem you have at hand, you can borrow that code without having to reinvent the wheel.
+
+-   A book library contains books written by various authors.
+-   npm is a library or a registery which contains code packages written by various developers
+-   it is a large public database of JavaScript code that developers from all over the world can use to share and borrow code.
+-   If you author a "code package", you can publish it to the npm registery for others to use.
+-   If you come across a code package that is authored by someone else and solves the problem you have at hand, you can borrow that code without having to reinvent the wheel.
 
 **nps is a software package manager**
-- Developers publish and consume code packages
-- How does a developer publish a package?
-- How does a developer consume a package?
-- What happens if the code package author decides to change a function name in a package?
-- How would one update an already installed package?
-- What if the package I am consuming is dependant on another package?
-- A command line interface tool that lets us manage packages in a project
+
+-   Developers publish and consume code packages
+-   How does a developer publish a package?
+-   How does a developer consume a package?
+-   What happens if the code package author decides to change a function name in a package?
+-   How would one update an already installed package?
+-   What if the package I am consuming is dependant on another package?
+-   A command line interface tool that lets us manage packages in a project
 
 **npm and Other Package Manager**
-- Other package managers such as pnpm and Yarn
-- npm is the default package manager for Node.js
-- You can check the npm version by typing >> node -v
+
+-   Other package managers such as pnpm and Yarn
+-   npm is the default package manager for Node.js
+-   You can check the npm version by typing >> node -v
 
 **npm**
-- npm did stand for node package manager when it first started out
-- Now, it is a package manager for the JavaScript programming language
+
+-   npm did stand for node package manager when it first started out
+-   Now, it is a package manager for the JavaScript programming language
 
 **Why learn about npm?**
-- When building enterprises scale applications, we often need to rely on code written by other developers, we need npm
+
+-   When building enterprises scale applications, we often need to rely on code written by other developers, we need npm
 
 ### package.json
 
 **What?**
-- package.json is npm's configuration file
-- It is a json file that typically lives in the root directory of your package and holds various metadata relevant to the package.
 
-**Why?** 
-- package.json is the central place to configure and describe how to interact with and run your package
-- It is primarily used by the npm CLI
+-   package.json is npm's configuration file
+-   It is a json file that typically lives in the root directory of your package and holds various metadata relevant to the package.
 
+**Why?**
+
+-   package.json is the central place to configure and describe how to interact with and run your package
+-   It is primarily used by the npm CLI
 
 ```js
-const upperCase = require("upper-case").upperCase;
+const upperCase = require('upper-case').upperCase;
 
 function greet(name) {
-  console.log(upperCase(`Hello ${name}, welcome to Codevolution`));
+    console.log(upperCase(`Hello ${name}, welcome to Codevolution`));
 }
 
 module.exports = greet;
 ```
-
 
 ```bash
 # to create package json file using npm cli, use the following commands
 npm init --y
 
 ```
-
 
 ```js
 {
@@ -1768,6 +1791,7 @@ npm init --y
   "license": "ISC"
 }
 ```
+
 ---
 
 ### Installing Packages
@@ -1784,35 +1808,42 @@ npm uninstall <package_name>
 ```
 
 **Package-lock.json**
-- An automatically generated file that describes the exact dependency tree that was installed.
-- Created when npm install is run and a package.json file is present
-- Contains detailed information about every package installed, including nested dependencies
+
+-   An automatically generated file that describes the exact dependency tree that was installed.
+-   Created when npm install is run and a package.json file is present
+-   Contains detailed information about every package installed, including nested dependencies
 
 Key Purposes:
 
 1. Dependency Locking
-- Locks the exact versions of all packages and their dependencies
-- Ensures consistent installations across different environments
+
+-   Locks the exact versions of all packages and their dependencies
+-   Ensures consistent installations across different environments
 
 2. Version Control Benefits
-- Should be committed to version control (Git)
-- Ensures all team members get identical dependency versions
-- Prevents "works on my machine" issues
+
+-   Should be committed to version control (Git)
+-   Ensures all team members get identical dependency versions
+-   Prevents "works on my machine" issues
+
 3. Security & Integrity
-- Contains integrity hashes for each package
-- Verifies packages haven't been tampered with
-- Includes resolved URLs for package sources
+
+-   Contains integrity hashes for each package
+-   Verifies packages haven't been tampered with
+-   Includes resolved URLs for package sources
+
 4. Performance Optimization
-- Speeds up subsequent npm install commands
-- npm can skip dependency resolution using the lock file
-- Reduces network requests by using cached information
+
+-   Speeds up subsequent npm install commands
+-   npm can skip dependency resolution using the lock file
+-   Reduces network requests by using cached information
 
 Best Practices:
-- ✅ Always commit package-lock.json to version control
-- ✅ Don't manually edit the lock file
-- ✅ Update using npm commands like npm update
-- ❌ Don't delete unless troubleshooting dependency issues
 
+-   ✅ Always commit package-lock.json to version control
+-   ✅ Don't manually edit the lock file
+-   ✅ Update using npm commands like npm update
+-   ❌ Don't delete unless troubleshooting dependency issues
 
 ```bash
 
@@ -1830,24 +1861,272 @@ rm package-lock.json && npm install
 The lock file ensures deterministic builds - same code, same dependencies, every time.
 
 ---
+
 ### Versioning
+
 **Semantic Versioning**
-- SemVer - is one of the most widely adopted versioning systems
-- A simple set of rules and requirements that dictate how version numbers are assigned adn incremented.
-- It is crucial to keep a semantic and historical track of changes
-- Version numbers and the way they change convey meaning about the underlying code and what has been modified from one version to the next.
+
+-   SemVer - is one of the most widely adopted versioning systems
+-   A simple set of rules and requirements that dictate how version numbers are assigned adn incremented.
+-   It is crucial to keep a semantic and historical track of changes
+-   Version numbers and the way they change convey meaning about the underlying code and what has been modified from one version to the next.
 
 ![ Semantic Versioning](./img/semantic-versioning.png)
 
 **Versioning Rules**
-- When you fix a bug and the code stays backwards-compatiable you increment the patch version.
-    - For Ex: 1.1.1 to 1.1.2
-- When you add new functionality but the code still stays backwards-compatible, you increment the minor version. You also reset the patch version to zero.
-    - For Ex: 1.1.1 to 1.2.0    
-- When you make changes and the code is no more backwards compatible, you increment the major version. You have to reset the minor and patch version to zero
-    - For Ex: 1.1.1 to 2.0.0 
+
+-   When you fix a bug and the code stays backwards-compatiable you increment the patch version.
+    -   For Ex: 1.1.1 to 1.1.2
+-   When you add new functionality but the code still stays backwards-compatible, you increment the minor version. You also reset the patch version to zero.
+    -   For Ex: 1.1.1 to 1.2.0
+-   When you make changes and the code is no more backwards compatible, you increment the major version. You have to reset the minor and patch version to zero
+    -   For Ex: 1.1.1 to 2.0.0
 
 **Few more points**
-- 0.Y.Z (a major version of zero) is used for initial development
-- When the code is production-ready, you increment to versoin 1.0.0
-- Even the simplest of changes has to be done with an increase in the version number.       
+
+-   0.Y.Z (a major version of zero) is used for initial development
+-   When the code is production-ready, you increment to versoin 1.0.0
+-   Even the simplest of changes has to be done with an increase in the version number.
+
+---
+
+### npm Scripts
+
+-   An npm Script is a convenient way to bundle common commands for use in a project.
+-   They are typically entered in the command line in order to do something with the application
+-   npm scripts aer stored in a project's package.json file, giving access to everyone who has access to the codebase.
+-   They also ensure that everyone is using the same command with the same options.
+-   Common use cases for npm scripts include building your project, starting a development server, compiling CSS, linting, minifying etc.
+-   npm scripts are executed using the command npm run <SCRIPT_NAME>
+
+---
+
+### Publishing an npm Package
+
+1. Create that module to publish
+2. first register your account no npmjs.com
+3. on cli type >> npm adduser <username>
+4. npm publish
+
+---
+
+### Building CLI Tools
+
+-   CLI stands for Command Line Interface
+-   A program that you can run from the terminal
+-   Ex: npm and git
+-   Create a basic CLI tool using node and npm
+-   Pass options to the CLI
+-   Add interactivity to the CLI
+
+
+- to pass options, we need to install yargs package that will provide all the args into array key value pairs of argument that we can utilize into our cli tools
+
+```bash
+npm i yargs
+
+```
+
+```js
+#!/usr/bin/env node
+
+const yargs = require('yargs');
+const { argv } = yargs(process.argv);
+
+const printFiveMoves = async (pokemonName) => {
+    const response = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
+    );
+    const pokemon = await response.json();
+    const moves = pokemon.moves.map(({ move }) => move.name);
+    console.log(moves.slice(0, 5));
+};
+
+const pokemon = argv.pokemon;
+printFiveMoves(pokemon);
+```
+
+
+
+```js
+{
+  "name": "my-cli-package-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "my-cli-package-1": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "yargs": "^17.6.2"
+  }
+}
+```
+---
+### Interactive CLI Tools
+
+```bash
+npm i inquirer
+```
+
+
+```js
+#!/usr/bin/env node
+
+const inquirer = require('inquirer')
+
+const printFiveMoves = async (pokemonName) => {
+    const response = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
+    );
+    const pokemon = await response.json();
+    const moves = pokemon.moves.map(({ move }) => move.name);
+    console.log(moves.slice(0, 5));
+};
+
+const prompt = inquirer.createPromptModule();
+prompt([
+    {
+        type: "input",
+        name: "pokemon",
+        description: "Please Enter a pokemon name to view its first 5 moves"
+    }
+]).then((answers) => {
+    const pokemon = answers.pokemon;
+    printFiveMoves(pokemon);
+})
+
+```
+
+**Section Summary**
+- CLI - A program that you can run from the terminal
+
+---
+### Cluster Module
+
+- Node is single threaded
+- No matter how many cores you have, node only uses a single core of your CPU
+- This is fine for I/O operations but if the code has long running and CPU intensive operations, your application might struggle from a performance point of view.
+- The Cluster module enables the creation of child processes (also called workers) that run simultaneously.
+- All created workers share the same server port.
+
+```js
+// no-cluster.js - example without use of cluster
+const http = require("http");
+
+const server = http.createServer((req, res) => {
+  if (req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Home page");
+  } else if (req.url === "/slow-page") {
+    for (let i = 0; i < 6000000000; i++) {} // Simulate CPU work
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Slow Page");
+  }
+});
+
+server.listen(8000, () => console.log("Server is running on port 8000"));
+
+```
+
+```js
+// cluster.js
+const cluster = require("cluster");
+const http = require("http");
+const numOfCPUs = require("os").cpus().length; //returns no of cores our cpu have
+
+if (cluster.isMaster) {
+  console.log(`Master process ${process.pid} is running`);
+  //fork workers.
+  for (let i = 0; i < numOfCPUs; i++) {
+    console.log(`Forking process number ${i}...`);
+    cluster.fork(); //creates new node js processes
+  }
+  cluster.on("exit", (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+    cluster.fork(); //forks a new process if any process dies
+  });
+} else {
+  const server = http.createServer((req, res) => {
+    if (req.url === "/") {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end("Home page");
+    } else if (req.url === "/slow-page") {
+      for (let i = 0; i < 6000000000; i++) {} // Simulate CPU work
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end("Slow Page");
+    }
+  });
+
+  server.listen(8000, () => console.log("Server is running on port 8000"));
+  console.log(`Worker ${process.pid} started`);
+}
+```
+Cluster Master
+- Worker 1 
+- Worker 2
+
+- Master is only in charge of the workers
+- Workers are in charge of handling incoming requests, reading file etc.
+- Each worker gets its own event loop, memory, and V8 instance.
+
+
+- Why shouldn't we simply create a large number of workers using cluster.fork()?
+- We should only create as many workers as there are CPU cores on the machine the app is running.
+- If you create more workers than there are logical cores on the computer it can cause an overhead as the system will have to schedule all the created workers with fewer number of cores.
+
+**PM2 (Process Manager 2)**
+```bash
+# Install globally
+npm install -g pm2
+
+# Start application with clustering
+pm2 start app.js
+
+# Start with specific instances
+pm2 start app.js -i 4
+
+# Use all CPU cores
+pm2 start app.js -i max
+
+# Monitor processes
+pm2 monit
+
+# View logs
+pm2 logs
+
+# Restart all processes
+pm2 restart all
+```
+
+PM2 is a production-grade process manager for Node.js applications that simplifies deployment and management.
+
+Key Features:
+
+🔄 Process Management
+- Automatically manages multiple Node.js processes
+- Built-in clustering without writing cluster code
+- Auto-restart on crashes or file changes
+⚡ Performance
+- Utilizes all CPU cores automatically
+- Load balancing across worker processes
+- Zero-downtime deployments
+
+📊 Monitoring
+- Real-time monitoring dashboard
+- Memory and CPU usage tracking
+- Log management and aggregation
+
+
+**Benefits over Manual Clustering:**
+- No Code Changes: PM2 handles clustering automatically
+- Production Ready: Built-in features for production environments
+- Easy Scaling: Scale up/down instances on demand
+- Automatic Recovery: Restarts failed processes instantly
+
