@@ -408,60 +408,42 @@ Synchronous communication is a type of communication where both parties must be 
 In computing or application design, this means:
 - The caller sends a request and waits for the response before continuing.
 - It’s blocking, meaning the execution stops until the reply is received.
-## Asynchronous communication
 
 **Where it is necessary**
-- Computation takes a lot of time
-- Scalability of application
-- Avoid cascading failure
-
 1. User Authentication / Login
-Why: You must verify credentials before allowing access.
-
-Example:
-
-A user logs in → frontend sends credentials to backend → waits for "success" or "failure".
-
-🔁 Required to ensure security and session management.
+- Why: You must verify credentials before allowing access.
+- Example: A user logs in → frontend sends credentials to backend → waits for "success" or "failure".
+- 🔁 Required to ensure security and session management.
 
 2. Form Submissions with Validation
-Why: The system must validate input and confirm it was saved.
-
-Example: Submitting a contact form, order form, or profile update.
-
-🔁 User expects an immediate confirmation or error.
+- Why: The system must validate input and confirm it was saved.
+- Example: Submitting a contact form, order form, or profile update.
+    - 🔁 User expects an immediate confirmation or error.
 
 3. Payment Processing
-Why: You need confirmation of payment status before completing checkout.
-
-Example: Credit card is charged via a payment gateway → the app waits for a response before placing the order.
-
-🔁 Avoids issues like duplicate orders or payments.
+- Why: You need confirmation of payment status before completing checkout.
+- Example: Credit card is charged via a payment gateway → the app waits for a response before placing the order.
+    - 🔁 Avoids issues like duplicate orders or payments.
 
 4. Database Transactions
-Why: Application logic depends on the result of the query.
-
-Example: Checking product stock before confirming order.
-
-🔁 Ensures data consistency and avoids race conditions.
+- Why: Application logic depends on the result of the query.
+- Example: Checking product stock before confirming order.
+    - 🔁 Ensures data consistency and avoids race conditions.
 
 5. API Gateway Calls in Microservices
-Why: Service A needs a result from Service B before proceeding.
-
-Example: Order service calls customer service to check credit before confirming purchase.
-
-🔁 Necessary for tightly coupled, sequential workflows.
+- Why: Service A needs a result from Service B before proceeding.
+- Example: Order service calls customer service to check credit before confirming purchase.
+    - 🔁 Necessary for tightly coupled, sequential workflows.
 
 6. Critical UI Workflows
-Why: The user interface waits on backend logic.
-Example: Booking a flight or hotel room — the UI must wait to confirm availability and lock the slot.
-
-🔁 Real-time feedback is crucial.
+- Why: The user interface waits on backend logic.
+- Example: Booking a flight or hotel room — the UI must wait to confirm availability and lock the slot.
+    - 🔁 Real-time feedback is crucial.
 
 7. File Upload with Post-Processing
-Why: User should know if the upload succeeded.
-Example: Uploading a resume or profile photo.
-🔁 Blocking behavior makes sense here.
+- Why: User should know if the upload succeeded.
+- Example: Uploading a resume or profile photo.
+    - 🔁 Blocking behavior makes sense here.
 
 🚦 Rule of Thumb
 Use synchronous communication when:
@@ -477,6 +459,162 @@ Don’t use synchronous calls for:
 - Notifications or logging
 - Real-time events (use WebSockets or message queues)
 
+## Asynchronous communication
+Asynchronous communication is when a system sends a request or message and doesn't wait for an immediate response. Instead, it moves on, and the response (if needed) comes later, often through a callback, message queue, event, or polling.
+
+**In Summary where**
+- Computation takes a lot of time
+- Scalability of application
+- Avoid cascading failure
 
 
+✅ Where Asynchronous Communication is Used
+1. Background Processing
+- ✅ Tasks that take time and don't require immediate feedback.
+- 📌 Examples:
+    - Sending confirmation emails
+    - Generating reports
+    - Image/video processing
 
+2. Microservices with Messaging Systems
+- ✅ Services communicate using message queues or events, not blocking each other.
+- 📌 Examples:
+    - Kafka, RabbitMQ, AWS SQS
+    - OrderService sends an event → BillingService picks it up later
+
+3. Event-Driven Applications
+- ✅ Actions trigger events, and listeners handle them later.
+- 📌 Examples:
+    - Clicking "like" on a post → triggers event → updates analytics in background
+
+4. Webhooks
+- ✅ External services notify your app asynchronously when something happens.
+- 📌 Examples:
+    - Stripe calls your webhook when payment succeeds
+    - GitHub triggers a webhook on a push
+
+5. UI with Background Tasks
+- ✅ Improves responsiveness by not freezing the UI.
+- 📌 Examples:
+    - File upload progress bars
+    - Chat messages sent in the background
+
+6. Polling / Long-Polling / WebSockets
+- ✅ Used for near real-time updates without blocking the main thread.
+- 📌 Examples:
+    - Live notifications
+    - Online user presence in chat
+
+
+**🧰 Tools & Technologies**
+| Type               | Examples                                        |
+| ------------------ | ----------------------------------------------- |
+| Message Queues     | RabbitMQ, Kafka, AWS SQS                        |
+| Event Brokers      | NATS, Redis Streams                             |
+| Background Jobs    | Celery (Python), Sidekiq (Ruby), Bull (Node.js) |
+| WebSocket / PubSub | Socket.IO, Pusher, Firebase, MQTT               |
+
+## message based communication
+- Clietn sends request in the form of message
+- Receive response in the form of message
+- It is async, so client is not required to halt the process and wait for the process.
+
+Producer
+Consumer
+Agent
+
+P2P Model
+Pub/Sub Model
+
+Kafka
+RabbitMQ
+
+
+## Communication protocol
+1. Push
+2. Pull / Polling
+3. Long Polling
+4. Socket
+5. Server setn events : Client subscribe to the server "stream" and the server will send a message ("stream of events") to the client until the server or client closes the stream. Ex : Crickbuzz, It is one way connection and Long lived connection.
+
+## REST API | SOA | Microservices architecture | Tier architecture
+
+### REST API 
+**Definition:**  
+An architectural style for designing networked applications. Resources (data) are exposed via URIs and manipulated using HTTP verbs (GET, POST, PUT, DELETE).  
+**Characteristics:**  
+- Stateless requests  
+- Uniform interface (resources + representations)  
+- Uses standard HTTP status codes  
+**Example (Express.js):**  
+```js
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+app.get('/users/:id', (req, res) => {
+  // fetch user by req.params.id
+  res.json({ id: req.params.id, name: 'Alice' });
+});
+
+app.post('/users', (req, res) => {
+  // create user with req.body
+  res.status(201).json({ id: '123', ...req.body });
+});
+
+app.listen(3000);
+```
+
+### SOA 
+
+**Service-Oriented Architecture**
+An architectural pattern where large applications are composed of coarse-grained, loosely coupled services communicating over an enterprise bus (ESB) using standardized protocols (SOAP, JMS, REST).
+
+**Characteristics:**
+- Services share a common communication layer (ESB)
+- Contracts defined via WSDL/XSD (for SOAP)
+- Emphasis on reusability and orchestration
+
+**Example:**
+- Order Service (SOAP)
+- Inventory Service (JMS messaging)
+- Billing Service (REST)
+These services interact via an ESB for routing, transformation, and security.
+
+**Disadvantage**
+1. higher latency
+2. Complext to secure
+3. Cascading failures
+4. Complex understanding
+
+### Microservices architecture
+An evolution of SOA with independently deployable, fine-grained services, each owning its own data store and communicating typically via lightweight protocols (HTTP/REST, gRPC, messaging).
+
+- Single responsibility per service
+- Decentralized data management
+- Automated deployment (CI/CD)
+- Polyglot technology choices
+Example:
+```js
+# Service A (Node.js + MongoDB)
+git clone svc-a && cd svc-a
+npm install && npm start
+
+# Service B (Go + PostgreSQL)
+git clone svc-b && cd svc-b
+make run
+
+```
+
+### Tier architecture
+A web application can be designed according to the n-tier architecture where tiers are different layers of architecture.
+
+A tier is a logical separate between different components of the application.
+1 tier : Means (Frontend, backend and database) - all 3 in one machine.
+2 tier : Means - Frontend in one machine and backend + database in one machine
+3 tier : Means - Frontend, backend and database each deployed separately.
+
+
+## Authentication and Authorization
+**Authentication** - Who are you
+**Authorization** - What can you do
