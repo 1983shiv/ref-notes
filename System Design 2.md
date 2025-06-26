@@ -229,3 +229,137 @@ app.listen(3000);
 - MVPs (Minimum Viable Products)
 
 Monolithic architecture is often the right choice for many applications, especially when starting out. The key is knowing when to transition to microservices as your application grows in complexity and scale.
+
+
+
+
+## Cache Eviction Techniques
+1. LRU : Least recently used
+2. MRU : Most recently used
+3. LFU : Least frequently used
+4. FIFO : First in first out 
+5. LIFO : Last in first out
+6. RR : Round Robin
+
+
+## File based storage system
+A file-based storage system is a database management system where data is stored in the form of files.
+
+Challenges
+1. Data Redundancy : Undate anamoly, delete anamoly leading to data inconsistency
+2. Poor Security : Same data are present in the system which causes a possibility of unauthorized usese
+3. Slow : the speed is very slow. Due to these challenges, data retrieval is not very efficient.
+
+**Important** : To overcome of file based storage system, we use RDBMS.
+
+## RDBMS
+- Software : It is a software that performs data operations on relational database.
+- Operatoins : It store, manage, query and retrieve data.
+- Tables : Data is represented in the form of tables.
+- Foreign Keys : The relationship between the two tables is represented by foreign keys.
+
+**Advantages**
+- No Data redundancy and inconsistency
+- Data Searching - Build it searching capabilities (no need of a separate programme as in FS)
+- Data concurrency : A locking system is provided by RDBMS to prevent abnormalities from occuring.
+- Data Integrity - To maintain data integrity numeric columns won't have alphabetic data. (There is no process in the file system to check these constraints automatically)
+
+**Disadvantages**
+- Problem 1 : Ridig schema
+- Problem 2 : High Cost
+- Problem 3 : Scalability Issue (Horizontal scalling / Sharding is very difficult)
+
+**Types of NoSQL Databases**
+It stand for "non-sql" database or we can say that it is a non-relational database.
+
+NoSQL is the umbrella term comprising of four different types of databases.
+
+Below is a concise explanation of the **definition**, **differences**, and **examples** for **key-value databases**, **document databases**, **columnar databases**, and **graph databases**.
+
+---
+
+### 1. Key-Value Database
+**Definition**: 
+A key-value database is a NoSQL database that stores data as a collection of key-value pairs, where each key is a unique identifier associated with a value. It’s simple, highly scalable, and optimized for fast retrieval.
+
+**Key Characteristics**:
+- Data is stored as key-value pairs (like a dictionary or hash table).
+- Best for simple queries and high-speed lookups.
+- Schema-less, offering flexibility in data types.
+- Limited querying capabilities compared to other databases.
+
+**Example**:
+- **Database**: Redis, Amazon DynamoDB, Riak.
+- **Use Case**: Caching, User Profiles, Shopping Cart, i.e Caching session data for a web application, e.g., storing user session IDs and their associated data (like `{ "user123": { "name": "Alice", "cart": ["item1", "item2"] } }`).
+
+---
+
+### 2. Document Database
+**Definition**: 
+A document database is a NoSQL database that stores data as semi-structured documents, typically in JSON, BSON, or XML format. Each document contains key-value pairs and can have nested structures.
+
+**Key Characteristics**:
+- Stores data as flexible, self-contained documents.
+- Supports complex queries, indexing, and aggregation.
+- Schema-less, allowing varied document structures.
+- Ideal for hierarchical or semi-structured data.
+
+**Example**:
+- **Database**: MongoDB, CouchDB, Firebase Firestore.
+- **Use Case**: CMS, Blogging, User Data with flexible schemas, i.e Storing user profiles in an e-commerce platform, e.g., a document like `{ "_id": "user123", "name": "Alice", "address": { "city": "New York", "zip": "10001" }, "orders": ["order1", "order2"] }`.
+
+---
+
+### 3. Columnar Database (Column-Family Database)
+**Definition**: 
+A columnar database stores data in columns rather than rows, optimizing for analytical queries and large-scale data processing. It’s designed for high-performance reads on specific columns.
+
+**Key Characteristics**:
+- Data is organized by columns, enabling efficient querying of specific fields.
+- Optimized for analytical workloads, aggregations, and big data.
+- Highly compressible due to similar data types in columns.
+- Often used in data warehousing and business intelligence.
+
+**Example**:
+- **Database**: Apache Cassandra, Google BigQuery, Amazon Redshift, HBase.
+- **Use Case**: Real-time analytics, Time-series data, High-volume write-heavy apps, i.e. Analyzing sales data, e.g., querying only the "revenue" and "date" columns from a massive dataset to calculate monthly sales trends.
+
+---
+
+### 4. Graph Database
+**Definition**: 
+A graph database is a NoSQL database that uses graph structures (nodes, edges, and properties) to represent and query relationships between data entities.
+
+**Key Characteristics**:
+- Optimized for complex relationships and traversals.
+- Nodes represent entities, and edges represent relationships.
+- Highly efficient for queries involving interconnected data.
+- Ideal for social networks, recommendation systems, and fraud detection.
+
+**Example**:
+- **Database**: Neo4j, ArangoDB, OrientDB.
+- **Use Case**: social networks, recommendation systems, and fraud detection e.g., storing users as nodes and friendships as edges to query "friends of friends" (like `{ Node: "Alice", Edge: "friend", Node: "Bob"}`). 
+
+---
+
+### Key Differences
+| **Feature**                | **Key-Value DB**                     | **Document DB**                     | **Columnar DB**                     | **Graph DB**                        |
+|----------------------------|--------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
+| **Data Model**             | Key-value pairs                     | Semi-structured documents (JSON/BSON) | Column-based storage                | Nodes and edges (graph structure)   |
+| **Query Flexibility**      | Simple lookups by key               | Rich queries (fields, nested data)  | Analytical queries on columns       | Relationship-based queries          |
+| **Scalability**            | Highly scalable, simple operations  | Scalable, supports complex queries  | Scalable for large datasets         | Scalable for relationship-heavy data|
+| **Use Case**               | Caching, sessions, simple lookups   | Content management, e-commerce      | Data warehousing, analytics         | Social networks, recommendations    |
+| **Schema**                 | Schema-less                         | Schema-less                         | Schema-defined (columns)            | Schema-less or semi-structured      |
+| **Performance**            | Fast for key-based access           | Fast for document retrieval         | Fast for column-based analytics     | Fast for relationship traversals    |
+
+---
+
+### Summary Example Scenario
+Imagine an e-commerce platform:
+- **Key-Value DB**: Stores user session data (e.g., Redis caching `{ "session123": { "user_id": "user123", "cart": ["item1"] } }`).
+- **Document DB**: Stores product details (e.g., MongoDB with `{ "_id": "item1", "name": "Laptop", "price": 999, "specs": { "ram": "16GB" } }`).
+- **Columnar DB**: Analyzes sales data (e.g., Cassandra querying only "product_id" and "sales_amount" columns for reports).
+- **Graph DB**: Recommends products based on user purchase relationships (e.g., Neo4j with nodes for users/products and edges for "purchased" or "viewed").
+
+Let me know if you'd like a deeper dive into any of these databases or specific use cases!
+
