@@ -269,9 +269,10 @@ Challenges
 - Problem 2 : High Cost
 - Problem 3 : Scalability Issue (Horizontal scalling / Sharding is very difficult)
 
-**Types of NoSQL Databases**
+## NoSQL Databases
 It stand for "non-sql" database or we can say that it is a non-relational database.
 
+**Types of NoSQL Databases**
 NoSQL is the umbrella term comprising of four different types of databases.
 
 Below is a concise explanation of the **definition**, **differences**, and **examples** for **key-value databases**, **document databases**, **columnar databases**, and **graph databases**.
@@ -361,5 +362,121 @@ Imagine an e-commerce platform:
 - **Columnar DB**: Analyzes sales data (e.g., Cassandra querying only "product_id" and "sales_amount" columns for reports).
 - **Graph DB**: Recommends products based on user purchase relationships (e.g., Neo4j with nodes for users/products and edges for "purchased" or "viewed").
 
-Let me know if you'd like a deeper dive into any of these databases or specific use cases!
+## Polyglot persistence
+![ Polyglot persistence](./img/polyglot.png)
+
+Polyglot persistence is the practice of using multiple, different data storage technologies within a single application—choosing the right database for each specific use-case rather than forcing one store to fit all needs.
+
+**Why use it?**
+-Leverage each store’s strengths (e.g., relational for transactions, document for flexible schemas, key-value for caching, graph for relationships).
+- Optimize performance, scalability, and developer productivity.
+- Avoid one tool’s limitations by combining specialized systems.
+**Example: E-commerce Platform**
+- Orders (ACID transactions): PostgreSQL
+- Product Catalog (flexible, evolving schema): MongoDB
+- User Sessions & Caching: Redis (key-value)
+- Search (full-text, faceted): Elasticsearch
+- Recommendations (graph traversals): Neo4j
+
+
+## What is denormalization in RDBMS
+**Normalization** : Putting data in multiple tables to avoid redundancy.
+**Denormalization** : It combines the data and organizes it in a single table. Denormalization is the process of adding redundant data to the normalized relational database to optimize its performance.
+
+**Benefits**
+- Faster Data read operations
+- Management convenience
+- High Data availability
+- Reduces the number of network calls to fetch dtaa from multiple places.
+
+**Challenges**
+- Redundant data -> wastege of memory
+- It increases the complexity
+- Data inconsistency 
+- It will cause slow write operations since we will need to write multiple places due to redundancy.
+
+## Indexing
+Indexing creates a lookup table with the column and the pointer to the memory location of the row, containing this column.
+
+What data structure use for indexing?
+B-trees data structure is used to store the indexing as it is a multilevel format of tree-based indexing, which has balanced binary search trees.
+
+Where to use indexing : your application is ready intensive, then apply the indexing.
+
+## Synchronous communication
+Synchronous communication is a type of communication where both parties must be available at the same time, and they wait for each other to respond before continuing.
+In computing or application design, this means:
+- The caller sends a request and waits for the response before continuing.
+- It’s blocking, meaning the execution stops until the reply is received.
+## Asynchronous communication
+
+**Where it is necessary**
+- Computation takes a lot of time
+- Scalability of application
+- Avoid cascading failure
+
+1. User Authentication / Login
+Why: You must verify credentials before allowing access.
+
+Example:
+
+A user logs in → frontend sends credentials to backend → waits for "success" or "failure".
+
+🔁 Required to ensure security and session management.
+
+2. Form Submissions with Validation
+Why: The system must validate input and confirm it was saved.
+
+Example: Submitting a contact form, order form, or profile update.
+
+🔁 User expects an immediate confirmation or error.
+
+3. Payment Processing
+Why: You need confirmation of payment status before completing checkout.
+
+Example: Credit card is charged via a payment gateway → the app waits for a response before placing the order.
+
+🔁 Avoids issues like duplicate orders or payments.
+
+4. Database Transactions
+Why: Application logic depends on the result of the query.
+
+Example: Checking product stock before confirming order.
+
+🔁 Ensures data consistency and avoids race conditions.
+
+5. API Gateway Calls in Microservices
+Why: Service A needs a result from Service B before proceeding.
+
+Example: Order service calls customer service to check credit before confirming purchase.
+
+🔁 Necessary for tightly coupled, sequential workflows.
+
+6. Critical UI Workflows
+Why: The user interface waits on backend logic.
+Example: Booking a flight or hotel room — the UI must wait to confirm availability and lock the slot.
+
+🔁 Real-time feedback is crucial.
+
+7. File Upload with Post-Processing
+Why: User should know if the upload succeeded.
+Example: Uploading a resume or profile photo.
+🔁 Blocking behavior makes sense here.
+
+🚦 Rule of Thumb
+Use synchronous communication when:
+- A result is required before taking the next step.
+- The user is actively waiting.
+- It affects data integrity or security.
+- It's a short, predictable interaction.
+
+⚠️ When to Avoid
+Don’t use synchronous calls for:
+- Background tasks (e.g., sending emails)
+- Long-running processes (e.g., data analytics)
+- Notifications or logging
+- Real-time events (use WebSockets or message queues)
+
+
+
 
