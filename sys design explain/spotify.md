@@ -1,6 +1,6 @@
 # High-Level System Design: Spotify (Requirements)
 
-![ Spotify System Design Explaination or approach](./img/spotify-sys-design-mock.png)
+![ Spotify System Design Explaination or approach](../img/spotify-sys-design-mock.png)
 
 ---
 
