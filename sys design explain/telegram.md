@@ -1,6 +1,10 @@
 # High-Level System Design: Telegram (Requirements)
 
+![ Telegram System Design Explaination or approach](../img/telegram-sys-design-mock.png)
+
 ---
+
+
 
 ## ✅ Functional Requirements (FRs)
 
