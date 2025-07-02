@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kafka __consumer_offsets Animation</title>
+  <style>
+    body { margin: 20px; font-family: sans-serif; }
+    #controls { margin-bottom: 10px; }
+    canvas { border: 1px solid #ccc; background: #fafafa; }
+    button { margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="btnJoin">Join Group</button>
+    <button id="btnAssign" disabled>Assign Partitions</button>
+    <button id="btnLeave" disabled>Consumer B Leaves</button>
+  </div>
+  <canvas id="canvas" width="800" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    // Entities
+    const partitions = [
+      { x: 150, y: 60, label: 'P0' },
+      { x: 300, y: 60, label: 'P1' },
+      { x: 450, y: 60, label: 'P2' }
+    ];
+    const coordinator = { x: 300, y: 180, label: 'Coordinator' };
+    const consumers = [
+      { id: 'A', x: 100, y: 330, label: 'Consumer A' },
+      { id: 'B', x: 300, y: 330, label: 'Consumer B' },
+      { id: 'C', x: 500, y: 330, label: 'Consumer C' }
+    ];
+    const offsetStore = { x: 300, y: 440, w: 200, h: 60, label: '__consumer_offsets' };
+    let joined = false, assigned = false, leftB = false;
+    let assignment = {}; // partitionIndex -> consumerIndex
+
+    // Draw boxes
+    function drawBox(x, y, w, h, text) {
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#000'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      text.split('\n').forEach((line, i, arr) => {
+        ctx.fillText(line, x + w/2, y + h/2 + (i - (arr.length-1)/2)*16);
+      });
+    }
+    // Arrow
+    function arrow(x1,y1,x2,y2,label) {
+      ctx.strokeStyle = '#007acc'; ctx.fillStyle = '#007acc'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      const ang = Math.atan2(y2-y1, x2-x1), hl=8;
+      ctx.beginPath();
+      ctx.moveTo(x2,y2);
+      ctx.lineTo(x2 - hl*Math.cos(ang - Math.PI/6), y2 - hl*Math.sin(ang - Math.PI/6));
+      ctx.lineTo(x2 - hl*Math.cos(ang + Math.PI/6), y2 - hl*Math.sin(ang + Math.PI/6));
+      ctx.fill();
+      if(label) {
+        ctx.font='14px sans-serif';
+        ctx.fillText(label, (x1+x2)/2 +10, (y1+y2)/2 - 10);
+      }
+    }
+    // Clear & redraw static entities
+    function drawScene() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.font = '16px sans-serif';
+      partitions.forEach(p => drawBox(p.x-30,p.y-20,60,40,p.label));
+      drawBox(coordinator.x-60,coordinator.y-20,120,40,coordinator.label);
+      consumers.forEach(c => {
+        if (!(leftB && c.id==='B')) drawBox(c.x-50,c.y-20,100,40,c.label);
+      });
+      drawBox(offsetStore.x - offsetStore.w/2, offsetStore.y - offsetStore.h/2,
+              offsetStore.w, offsetStore.h, offsetStore.label);
+    }
+
+    // Sequence
+    document.getElementById('btnJoin').onclick = () => {
+      if (joined) return;
+      joined = true; drawScene();
+      consumers.forEach((c, i) => {
+        const cx = c.x, cy = c.y - 20;
+        arrow(cx, cy, coordinator.x, coordinator.y + 20, 'join');
+      });
+      document.getElementById('btnAssign').disabled = false;
+    };
+
+    document.getElementById('btnAssign').onclick = () => {
+      if (assigned) return;
+      assigned = true; drawScene();
+      // simple sticky assign: P0->A, P1->B, P2->C
+      assignment = {0:0,1:1,2:2};
+      partitions.forEach((p, pi) => {
+        const con = consumers[assignment[pi]];
+        arrow(coordinator.x, coordinator.y+20, con.x, con.y-20, `assign ${p.label}`);
+        setTimeout(() => {
+          // commit offset
+          arrow(con.x, con.y-20, offsetStore.x, offsetStore.y-30, `commit ${p.label}`);
+        }, 500 + pi*300);
+      });
+      document.getElementById('btnLeave').disabled = false;
+    };
+
+    document.getElementById('btnLeave').onclick = () => {
+      if (leftB) return;
+      leftB = true; drawScene();
+      // show leave event
+      const b = consumers.find(c=>c.id==='B');
+      arrow(b.x, b.y-20, coordinator.x, coordinator.y+20, 'leave B');
+      // coordinator reads offsets
+      setTimeout(() => {
+        arrow(offsetStore.x, offsetStore.y-30, coordinator.x-20, coordinator.y+20, 'read offsets');
+        // reassign P1 from B to next available (A or C)
+        const newConIdx = 0; // assign to A
+        assignment[1] = newConIdx;
+        setTimeout(() => {
+          const p = partitions[1], nc = consumers[newConIdx];
+          arrow(coordinator.x, coordinator.y+20, nc.x, nc.y-20, `reassign ${p.label}`);
+        }, 600);
+      }, 800);
+    };
+
+    // initial draw
+    drawScene();
+  </script>
+</body>
+</html>
