@@ -14,7 +14,7 @@
         - REST APIs and Status Codes
         - Latency, Throughput, Bandwidth
     - OS Concepts
-        - Threads vs Process
+        - [Threads vs Process](#threads-vs-process)
         - CPU Scheduling & Context Switching
         - I/O Blocking & Async I/O
         - Virtual Memory & Paging
@@ -73,3 +73,25 @@
         - FlashCards / Notes ReCap
         - Revise Patterns & Architecture
         - Deep Dive on Weak Areas
+
+
+
+## Threads vs Process
+**Process**
+- System Calls are involved in Process (i.e. fork() are used to created child process)
+- OS treats different process differently
+- Different process have different copies of data, files, code
+- Context Switching is slower
+- Blocking a process
+- Independent
+
+**Threads**
+- There is no system call involved
+- All user level threads treated as single task for OS
+- Threads share same copy of data, files, & code.
+- Context switching is faster
+- Blocking a thread will block entire process
+- Interdependent
+
+![ Process vs Threads](./img/process-threads.png)
+
