@@ -77,12 +77,24 @@
 
 
 ## Threads vs Process
+
+| **Process**                                                                 | **Thread**                                                                   |
+|-----------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| System calls are involved in process (e.g., `fork()` is used to create a child process) | No system call is involved                                                   |
+| OS treats different processes separately                                    | All user-level threads are treated as a single task by the OS                |
+| Each process has its own copy of data, files, and code                      | Threads share the same copy of data, files, and code                         |
+| Context switching is slower                                                 | Context switching is faster                                                  |
+| Blocking a process does not block other processes or child processes        | Blocking a thread blocks the entire process                                 |
+| Processes are independent                                                   | Threads are interdependent                                                   |
+
+
+
 **Process**
 - System Calls are involved in Process (i.e. fork() are used to created child process)
 - OS treats different process differently
 - Different process have different copies of data, files, code
 - Context Switching is slower
-- Blocking a process
+- Blocking a process will not block another process or child process.
 - Independent
 
 **Threads**
@@ -93,5 +105,5 @@
 - Blocking a thread will block entire process
 - Interdependent
 
-![ Process vs Threads](./img/process-threads.png)
+![ Process vs Threads](./img/process-threads.jpg)
 
