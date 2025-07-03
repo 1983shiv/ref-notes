@@ -1,4 +1,4 @@
-# 📘 Tech Study Notes
+# 📘 Study Notes
 
 Welcome to my personal collection of **technical study notes** – built for **learning**, **quick revision**, and **interview preparation**. This repository is where I regularly organize and update notes while studying or working with various technologies.
 
