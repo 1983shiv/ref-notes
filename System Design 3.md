@@ -1,4 +1,4 @@
-# System Design Roadmap (12 Weeks)
+# System Design Roadmap
 
 1. Foundation
     - Computer Science Basics
