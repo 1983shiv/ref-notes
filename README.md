@@ -1,4 +1,4 @@
-# 📘 Tech Study Notes – 1983shiv
+# 📘 Tech Study Notes
 
 Welcome to my personal collection of **technical study notes** – built for **learning**, **quick revision**, and **interview preparation**. This repository is where I regularly organize and update notes while studying or working with various technologies.
 
@@ -37,7 +37,7 @@ Your star motivates me to keep adding more content and improving it for the comm
 
 ---
 
-## 📫 Connect with me
+## ⚠️ Disclaimer
 
-Feel free to reach out if you have suggestions or want to discuss any topic:
-- GitHub: [1983shiv](https://github.com/1983shiv)
+This repository is primarily prepared for **my own study and revision**, so you may find some topics **incomplete**, **under construction**, or **roughly organized**. 
+
