@@ -1,6 +1,67 @@
+## Table of Contents
+
+1. [Design Pattern](#design-pattern)
+    - What is a Design Pattern?
+    - Why do we need them?
+    - Real-life analogy
+    - Categories of Design Patterns
+    - Example: Singleton Pattern
+    - Summary
+
+2. [Classes](#classes)
+
+3. [Coupling](#coupling)
+    - Types of Coupling
+    - Example
+
+4. [Encapsulation](#encapsulation)
+    - Why use encapsulation?
+    - How it works
+    - Example
+    - Key Points
+
+5. [Abstraction](#abstraction)
+    - Why use abstraction?
+    - How it works
+    - Example
+    - Key Points
+
+6. [Difference between Encapsulation and Abstraction](#difference-between-encapsulation-and-abstraction)
+    - Abstraction
+    - Encapsulation
+    - In Short
+    - Summary Table
+
+7. [Interface](#interface)
+    - Why use interfaces?
+    - How it works
+    - Example
+    - Key Points
+
+8. [Inheritance](#inheritance)
+    - Why use inheritance?
+    - How it works
+    - Example
+    - Key Points
+
+9. [Polymorphism](#polymorphism)
+    - How it works
+    - Example
+    - Key Points
+
+10. [SOLID Principles](#solid)
+    - What does SOLID stand for?
+    - Simple Breakdown with Examples
+    - Summary
+
+11. [Single Responsibility Principle (SRP)](#single-responsibility-principle-srp)
+    - Why is it important?
+    - Example
+    - Key Point
+
+    
 ## Design Pattern
 ---
-
 ### 🧩 What is a **Design Pattern** in Software Development?
 
 In simple words:
