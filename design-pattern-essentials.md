@@ -54,12 +54,12 @@
     - Simple Breakdown with Examples
     - Summary
 
-11. [Single Responsibility Principle (SRP)](#single-responsibility-principle-srp)
+11. [Single Responsibility Principle (SRP) in detail](#single-responsibility-principle-srp)
     - Why is it important?
     - Example
     - Key Point
 
-    
+
 ## Design Pattern
 ---
 ### 🧩 What is a **Design Pattern** in Software Development?
@@ -209,6 +209,42 @@ class Car {
 }
 
 // Loose coupling (good)
+
+// index.js
+import TaxCalculator2024 from "./classes/TaxCalculator2024.js";
+import TaxCalculator2025 from "./classes/TaxCalculator2025.js";
+
+let calculateTaxin2024 = new TaxCalculator2024()
+console.log(calculateTaxin2024.calculateTax(12_00_000))
+console.log(calculateTaxin2024.calculateInsurance(12_00_000))
+
+let calculateTaxin2025 = new TaxCalculator2025()
+console.log(calculateTaxin2025.calculateTax(12_00_000))
+
+export default interface TaxCalculator{
+    calculateTax(totalIncome: number): number;
+}
+
+import TaxCalculator from "../interface/TaxCalculator"
+export default class TaxCalculator2025 implements TaxCalculator {
+    calculateTax(totalIncome: number): number {
+        return totalIncome*0.4;
+    }
+     
+}
+
+import TaxCalculator from "../interface/TaxCalculator"
+export default class TaxCalculator2024 implements TaxCalculator {
+    calculateTax(totalIncome: number): number {
+        return totalIncome*0.3;
+    }
+    calculateInsurance(InsuredAmt: number): number{
+        return InsuredAmt*.121;
+    }
+}
+
+// Or
+
 interface IEngine {
   start(): void;
 }
@@ -222,6 +258,10 @@ class Car2 {
 }
 const myCar = new Car2(new PetrolEngine());
 myCar.drive(); // Output: Petrol engine started
+
+// or
+
+
 ```
 
 **Key Points:**
