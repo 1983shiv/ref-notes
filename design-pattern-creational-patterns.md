@@ -1,5 +1,11 @@
 ## Creation Design Pattern
 
+- [Singleton Design Pattern](#singleton-design-pattern)
+- [Factory Design Pattern](#factory-design-pattern)
+- [Abstract Factory Design Pattern](#abstract-factory-design-pattern)
+- [Builder Design Pattern](#builder-design-pattern)
+- [Prototype Design Pattern](#prototype-design-pattern)
+
 ### Singleton Design Pattern
 
 The **Singleton Pattern** is a creational design pattern that ensures a class has only one instance and provides a global point of access to that instance.
@@ -545,10 +551,857 @@ class AppStateManager {
   public subscribe(observer: Function): void {
     this.observers.push(observer);
   }
+  public unsubscribe(observer: Function): void {
+    this.observers.delete(observer);
+  }
 
   private notifyObservers(): void {
     this.observers.forEach(observer => observer(this.state));
   }
+
+  private debouncedNotify(delay = 100): void {
+    clearTimeout(this.notifyTimeout);
+    this.notifyTimeout = setTimeout(() => {
+      this.notifyObservers();
+    }, delay);
+  }
+
 }
 
 ```
+
+--- 
+
+### Factory Design Pattern
+
+The **Factory Pattern** is a creational design pattern that provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created. 
+
+It encapsulates object creation logic and promotes loose coupling between the client and the objects being created.
+
+![ Factory design pattern structure](./img/factory-design-pattern.png)
+
+---
+
+### TypeScript Implementation
+
+```ts
+// IProduct interface
+interface IPizza {
+  eat(): string;
+}
+
+// ConcreteProduct1
+class VegPizza implements IPizza {
+  eat(): string {
+    return "Eating Veg Pizza";
+  }
+}
+
+// ConcreteProduct2
+class NonVegPizza implements IPizza {
+  eat(): string {
+    return "Eating Non-Veg Pizza";
+  }
+}
+
+// IFactory interface
+interface IPizzaChef {
+  preparePizza(): IPizza;
+}
+
+// ConcreteFactory1
+class VegPizzaChef implements IPizzaChef {
+  preparePizza(): IPizza {
+    return new VegPizza();
+  }
+}
+
+// ConcreteFactory2
+class NonVegPizzaChef implements IPizzaChef {
+  preparePizza(): IPizza {
+    return new NonVegPizza();
+  }
+}
+
+// Client
+class Waiter {
+  getPizza(pizzaType: string): IPizza {
+    let chef: IPizzaChef;
+    
+    switch (pizzaType) {
+      case "NonVeg":
+        chef = new NonVegPizzaChef();
+        break;
+      default:
+        chef = new VegPizzaChef();
+        break;
+    }
+    
+    return chef.preparePizza();
+  }
+}
+
+// Usage
+const waiter = new Waiter();
+const vegPizza = waiter.getPizza("Veg");
+const nonVegPizza = waiter.getPizza("NonVeg");
+
+console.log(vegPizza.eat());    // Output: Eating Veg Pizza
+console.log(nonVegPizza.eat()); // Output: Eating Non-Veg Pizza
+
+```
+
+# How Factory Pattern Works
+
+## 🏗️ Components of the Factory Pattern
+
+- **Factory Interface (`IPizzaChef`)**: Defines the method for creating objects  
+- **Concrete Factories (`VegPizzaChef`, `NonVegPizzaChef`)**: Implement the creation logic  
+- **Product Interface (`IPizza`)**: Defines the interface for created objects  
+- **Concrete Products (`VegPizza`, `NonVegPizza`)**: Actual objects being created  
+- **Client (`Waiter`)**: Uses the factory to create objects without knowing their concrete types  
+
+---
+
+# When to Identify Factory Pattern
+
+## ✅ Look for These Characteristics:
+- Object creation logic is complex or varies  
+- Need to create different types of objects based on conditions  
+- Want to decouple object creation from usage  
+- Multiple classes implement the same interface  
+- Creation logic might change frequently  
+
+---
+
+## 💡 Common Naming Patterns:
+- **Factory** (e.g., `PizzaFactory`, `CarFactory`)  
+- **Creator** (e.g., `DocumentCreator`, `ShapeCreator`)  
+- **Builder** (e.g., `MessageBuilder`, `QueryBuilder`)  
+- **Provider** (e.g., `DatabaseProvider`, `ServiceProvider`)  
+- **Generator** (e.g., `ReportGenerator`, `TokenGenerator`)  
+
+---
+
+## ⚠️ Warning Signs:
+- ❌ Simple object creation (use `new` instead)  
+- ❌ Only one type of object to create  
+- ❌ Creation logic never changes  
+- ❌ Over-engineering simple scenarios  
+
+---
+
+## ✅ Factory Pattern is Good For:
+- Creating objects with complex initialization  
+- Hiding object creation complexity from clients  
+- Supporting multiple product families  
+- Implementing plugin architectures  
+- Database connection creation  
+- File format parsers  
+- UI component creation  
+
+**10 Real-World Scenarios**
+1. Database Connection Factory
+
+```ts
+interface IConnection {
+  connect(): string;
+  query(sql: string): any[];
+}
+
+class MySQLConnection implements IConnection {
+  connect(): string { return "Connected to MySQL"; }
+  query(sql: string): any[] { return []; }
+}
+
+class PostgreSQLConnection implements IConnection {
+  connect(): string { return "Connected to PostgreSQL"; }
+  query(sql: string): any[] { return []; }
+}
+
+interface IConnectionFactory {
+  createConnection(): IConnection;
+}
+
+class MySQLFactory implements IConnectionFactory {
+  createConnection(): IConnection {
+    return new MySQLConnection();
+  }
+}
+
+class PostgreSQLFactory implements IConnectionFactory {
+  createConnection(): IConnection {
+    return new PostgreSQLConnection();
+  }
+}
+
+class DatabaseManager {
+  getConnection(dbType: string): IConnection {
+    let factory: IConnectionFactory;
+    
+    switch (dbType) {
+      case "mysql":
+        factory = new MySQLFactory();
+        break;
+      case "postgresql":
+        factory = new PostgreSQLFactory();
+        break;
+      default:
+        throw new Error("Unsupported database type");
+    }
+    
+    return factory.createConnection();
+  }
+}
+```
+
+2. Payment Gateway Factory
+```ts
+interface IPaymentGateway {
+  processPayment(amount: number): string;
+}
+
+class PayPalGateway implements IPaymentGateway {
+  processPayment(amount: number): string {
+    return `Processed $${amount} via PayPal`;
+  }
+}
+
+class StripeGateway implements IPaymentGateway {
+  processPayment(amount: number): string {
+    return `Processed $${amount} via Stripe`;
+  }
+}
+
+interface IPaymentFactory {
+  createGateway(): IPaymentGateway;
+}
+
+class PayPalFactory implements IPaymentFactory {
+  createGateway(): IPaymentGateway {
+    return new PayPalGateway();
+  }
+}
+
+class StripeFactory implements IPaymentFactory {
+  createGateway(): IPaymentGateway {
+    return new StripeGateway();
+  }
+}
+
+class PaymentProcessor {
+  processPayment(gatewayType: string, amount: number): string {
+    let factory: IPaymentFactory;
+    
+    switch (gatewayType) {
+      case "paypal":
+        factory = new PayPalFactory();
+        break;
+      case "stripe":
+        factory = new StripeFactory();
+        break;
+      default:
+        throw new Error("Unsupported payment gateway");
+    }
+    
+    const gateway = factory.createGateway();
+    return gateway.processPayment(amount);
+  }
+}
+```
+
+3. Document Parser Factory
+
+```ts
+interface IDocumentParser {
+  parse(content: string): any;
+}
+
+class PDFParser implements IDocumentParser {
+  parse(content: string): any {
+    return { type: "PDF", data: content };
+  }
+}
+
+class XMLParser implements IDocumentParser {
+  parse(content: string): any {
+    return { type: "XML", data: content };
+  }
+}
+
+class JSONParser implements IDocumentParser {
+  parse(content: string): any {
+    return { type: "JSON", data: JSON.parse(content) };
+  }
+}
+
+interface IParserFactory {
+  createParser(): IDocumentParser;
+}
+
+class PDFParserFactory implements IParserFactory {
+  createParser(): IDocumentParser {
+    return new PDFParser();
+  }
+}
+
+class XMLParserFactory implements IParserFactory {
+  createParser(): IDocumentParser {
+    return new XMLParser();
+  }
+}
+
+class JSONParserFactory implements IParserFactory {
+  createParser(): IDocumentParser {
+    return new JSONParser();
+  }
+}
+
+class DocumentProcessor {
+  parseDocument(fileExtension: string, content: string): any {
+    let factory: IParserFactory;
+    
+    switch (fileExtension.toLowerCase()) {
+      case "pdf":
+        factory = new PDFParserFactory();
+        break;
+      case "xml":
+        factory = new XMLParserFactory();
+        break;
+      case "json":
+        factory = new JSONParserFactory();
+        break;
+      default:
+        throw new Error("Unsupported file format");
+    }
+    
+    const parser = factory.createParser();
+    return parser.parse(content);
+  }
+}
+```
+
+4. UI Component Factory
+
+```ts
+interface IButton {
+  render(): string;
+  onClick(): void;
+}
+
+class WindowsButton implements IButton {
+  render(): string { return "Windows Button"; }
+  onClick(): void { console.log("Windows button clicked"); }
+}
+
+class MacButton implements IButton {
+  render(): string { return "Mac Button"; }
+  onClick(): void { console.log("Mac button clicked"); }
+}
+
+class LinuxButton implements IButton {
+  render(): string { return "Linux Button"; }
+  onClick(): void { console.log("Linux button clicked"); }
+}
+
+interface IUIFactory {
+  createButton(): IButton;
+}
+
+class WindowsUIFactory implements IUIFactory {
+  createButton(): IButton {
+    return new WindowsButton();
+  }
+}
+
+class MacUIFactory implements IUIFactory {
+  createButton(): IButton {
+    return new MacButton();
+  }
+}
+
+class LinuxUIFactory implements IUIFactory {
+  createButton(): IButton {
+    return new LinuxButton();
+  }
+}
+
+class UIManager {
+  createUI(platform: string): IButton {
+    let factory: IUIFactory;
+    
+    switch (platform) {
+      case "windows":
+        factory = new WindowsUIFactory();
+        break;
+      case "mac":
+        factory = new MacUIFactory();
+        break;
+      case "linux":
+        factory = new LinuxUIFactory();
+        break;
+      default:
+        throw new Error("Unsupported platform");
+    }
+    
+    return factory.createButton();
+  }
+}
+```
+
+5. Notification Service Factory
+```ts
+interface INotification {
+  send(message: string): string;
+}
+
+class EmailNotification implements INotification {
+  send(message: string): string {
+    return `Email sent: ${message}`;
+  }
+}
+
+class SMSNotification implements INotification {
+  send(message: string): string {
+    return `SMS sent: ${message}`;
+  }
+}
+
+class PushNotification implements INotification {
+  send(message: string): string {
+    return `Push notification sent: ${message}`;
+  }
+}
+
+interface INotificationFactory {
+  createNotification(): INotification;
+}
+
+class EmailNotificationFactory implements INotificationFactory {
+  createNotification(): INotification {
+    return new EmailNotification();
+  }
+}
+
+class SMSNotificationFactory implements INotificationFactory {
+  createNotification(): INotification {
+    return new SMSNotification();
+  }
+}
+
+class PushNotificationFactory implements INotificationFactory {
+  createNotification(): INotification {
+    return new PushNotification();
+  }
+}
+
+class NotificationService {
+  sendNotification(type: string, message: string): string {
+    let factory: INotificationFactory;
+    
+    switch (type) {
+      case "email":
+        factory = new EmailNotificationFactory();
+        break;
+      case "sms":
+        factory = new SMSNotificationFactory();
+        break;
+      case "push":
+        factory = new PushNotificationFactory();
+        break;
+      default:
+        throw new Error("Unsupported notification type");
+    }
+    
+    const notification = factory.createNotification();
+    return notification.send(message);
+  }
+}
+```
+
+6. Vehicle Factory
+```ts
+
+interface IVehicle {
+  start(): string;
+  stop(): string;
+}
+
+class Car implements IVehicle {
+  start(): string { return "Car engine started"; }
+  stop(): string { return "Car engine stopped"; }
+}
+
+class Motorcycle implements IVehicle {
+  start(): string { return "Motorcycle engine started"; }
+  stop(): string { return "Motorcycle engine stopped"; }
+}
+
+class Truck implements IVehicle {
+  start(): string { return "Truck engine started"; }
+  stop(): string { return "Truck engine stopped"; }
+}
+
+interface IVehicleFactory {
+  createVehicle(): IVehicle;
+}
+
+class CarFactory implements IVehicleFactory {
+  createVehicle(): IVehicle {
+    return new Car();
+  }
+}
+
+class MotorcycleFactory implements IVehicleFactory {
+  createVehicle(): IVehicle {
+    return new Motorcycle();
+  }
+}
+
+class TruckFactory implements IVehicleFactory {
+  createVehicle(): IVehicle {
+    return new Truck();
+  }
+}
+
+class VehicleDealer {
+  getVehicle(type: string): IVehicle {
+    let factory: IVehicleFactory;
+    
+    switch (type) {
+      case "car":
+        factory = new CarFactory();
+        break;
+      case "motorcycle":
+        factory = new MotorcycleFactory();
+        break;
+      case "truck":
+        factory = new TruckFactory();
+        break;
+      default:
+        throw new Error("Unsupported vehicle type");
+    }
+    
+    return factory.createVehicle();
+  }
+}
+
+```
+
+7. Logger Factory
+```ts
+interface ILogger {
+  log(message: string): void;
+}
+
+class FileLogger implements ILogger {
+  log(message: string): void {
+    console.log(`[FILE] ${new Date().toISOString()}: ${message}`);
+  }
+}
+
+class ConsoleLogger implements ILogger {
+  log(message: string): void {
+    console.log(`[CONSOLE] ${new Date().toISOString()}: ${message}`);
+  }
+}
+
+class DatabaseLogger implements ILogger {
+  log(message: string): void {
+    console.log(`[DATABASE] ${new Date().toISOString()}: ${message}`);
+  }
+}
+
+interface ILoggerFactory {
+  createLogger(): ILogger;
+}
+
+class FileLoggerFactory implements ILoggerFactory {
+  createLogger(): ILogger {
+    return new FileLogger();
+  }
+}
+
+class ConsoleLoggerFactory implements ILoggerFactory {
+  createLogger(): ILogger {
+    return new ConsoleLogger();
+  }
+}
+
+class DatabaseLoggerFactory implements ILoggerFactory {
+  createLogger(): ILogger {
+    return new DatabaseLogger();
+  }
+}
+
+class LoggingService {
+  getLogger(type: string): ILogger {
+    let factory: ILoggerFactory;
+    
+    switch (type) {
+      case "file":
+        factory = new FileLoggerFactory();
+        break;
+      case "console":
+        factory = new ConsoleLoggerFactory();
+        break;
+      case "database":
+        factory = new DatabaseLoggerFactory();
+        break;
+      default:
+        throw new Error("Unsupported logger type");
+    }
+    
+    return factory.createLogger();
+  }
+}
+```
+
+8. Image Processor Factory
+
+```ts
+interface IImageProcessor {
+  process(imagePath: string): string;
+}
+
+class JPEGProcessor implements IImageProcessor {
+  process(imagePath: string): string {
+    return `Processing JPEG image: ${imagePath}`;
+  }
+}
+
+class PNGProcessor implements IImageProcessor {
+  process(imagePath: string): string {
+    return `Processing PNG image: ${imagePath}`;
+  }
+}
+
+class GIFProcessor implements IImageProcessor {
+  process(imagePath: string): string {
+    return `Processing GIF image: ${imagePath}`;
+  }
+}
+
+interface IImageProcessorFactory {
+  createProcessor(): IImageProcessor;
+}
+
+class JPEGProcessorFactory implements IImageProcessorFactory {
+  createProcessor(): IImageProcessor {
+    return new JPEGProcessor();
+  }
+}
+
+class PNGProcessorFactory implements IImageProcessorFactory {
+  createProcessor(): IImageProcessor {
+    return new PNGProcessor();
+  }
+}
+
+class GIFProcessorFactory implements IImageProcessorFactory {
+  createProcessor(): IImageProcessor {
+    return new GIFProcessor();
+  }
+}
+
+class ImageService {
+  processImage(fileExtension: string, imagePath: string): string {
+    let factory: IImageProcessorFactory;
+    
+    switch (fileExtension.toLowerCase()) {
+      case "jpg":
+      case "jpeg":
+        factory = new JPEGProcessorFactory();
+        break;
+      case "png":
+        factory = new PNGProcessorFactory();
+        break;
+      case "gif":
+        factory = new GIFProcessorFactory();
+        break;
+      default:
+        throw new Error("Unsupported image format");
+    }
+    
+    const processor = factory.createProcessor();
+    return processor.process(imagePath);
+  }
+}
+```
+9. Report Generator Factory
+
+```ts
+interface IReport {
+  generate(data: any[]): string;
+}
+
+class PDFReport implements IReport {
+  generate(data: any[]): string {
+    return `PDF Report generated with ${data.length} records`;
+  }
+}
+
+class ExcelReport implements IReport {
+  generate(data: any[]): string {
+    return `Excel Report generated with ${data.length} records`;
+  }
+}
+
+class CSVReport implements IReport {
+  generate(data: any[]): string {
+    return `CSV Report generated with ${data.length} records`;
+  }
+}
+
+interface IReportFactory {
+  createReport(): IReport;
+}
+
+class PDFReportFactory implements IReportFactory {
+  createReport(): IReport {
+    return new PDFReport();
+  }
+}
+
+class ExcelReportFactory implements IReportFactory {
+  createReport(): IReport {
+    return new ExcelReport();
+  }
+}
+
+class CSVReportFactory implements IReportFactory {
+  createReport(): IReport {
+    return new CSVReport();
+  }
+}
+
+class ReportService {
+  generateReport(format: string, data: any[]): string {
+    let factory: IReportFactory;
+    
+    switch (format.toLowerCase()) {
+      case "pdf":
+        factory = new PDFReportFactory();
+        break;
+      case "excel":
+        factory = new ExcelReportFactory();
+        break;
+      case "csv":
+        factory = new CSVReportFactory();
+        break;
+      default:
+        throw new Error("Unsupported report format");
+    }
+    
+    const report = factory.createReport();
+    return report.generate(data);
+  }
+}
+```
+
+10. Cache Provider Factory
+
+```ts
+interface ICacheProvider {
+  get(key: string): any;
+  set(key: string, value: any): void;
+}
+
+class MemoryCache implements ICacheProvider {
+  private cache = new Map<string, any>();
+  
+  get(key: string): any {
+    return this.cache.get(key);
+  }
+  
+  set(key: string, value: any): void {
+    this.cache.set(key, value);
+  }
+}
+
+class RedisCache implements ICacheProvider {
+  get(key: string): any {
+    console.log(`Getting ${key} from Redis`);
+    return null; // Simulate Redis get
+  }
+  
+  set(key: string, value: any): void {
+    console.log(`Setting ${key} in Redis with value:`, value);
+  }
+}
+
+class FileCache implements ICacheProvider {
+  get(key: string): any {
+    console.log(`Getting ${key} from file system`);
+    return null; // Simulate file read
+  }
+  
+  set(key: string, value: any): void {
+    console.log(`Writing ${key} to file system with value:`, value);
+  }
+}
+
+interface ICacheFactory {
+  createCache(): ICacheProvider;
+}
+
+class MemoryCacheFactory implements ICacheFactory {
+  createCache(): ICacheProvider {
+    return new MemoryCache();
+  }
+}
+
+class RedisCacheFactory implements ICacheFactory {
+  createCache(): ICacheProvider {
+    return new RedisCache();
+  }
+}
+
+class FileCacheFactory implements ICacheFactory {
+  createCache(): ICacheProvider {
+    return new FileCache();
+  }
+}
+
+class CacheManager {
+  getCache(type: string): ICacheProvider {
+    let factory: ICacheFactory;
+    
+    switch (type.toLowerCase()) {
+      case "memory":
+        factory = new MemoryCacheFactory();
+        break;
+      case "redis":
+        factory = new RedisCacheFactory();
+        break;
+      case "file":
+        factory = new FileCacheFactory();
+        break;
+      default:
+        throw new Error("Unsupported cache type");
+    }
+    
+    return factory.createCache();
+  }
+}
+```
+
+# Summary
+
+The **Factory Pattern** is essential when you need to:
+
+- Create objects without specifying their exact classes  
+- Delegate object creation to specialized factories  
+- Support multiple product families  
+- Make your code more flexible and maintainable  
+
+---
+
+## ✅ Key Benefits:
+
+- Promotes **loose coupling**  
+- Easier to **extend with new products**  
+- **Centralizes** object creation logic  
+- Follows the **Open/Closed Principle**  
+
+---
