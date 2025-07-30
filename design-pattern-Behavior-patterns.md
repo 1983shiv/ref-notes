@@ -48,6 +48,20 @@ The **Memento Pattern** is a behavioral design pattern that lets you capture and
 
 It's commonly used for undo/redo functionality.
 
+**How the Memento Pattern Works**
+- Originator (Editor): The object whose state needs to be saved and restored.
+- Memento (EditorState): Stores the internal state of the originator.
+- Caretaker (History): Keeps track of the memento objects but never modifies them.
+
+***In this example:***
+- The editor's content is changed several times.
+- Each time, the state is saved to history.
+- When needed, the editor can restore its previous state from history (undo).
+
+**Key Point:**
+The memento pattern allows undo/redo functionality without exposing the internal details of the object.
+
+
 ---
 
 #### TypeScript Example
@@ -112,18 +126,6 @@ console.log(editor.getContent()); // Output: b
 
 ```
 
-**How the Memento Pattern Works**
-- Originator (Editor): The object whose state needs to be saved and restored.
-- Memento (EditorState): Stores the internal state of the originator.
-- Caretaker (History): Keeps track of the memento objects but never modifies them.
-
-***In this example:***
-- The editor's content is changed several times.
-- Each time, the state is saved to history.
-- When needed, the editor can restore its previous state from history (undo).
-
-**Key Point:**
-The memento pattern allows undo/redo functionality without exposing the internal details of the object.
 
 
 
