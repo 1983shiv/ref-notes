@@ -4,39 +4,39 @@ Behavioral design patterns are concerned with the assignment of responsibilities
 
 ## List of Behavioral Design Patterns
 
-1. **Chain of Responsibility**
+1. [**Chain of Responsibility**]
    - Passes a request along a chain of handlers.
    - Each handler decides either to process the request or pass it to the next handler.
 
-2. **Command**
+2. [**Command**]
    - Encapsulates a request as an object, thereby allowing for parameterization and queuing of requests.
 
-3. **Interpreter**
+3. [**Interpreter**]
    - Provides a way to evaluate language grammar or expression.
    - Used to interpret sentences in a language.
 
-4. **Iterator**
+4. [**Iterator**]
    - Provides a way to access elements of a collection sequentially without exposing the underlying representation.
 
-5. **Mediator**
+5. [**Mediator**]
    - Defines an object that centralizes communication between a set of objects to promote loose coupling.
 
-6. **Memento** (#memento-desing-pattern)
+6. [**Memento**](#memento-design-pattern)
    - Captures and restores an object’s internal state without violating encapsulation.
 
-7. **Observer**
+7. [**Observer**]
    - Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified.
 
-8. **State**
+8. [**State**]
    - Allows an object to change its behavior when its internal state changes.
 
-9. **Strategy** (#strategy-design-pattern)
+9. [**Strategy**](#strategy-design-pattern)
    - Defines a family of algorithms, encapsulates each one, and makes them interchangeable.
 
-10. **Template Method**
+10. [**Template Method**]
     - Defines the skeleton of an algorithm in a method, deferring some steps to subclasses.
 
-11. **Visitor**
+11. [**Visitor**]
     - Lets you define a new operation without changing the classes of the elements on which it operates.
 
 ---
@@ -129,8 +129,6 @@ The memento pattern allows undo/redo functionality without exposing the internal
 
 ### Strategy Design Pattern
 Defines a family of algorithm, put them into a seperate classes so that they can be change at run time.
-
-# Strategy Pattern Summary
 
 ## When to Use
 
