@@ -582,11 +582,11 @@ It encapsulates object creation logic and promotes loose coupling between the cl
 
 **Simple Factory : A Factory class that decides which concrete class to instantiate.**
 
-![ Simple Factory Design Pattern](./img/simple-factory-design-pattern.png)
+![ Simple Factory Design Pattern](./img/simple-factory-design-method.png)
 
 **Factory Method : Defines an interface for creating objects but allows subclasses to decide which class to instantiate.**
 
-![ Factory Design Method](./img/simple-factory-design-method.png)
+![ Factory Design Method](./img/simple-factory-design-pattern.png)
 
 ![ Abstract Factory Design Pattern](./img/abstract-factory-design-uml.png)
 
