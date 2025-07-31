@@ -132,6 +132,9 @@ console.log(editor.getContent()); // Output: b
 ### Strategy Design Pattern
 Defines a family of algorithm, put them into a seperate classes so that they can be change at run time.
 
+![ Inheritance of sub classes](./img/strategy-design-pattern-1.png)
+![ Strategy Design Pattern UML](./img/strategy-design-pattern-uml.png)
+
 ## When to Use
 
 The **Strategy Pattern** is essential when you need to:
@@ -330,8 +333,7 @@ robot1.fly();         // Output: Flying normally...
 
 ```
 
-**10 Real-World Scenarios**
-# Table of Contents
+## 10 Real-World Scenarios
 
 1. [Payment Processing System](#payment-processing-system)  
 2. [Sorting Algorithm Strategy](#sorting-algorithm-strategy)  

@@ -580,9 +580,335 @@ It encapsulates object creation logic and promotes loose coupling between the cl
 
 ![ Factory design pattern structure](./img/factory-design-pattern.png)
 
+**Simple Factory : A Factory class that decides which concrete class to instantiate.**
+
+![ Simple Factory Design Pattern](./img/simple-factory-design-pattern.png)
+
+**Factory Method : Defines an interface for creating objects but allows subclasses to decide which class to instantiate.**
+
+![ Factory Design Method](./img/simple-factory-design-method.png)
+
+![ Abstract Factory Design Pattern](./img/abstract-factory-design-uml.png)
+
+**Abstract Factory : Provides an interface for creating families of related objects without specifying there concrete classes.**
+
+
 ---
 
 ### TypeScript Implementation
+**Simple Factory typescript Code**
+
+```ts
+
+// --- Burger Interface ---
+interface Burger {
+    prepare(): void;
+}
+
+// --- Concrete Burger Implementations ---
+class BasicBurger implements Burger {    
+    prepare(): void {
+        console.log("Preparing Basic Burger with bun, patty, and ketchup!");
+    }
+}
+
+class StandardBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Standard Burger with bun, patty, cheese, and lettuce!");
+    }
+}
+
+class PremiumBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Premium Burger with gourmet bun, premium patty, cheese, lettuce, and secret sauce!");
+    }
+}
+
+// --- Burger Factory ---
+class BurgerFactory {
+    createBurger(String type): Burger {
+        switch(type){
+            case 'basic':
+                return new BasicBurger();
+                break;
+            case 'standard':
+                return new StandardBurger();
+                break;
+            case 'premium':
+                return new PremiumBurger()
+                brea;
+            default:
+                console.log("Invalid burger type!");
+                return null;
+        }
+    }
+}
+
+
+// --- Usage ---
+const type = "standard";
+const factory = new BurgerFactory();
+const burger = factory.createBurger(type);
+
+if (burger) {
+    burger.prepare(); // ✅ Will call the appropriate burger's prepare() method
+}
+
+```
+
+**Factory Design Method Typescript Code**
+
+```ts
+// --- Product Interface and Implementations ---
+interface Burger {
+    prepare(): void;
+}
+
+// Regular Buns
+class BasicBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Basic Burger with bun, patty, and ketchup!");
+    }
+}
+
+class StandardBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Standard Burger with bun, patty, cheese, and lettuce!");
+    }
+}
+
+class PremiumBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Premium Burger with gourmet bun, premium patty, cheese, lettuce, and secret sauce!");
+    }
+}
+
+// Wheat Buns
+class BasicWheatBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Basic Wheat Burger with bun, patty, and ketchup!");
+    }
+}
+
+class StandardWheatBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Standard Wheat Burger with bun, patty, cheese, and lettuce!");
+    }
+}
+
+class PremiumWheatBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Premium Wheat Burger with gourmet bun, premium patty, cheese, lettuce, and secret sauce!");
+    }
+}
+
+// --- Factory Interface and Concrete Factories ---
+interface BurgerFactory {
+    createBurger(type: string): Burger | null;
+}
+
+class SinghBurger implements BurgerFactory {
+    createBurger(type: string): Burger | null {
+        switch (type.toLowerCase()) {
+            case "basic":
+                return new BasicBurger();
+            case "standard":
+                return new StandardBurger();
+            case "premium":
+                return new PremiumBurger();
+            default:
+                console.log("❌ Invalid burger type!");
+                return null;
+        }
+    }
+}
+
+class KingBurger implements BurgerFactory {
+    createBurger(type: string): Burger | null {
+        switch (type.toLowerCase()) {
+            case "basic":
+                return new BasicWheatBurger();
+            case "standard":
+                return new StandardWheatBurger();
+            case "premium":
+                return new PremiumWheatBurger();
+            default:
+                console.log("❌ Invalid burger type!");
+                return null;
+        }
+    }
+}
+
+// --- Main / Usage Example ---
+function main() {
+    const type = "basic";
+
+    const myFactory: BurgerFactory = new SinghBurger(); // or new KingBurger()
+    const burger = myFactory.createBurger(type);
+
+    if (burger) {
+        burger.prepare();
+    }
+}
+
+main();
+
+```
+
+**Abstract Factory Design Pattern Typescript Code**
+
+```ts
+// --- Product 1 --> Burger ---
+interface Burger {
+    prepare(): void;
+}
+
+class BasicBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Basic Burger with bun, patty, and ketchup!");
+    }
+}
+
+class StandardBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Standard Burger with bun, patty, cheese, and lettuce!");
+    }
+}
+
+class PremiumBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Premium Burger with gourmet bun, premium patty, cheese, lettuce, and secret sauce!");
+    }
+}
+
+class BasicWheatBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Basic Wheat Burger with bun, patty, and ketchup!");
+    }
+}
+
+class StandardWheatBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Standard Wheat Burger with bun, patty, cheese, and lettuce!");
+    }
+}
+
+class PremiumWheatBurger implements Burger {
+    prepare(): void {
+        console.log("Preparing Premium Wheat Burger with gourmet bun, premium patty, cheese, lettuce, and secret sauce!");
+    }
+}
+
+// --- Product 2 --> GarlicBread ---
+interface GarlicBread {
+    prepare(): void;
+}
+
+class BasicGarlicBread implements GarlicBread {
+    prepare(): void {
+        console.log("Preparing Basic Garlic Bread with butter and garlic!");
+    }
+}
+
+class CheeseGarlicBread implements GarlicBread {
+    prepare(): void {
+        console.log("Preparing Cheese Garlic Bread with extra cheese and butter!");
+    }
+}
+
+class BasicWheatGarlicBread implements GarlicBread {
+    prepare(): void {
+        console.log("Preparing Basic Wheat Garlic Bread with butter and garlic!");
+    }
+}
+
+class CheeseWheatGarlicBread implements GarlicBread {
+    prepare(): void {
+        console.log("Preparing Cheese Wheat Garlic Bread with extra cheese and butter!");
+    }
+}
+
+// --- Abstract Factory ---
+interface MealFactory {
+    createBurger(type: string): Burger | null;
+    createGarlicBread(type: string): GarlicBread | null;
+}
+
+// --- Concrete Factory 1 ---
+class SinghBurger implements MealFactory {
+    createBurger(type: string): Burger | null {
+        switch (type.toLowerCase()) {
+            case "basic":
+                return new BasicBurger();
+            case "standard":
+                return new StandardBurger();
+            case "premium":
+                return new PremiumBurger();
+            default:
+                console.log("❌ Invalid burger type!");
+                return null;
+        }
+    }
+
+    createGarlicBread(type: string): GarlicBread | null {
+        switch (type.toLowerCase()) {
+            case "basic":
+                return new BasicGarlicBread();
+            case "cheese":
+                return new CheeseGarlicBread();
+            default:
+                console.log("❌ Invalid garlic bread type!");
+                return null;
+        }
+    }
+}
+
+// --- Concrete Factory 2 ---
+class KingBurger implements MealFactory {
+    createBurger(type: string): Burger | null {
+        switch (type.toLowerCase()) {
+            case "basic":
+                return new BasicWheatBurger();
+            case "standard":
+                return new StandardWheatBurger();
+            case "premium":
+                return new PremiumWheatBurger();
+            default:
+                console.log("❌ Invalid burger type!");
+                return null;
+        }
+    }
+
+    createGarlicBread(type: string): GarlicBread | null {
+        switch (type.toLowerCase()) {
+            case "basic":
+                return new BasicWheatGarlicBread();
+            case "cheese":
+                return new CheeseWheatGarlicBread();
+            default:
+                console.log("❌ Invalid garlic bread type!");
+                return null;
+        }
+    }
+}
+
+// --- Main / Usage ---
+function main() {
+    const burgerType = "basic";
+    const garlicBreadType = "cheese";
+
+    const mealFactory: MealFactory = new SinghBurger(); // or new KingBurger()
+
+    const burger = mealFactory.createBurger(burgerType);
+    const garlicBread = mealFactory.createGarlicBread(garlicBreadType);
+
+    if (burger) burger.prepare();
+    if (garlicBread) garlicBread.prepare();
+}
+
+main();
+
+```
 
 ```ts
 // IProduct interface
@@ -650,6 +976,8 @@ console.log(vegPizza.eat());    // Output: Eating Veg Pizza
 console.log(nonVegPizza.eat()); // Output: Eating Non-Veg Pizza
 
 ```
+
+
 
 # How Factory Pattern Works
 
