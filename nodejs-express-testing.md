@@ -1,6 +1,32 @@
 ## Node.js/Express TypeScript Testing Cheat Sheet
 Here’s a comprehensive Markdown cheat sheet for backend testing in Node.js/Express with TypeScript, using Jest, Supertest, ts-jest, ts-node, Vitest, and mongodb-memory-server. This covers all common combinations for unit, integration, mocking/stubbing, HTTP request simulation, and assertions
 
+### Installation Example (with Jest + Supertest + TypeScript)
+```bash
+npm install --save-dev jest supertest ts-jest @types/jest @types/supertest
+```
+### Set up Jest config:
+
+```bash
+npx ts-jest config:init
+
+```
+
+### Suggested Project Structure
+```bash
+/src
+  /routes
+  /controllers
+  /services
+  /models
+  app.ts
+/tests
+  app.test.ts
+  routes/
+  services/
+```
+
+
 1. Setup Imports
 ```js
 import request from 'supertest';
