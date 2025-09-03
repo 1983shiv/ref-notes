@@ -4193,4 +4193,1519 @@ After setting up everything, you can test the functionality using an API client 
 
 ***
 
-This detailed breakdown covers all the essential steps and concepts from the video, ensuring a robust understanding of implementing password hashing with TypeORM triggers in NestJS.
+
+---
+
+### 1. Project Setup: Creating the Authentication Module
+
+First, you need to create the `auth` module, which will house the authentication logic.
+
+**Step:** Use the Nest CLI to generate the `auth` resource.
+**Command:**
+```bash
+Nest G res auth --no-spec
+```
+This command generates the `auth` module, controller, and service files without creating test files (`--no-spec`). When prompted, choose "REST API" and select "No" for creating CRUD entry points.
+
+### 2. Installing Dependencies
+
+Next, install the necessary packages for Passport.js authentication.
+
+**Step:** Install core Passport.js packages and their type definitions.
+**Commands:**
+```bash
+npm install @nestjs/passport passport passport-local
+npm install --save-dev @types/passport-local
+```
+*   `@nestjs/passport`: NestJS integration for Passport.js.
+*   `passport`: The core Passport.js library.
+*   `passport-local`: The Passport strategy specifically for username and password authentication.
+*   `@types/passport-local`: TypeScript type definitions for `passport-local`, installed as a development dependency.
+
+### 3. User Service Modification: Adding `findByEmail` Method
+
+Since the authentication will use the user's email as their username, a method is needed in the `UserService` to retrieve a user based on their email.
+
+**Step:** Go to your `user.service.ts` file and add an `async findByEmail` method. This method uses the `userRepository` to find a user by their email address.
+
+**Example Code (`src/user/user.service.ts`):**
+```typescript
+// Assuming you have a User entity and a UserRepository already set up with TypeORM
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './user.entity'; // Adjust path to your User entity
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  // ... (other existing methods, e.g., findOne by ID) ...
+
+  /**
+   * Finds a user by their email address.
+   * @param email The email address to search for.
+   * @returns The user object if found, otherwise undefined.
+   */
+  async findByEmail(email: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+}
+```
+
+### 4. Auth Service Implementation: The `validateUser` Method
+
+The `AuthService` will contain the core logic for validating user credentials.
+
+**Step 4.1: Inject `UserService` and Register in `AuthModule`**
+**Inject:** Add `private userService: UserService` to the `AuthService` constructor.
+**Register:** Crucially, `UserService` must be registered in the `providers` list of the `AuthModule` to avoid runtime errors. Also, ensure the `User` entity is registered with `TypeOrmModule.forFeature()` in `AuthModule` as `UserService` depends on `UserRepository`.
+
+**Example Code (`src/auth/auth.module.ts`):**
+```typescript
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { UserService } from '../user/user.service'; // Adjust path
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../user/user.entity'; // Adjust path
+import { LocalStrategy } from './strategies/local.strategy'; // Will be created in the next step
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([User]), // Register User entity
+  ],
+  controllers: [AuthController],
+  providers: [
+    AuthService,
+    UserService, // **Register UserService here**
+    LocalStrategy, // Will be registered here later
+  ],
+})
+export class AuthModule {}
+```
+
+**Step 4.2: Create `validateUser` Method**
+Create an `async validateUser` method in `auth.service.ts` that takes `email` and `password` as input from the login API.
+
+*   **Retrieve User**: Use `this.userService.findByEmail()` to get the user.
+*   **Check User Existence**: If the user is `null`, throw an `UnauthorizedException`.
+*   **Compare Passwords**: Use `bcrypt.compare()` to compare the provided plaintext password with the hashed password stored in the database. **Ensure you `await` this function**.
+*   **Check Password Match**: If the passwords do not match, throw another `UnauthorizedException`.
+*   **Return User Subset**: If validation is successful, return a subset of the user object, specifically the **user's ID**. It is important **not to return the entire user object, especially the password**.
+
+**Example Code (`src/auth/auth.service.ts`):**
+```typescript
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UserService } from '../user/user.service'; // Adjust path
+import * as bcrypt from 'bcrypt'; // Make sure bcrypt is installed: npm install bcryptjs @types/bcryptjs or npm install bcrypt
+
+@Injectable()
+export class AuthService {
+  constructor(private userService: UserService) {}
+
+  /**
+   * Validates user credentials (email and password).
+   * @param email The user's email (used as username).
+   * @param pass The plaintext password provided by the user.
+   * @returns An object containing the user's ID if credentials are valid.
+   * @throws UnauthorizedException if user not found or password invalid.
+   */
+  async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.userService.findByEmail(email);
+
+    // 1. Check if user exists
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // 2. Compare provided password with stored hashed password
+    // It's crucial to await this function
+    const isPasswordMatch = await bcrypt.compare(pass, user.password);
+
+    // 3. Check if passwords match
+    if (!isPasswordMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // 4. If validated, return a minimal user object (e.g., just the ID)
+    // Avoid returning sensitive data like the password
+    return { id: user.id };
+  }
+}
+```
+
+### 5. Passport Strategy Creation: Local Strategy
+
+Passport strategies define how users prove their identity. The local strategy authenticates users with credentials stored in your application's database.
+
+**Step 5.1: Create Strategy File and Class**
+Create a new directory `strategies` inside `src/auth`, and then create `local.strategy.ts` within it.
+
+**Example Code (`src/auth/strategies/local.strategy.ts`):**
+```typescript
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-local'; // Import Strategy from passport-local
+import { AuthService } from '../auth.service'; // Adjust path
+
+@Injectable()
+export class LocalStrategy extends PassportStrategy(Strategy) {
+  constructor(private authService: AuthService) {
+    // Call the super constructor to configure the strategy
+    super({
+      usernameField: 'email', // Tell passport-local to use 'email' from the request body as the username
+      // If your password field was named something other than 'password' (e.g., 'pass'),
+      // you would set passwordField: 'pass' here.
+    });
+  }
+
+  /**
+   * Validates the user's credentials against the AuthService.
+   * This method is automatically called by Passport.js after extracting username/password.
+   * @param email The email extracted from the request body.
+   * @param password The password extracted from the request body.
+   * @returns The validated user object (from AuthService.validateUser) on success.
+   * @throws UnauthorizedException on validation failure.
+   */
+  async validate(email: string, password: string): Promise<any> {
+    const user = await this.authService.validateUser(email, password);
+    if (!user) {
+      // AuthService.validateUser already throws specific exceptions,
+      // but this acts as a final safeguard if for some reason it returns null.
+      throw new UnauthorizedException();
+    }
+    // The object returned here (e.g., { id: user.id }) will be attached to req.user
+    return user;
+  }
+}
+```
+
+**Step 5.2: Register `LocalStrategy` in `AuthModule`**
+Add the `LocalStrategy` to the `providers` array in your `AuthModule`.
+
+**Example Code (`src/auth/auth.module.ts` - updated):**
+```typescript
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { UserService } from '../user/user.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../user/user.entity';
+import { LocalStrategy } from './strategies/local.strategy'; // Import LocalStrategy
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([User]),
+  ],
+  controllers: [AuthController],
+  providers: [
+    AuthService,
+    UserService,
+    LocalStrategy, // **Register LocalStrategy here**
+  ],
+})
+export class AuthModule {}
+```
+
+### 6. Auth Controller: Login Endpoint
+
+Now, create the login endpoint in `auth.controller.ts` that will utilise the local strategy.
+
+**Step:** Define a `POST` route for `/login`. Use the `@UseGuards(AuthGuard('local'))` decorator to activate the local strategy for this route. Access the authenticated user object (returned by `LocalStrategy.validate`) via `@Request() req` as `req.user`. Also, set the HTTP status code to `200 OK` for a successful login instead of the default `201 Created` for POST requests.
+
+**Example Code (`src/auth/auth.controller.ts`):**
+```typescript
+import { Controller, Post, Request, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport'; // Import AuthGuard
+
+@Controller('auth') // Assuming the base route for this controller is 'auth'
+export class AuthController {
+
+  /**
+   * Handles user login with local strategy.
+   * @param req The request object, which will contain the authenticated user after guard execution.
+   * @returns The authenticated user object (e.g., { id: userId }).
+   */
+  @Post('login')
+  @HttpCode(HttpStatus.OK) // Set successful login status to 200 OK
+  @UseGuards(AuthGuard('local')) // Activate the local Passport strategy
+  async login(@Request() req) {
+    // req.user contains the object returned by LocalStrategy.validate()
+    return req.user;
+  }
+}
+```
+
+### 7. Optional: Creating a Custom Guard
+
+You can create a custom guard to wrap `AuthGuard('local')`, which can be useful for better organisation or to add custom logic later.
+
+**Step 7.1: Generate Custom Guard**
+Use the Nest CLI to generate a new guard.
+**Command:**
+```bash
+Nest G gu auth/guards/local-auth
+```
+This creates `local-auth.guard.ts` in `src/auth/guards/`.
+
+**Step 7.2: Implement Custom Guard**
+The custom guard simply extends `AuthGuard('local')`.
+
+**Example Code (`src/auth/guards/local-auth.guard.ts`):**
+```typescript
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+@Injectable()
+export class LocalAuthGuard extends AuthGuard('local') {
+  // You can override methods like canActivate() here to add custom logic
+}
+```
+
+**Step 7.3: Use Custom Guard in Controller**
+Replace `AuthGuard('local')` with your `LocalAuthGuard` in the controller.
+
+**Example Code (`src/auth/auth.controller.ts` - with custom guard):**
+```typescript
+import { Controller, Post, Request, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { LocalAuthGuard } from './guards/local-auth.guard'; // Import your custom guard
+
+@Controller('auth')
+export class AuthController {
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard) // Use the custom local authentication guard
+  async login(@Request() req) {
+    return req.user;
+  }
+}
+```
+
+### Recap of Authentication Flow
+
+When a client sends a POST request to `/auth/login` with `email` and `password` in the body, the following sequence occurs:
+
+1.  **Guard Activation**: The `LocalAuthGuard` (or `AuthGuard('local')`) is activated for the `/login` route.
+2.  **Strategy Execution**: The `LocalStrategy` is invoked. It automatically extracts the `email` and `password` from the request body.
+3.  **Validation Call**: `LocalStrategy` calls `AuthService.validateUser(email, password)`.
+4.  **User Retrieval**: `AuthService.validateUser` calls `UserService.findByEmail(email)` to find the user in the database.
+5.  **User Existence Check**: If no user is found, an `UnauthorizedException` ("User not found") is thrown.
+6.  **Password Comparison**: If a user is found, `bcrypt.compare()` is used to check if the provided password matches the hashed password in the database.
+7.  **Password Match Check**: If passwords do not match, an `UnauthorizedException` ("Invalid credentials") is thrown.
+8.  **Successful Validation**: If all checks pass, `AuthService.validateUser` returns a minimal user object (e.g., `{ id: userId }`).
+9.  **Request Object Enrichment**: This returned user object is then attached to the `request` object as `req.user` by Passport.js.
+10. **Controller Response**: Finally, the `AuthController.login` method returns `req.user` to the client.
+
+This completes the username and password authentication with the local strategy. In subsequent steps of the course, this `req.user` object is used to create a **JWT token** for protecting other API routes.
+
+
+---
+
+## (JSON Web Token) authentication
+
+### **1. Install Dependencies**
+
+First, install the necessary packages for JWT authentication and passport integration:
+
+```bash
+npm install @nestjs/jwt passport-jwt
+npm install --save-dev @types/passport-jwt
+```
+*   `@nestjs/jwt`: Provides the JWT module and service for NestJS.
+*   `passport-jwt`: Passport strategy for authenticating with a JSON Web Token.
+*   `@types/passport-jwt`: TypeScript type definitions for `passport-jwt`.
+
+---
+
+### **2. Configure the JWT Module**
+
+The `JwtModule` needs to be configured in your `AuthModule` to specify how JWT tokens are created and validated.
+
+**Scenario:**
+When a user successfully logs in, a JWT token is created based on their user ID and sent back to the client along with the user ID. For subsequent requests to protected APIs, the client must include this access token in the request header.
+
+**`src/auth/auth.module.ts`**
+
+```typescript
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt'; //
+
+@Module({
+  imports: [
+    JwtModule.register({ //
+      secret: 'YOUR_SECRET_KEY', // (Temporarily, will be moved to .env)
+      signOptions: { expiresIn: '1d' }, // (Token valid for 1 day)
+    }),
+  ],
+  // ... other module configurations
+})
+export class AuthModule {}
+```
+*   The `JwtModule.register()` function is used to set global configurations for JWT.
+*   **`secret`**: This is a crucial key used to both **create (sign)** and **validate (decode)** the JWT token. It must be kept secure and should not be hardcoded in the codebase due to its sensitive nature.
+*   **`signOptions.expiresIn`**: Defines the expiration time of the JWT token (e.g., '1d' for one day, '48h' for 48 hours, '7d' for 7 days). After this time, the token is no longer valid, and the user must re-authenticate or use a refresh token mechanism.
+
+---
+
+### **3. Manage Sensitive Data with `.env` and Config Module**
+
+Sensitive data like the secret key and expiration time should be stored in environment variables, typically in a `.env` file, and loaded using NestJS's ConfigModule.
+
+**3.1. Create `.env` variables**
+
+In your `.env` file at the project root:
+
+```ini
+JWT_SECRET=
+JWT_EXPIRE_IN=1d
+```
+*   `JWT_SECRET`: The secret key for signing and verifying JWTs.
+*   `JWT_EXPIRE_IN`: The default expiration time for generated tokens.
+
+**3.2. Generate a strong secret key**
+
+Use `openssl` in your terminal to generate a strong 32-byte secret key and paste it into your `.env` file:
+
+```bash
+openssl rand -base64 32
+```
+*   This command generates a strong, random 32-byte string which is ideal for a secret key. Paste the output after `JWT_SECRET=` in your `.env` file.
+
+**3.3. Create a JWT Config File**
+
+Create a configuration file to load the `.env` variables using NestJS's `ConfigModule`.
+
+**`src/config/jwt.config.ts`**
+
+```typescript
+import { registerAs } from '@nestjs/config'; //
+import { JwtModuleOptions } from '@nestjs/jwt'; //
+
+export default registerAs(
+  'jwt', // Namespace for this config
+  (): JwtModuleOptions => ({ // Factory function
+    secret: process.env.JWT_SECRET, // Load secret from .env
+    signOptions: {
+      expiresIn: process.env.JWT_EXPIRE_IN, // Load expiry from .env
+    },
+  }),
+);
+```
+*   **`registerAs('jwt', ...)`**: Creates a namespace for this configuration, allowing you to access it specifically as `'jwt'` later.
+*   The factory function returns an object conforming to `JwtModuleOptions`, containing the `secret` and `signOptions.expiresIn` read from `process.env`.
+
+**3.4. Update `AuthModule` to use `registerAsync`**
+
+Modify `AuthModule` to use `JwtModule.registerAsync` and integrate the `jwt.config.ts` file via `ConfigModule.forFeature`.
+
+**`src/auth/auth.module.ts`**
+
+```typescript
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config'; // Add ConfigService
+import jwtConfig from '../config/jwt.config'; // Import the JWT config file
+
+@Module({
+  imports: [
+    // ... other imports
+    ConfigModule.forFeature(jwtConfig), // Register the JWT config with ConfigModule
+    JwtModule.registerAsync({ // Use registerAsync for asynchronous configuration
+      imports: [ConfigModule], // Import ConfigModule to make ConfigService available
+      useFactory: (configService: ConfigService) => ({ // Use a factory function to provide options
+        secret: configService.get<string>('jwt.secret'), // Access the secret from the namespaced config
+        signOptions: {
+          expiresIn: configService.get<string>('jwt.expiresIn'), // Access expiry from namespaced config
+        },
+      }),
+      inject: [ConfigService], // Inject ConfigService into the factory
+    }),
+  ],
+  // ... other module configurations
+})
+export class AuthModule {}
+```
+*   `ConfigModule.forFeature(jwtConfig)`: This registers the `jwtConfig` factory with the `ConfigModule`, making it accessible within the module.
+*   `JwtModule.registerAsync()`: Allows for dynamic configuration of the `JwtModule`, useful when configurations depend on other services (like `ConfigService`).
+*   `useFactory`: A function that returns the `JwtModuleOptions`. It takes `ConfigService` as an argument, which is then used to retrieve the `secret` and `expiresIn` values from the namespaced `jwt` configuration.
+
+---
+
+### **4. Create JWT Token on Login**
+
+After a user successfully logs in using the local strategy, a JWT token containing their user ID is generated and returned.
+
+**4.1. Define JWT Payload Type**
+
+Create a type for the data that will be encrypted inside the JWT.
+
+**`src/auth/types/auth-jwt-payload.d.ts`**
+
+```typescript
+export type AuthJwtPayload = {
+  sub: number; // The 'sub' (subject) property will hold the user ID
+};
+```
+*   The `sub` (subject) property is a standard JWT claim used to identify the principal (user) of the token.
+
+**4.2. Inject `JwtService` and Create Login Function in `AuthService`**
+
+The `AuthService` will handle the creation of the JWT token.
+
+**`src/auth/auth.service.ts`**
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt'; //
+import { AuthJwtPayload } from './types/auth-jwt-payload.d'; //
+
+@Injectable()
+export class AuthService {
+  constructor(private jwtService: JwtService) {} // Inject JwtService
+
+  async login(userId: number): Promise<{ accessToken: string }> { //
+    const payload: AuthJwtPayload = { sub: userId }; // Create the payload with user ID
+    return {
+      accessToken: this.jwtService.sign(payload), // Sign the payload to create the token
+    };
+  }
+
+  // ... other service methods
+}
+```
+*   **`constructor(private jwtService: JwtService)`**: The `JwtService` is injected, allowing `AuthService` to use its methods.
+*   **`this.jwtService.sign(payload)`**: This method creates the JWT token. Since the `JwtModule` was configured globally with the secret and `expiresIn` via `registerAsync`, you don't need to provide them here every time you sign a token.
+
+**4.3. Update `AuthController` to Return JWT**
+
+Modify the login endpoint in `AuthController` to return the generated JWT token along with the user ID.
+
+**`src/auth/auth.controller.ts`**
+
+```typescript
+import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport'; // (Assuming local strategy is already set up)
+import { AuthService } from './auth.service'; //
+
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @UseGuards(AuthGuard('local')) // (Using local strategy for initial login)
+  @Post('login')
+  async login(@Request() req: any) { //
+    const userId = req.user.id; // Extract user ID after successful local authentication
+    const { accessToken } = await this.authService.login(userId); // Create JWT token
+    return {
+      id: userId, // Return user ID
+      accessToken: accessToken, // Return the generated JWT access token
+    };
+  }
+
+  // ... other controller methods
+}
+```
+*   After successful local authentication (`@UseGuards(AuthGuard('local'))`), the user object is available in `req.user`.
+*   `this.authService.login(userId)` is called to create the JWT.
+*   The response now includes the user's `id` and the `accessToken`.
+
+---
+
+### **5. Implement JWT Strategy for API Protection**
+
+A JWT strategy is needed to extract, decode, and validate incoming JWT tokens from client requests to protected endpoints.
+
+**5.1. Create JWT Strategy File**
+
+**`src/auth/strategy/jwt.strategy.ts`**
+
+```typescript
+import { Inject, Injectable } from '@nestjs/common'; // Add Inject
+import { PassportStrategy } from '@nestjs/passport'; //
+import { ExtractJwt, Strategy } from 'passport-jwt'; // Import Strategy from passport-jwt
+import { ConfigType } from '@nestjs/config'; //
+import jwtConfig from '../../config/jwt.config'; //
+import { AuthJwtPayload } from '../types/auth-jwt-payload.d'; //
+
+@Injectable() //
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') { //
+  constructor(
+    @Inject(jwtConfig.KEY) // Inject the namespaced config
+    private jwtConfiguration: ConfigType<typeof jwtConfig>, //
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract JWT from 'Bearer' token in request header
+      secretOrKey: jwtConfiguration.secret, // Use the same secret key for decoding as for signing
+    });
+  }
+
+  async validate(payload: AuthJwtPayload) { //
+    // The passport strategy base class already handled extracting, decoding, and validating the JWT itself.
+    // This function receives the already decoded and validated payload.
+    // Here, we just extract what's necessary (e.g., user ID) and return it.
+    // This returned object will be appended to the 'request.user' object.
+    return { id: payload.sub }; // Return user ID
+  }
+}
+```
+*   **`@Injectable()`**: Marks the class as a provider that can be injected.
+*   **`extends PassportStrategy(Strategy, 'jwt')`**: Extends the base `PassportStrategy` class, specifying the `Strategy` from `passport-jwt` and giving it the name `'jwt'`.
+*   **`constructor`**:
+    *   `@Inject(jwtConfig.KEY) private jwtConfiguration: ConfigType<typeof jwtConfig>`: Injects the specific namespaced `jwt` configuration to retrieve the secret key.
+    *   **`super()`**: Calls the parent constructor with configuration options.
+        *   **`jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()`**: Configures the strategy to look for the JWT in the `Authorization` header, expecting a `Bearer` token format (e.g., `Authorization: Bearer <your-jwt-token>`).
+        *   **`secretOrKey: jwtConfiguration.secret`**: Provides the secret key used for decoding and verifying the token's signature. This *must* be the same key used to sign the token.
+*   **`validate(payload: AuthJwtPayload)`**: This function is called by `passport-jwt` *after* the token has been successfully extracted, decoded, and verified. It receives the decoded `payload` from the JWT. The object returned by this function (in this case, `{ id: payload.sub }`) will be attached to the `request` object as `req.user` for subsequent handling.
+
+**5.2. Register JWT Strategy in `AuthModule`**
+
+The `JwtStrategy` needs to be provided in the `AuthModule` so NestJS can discover and use it.
+
+**`src/auth/auth.module.ts`**
+
+```typescript
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import jwtConfig from '../config/jwt.config';
+import { JwtStrategy } from './strategy/jwt.strategy'; // Import JwtStrategy
+
+@Module({
+  imports: [
+    // ... other imports
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: {
+          expiresIn: configService.get<string>('jwt.expiresIn'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [JwtStrategy], // Register JwtStrategy as a provider
+  // ... other module configurations
+})
+export class AuthModule {}
+```
+
+---
+
+### **6. Create a JWT Authentication Guard**
+
+NestJS guards allow you to protect routes based on specific conditions, in this case, the presence and validity of a JWT.
+
+**6.1. Generate the Guard**
+
+Use the Nest CLI to generate a guard:
+
+```bash
+nest g guard auth/guards/jwt-auth
+```
+
+**6.2. Implement the JWT Auth Guard**
+
+**`src/auth/guards/jwt-auth.guard.ts`**
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport'; //
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') { // Extends AuthGuard with the 'jwt' strategy
+  // By extending AuthGuard('jwt'), this guard automatically triggers the JwtStrategy
+  // to extract, decode, validate the JWT, and populate req.user if successful.
+  // If the token is missing, invalid, or expired, it will automatically throw an UnauthorizedException.
+}
+```
+*   `extends AuthGuard('jwt')`: This automatically links the guard to the `JwtStrategy` that was registered with the name `'jwt'`. When this guard is used on an endpoint, it will invoke the `JwtStrategy`.
+
+---
+
+### **7. Protect API Endpoints**
+
+Now, apply the `JwtAuthGuard` to protect your API endpoints.
+
+**`src/user/user.controller.ts`**
+
+```typescript
+import { Controller, Get, UseGuards, Request } from '@nestjs/common'; //
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Import the JWT Auth Guard
+import { UserService } from './user.service'; //
+
+@Controller('user')
+export class UserController {
+  constructor(private userService: UserService) {}
+
+  @UseGuards(JwtAuthGuard) // Apply the JWT Auth Guard to protect this endpoint
+  @Get('profile')
+  async getProfile(@Request() req: any) { // Access the request object
+    // The JwtAuthGuard and JwtStrategy have already populated req.user with the user's ID
+    // The ID is extracted from the JWT payload, making it secure.
+    const userId = req.user.id; // Get user ID from the authenticated user object
+
+    // Example: Fetch user profile from the database using the ID
+    return this.userService.findOne(userId); //
+  }
+
+  // ... other controller methods
+}
+```
+*   **`@UseGuards(JwtAuthGuard)`**: This decorator ensures that any request to the `getProfile` endpoint will first pass through the `JwtAuthGuard`.
+*   If the JWT is valid, the `JwtStrategy`'s `validate` method will execute, and its return value (e.g., `{ id: 1 }`) will be available as `req.user`.
+*   **`req.user.id`**: Safely retrieves the authenticated user's ID from the request object, which was extracted from the JWT. This is more secure than extracting it from path parameters.
+
+---
+
+### **8. Testing with Insomnia (or Postman)**
+
+1.  **Login to get a token**:
+    *   Send a `POST` request to `/auth/login` with valid `username` and `password` in the request body.
+    *   The response will include the `id` and `accessToken`. **Copy this `accessToken`**.
+
+2.  **Access protected profile endpoint**:
+    *   Send a `GET` request to `/user/profile`.
+    *   **Initially, this will return `401 Unauthorized`** because it's a protected API without a token.
+    *   Go to the **"Auth"** section of your request (e.g., in Insomnia), select **"Bearer Token"**, and paste the copied `accessToken` into the token field.
+    *   Send the request again. Now, it should return the user's profile, indicating successful authentication and authorization.
+
+---
+
+### **Quick Recap of the JWT Authentication Flow**
+
+1.  **Configuration**: The `JwtModule` is configured with a secret key and expiration time, preferably loaded from environment variables using the `ConfigModule`.
+2.  **Login**: Upon a successful login (e.g., via local strategy), the `AuthService` uses the `JwtService.sign()` method to create a JWT token. This token includes a payload (e.g., user ID). The token is then returned to the client.
+3.  **Client Request**: The client stores this token and includes it in the `Authorization: Bearer <token>` header for all subsequent requests to protected API endpoints.
+4.  **API Protection**:
+    *   An endpoint is protected using `@UseGuards(JwtAuthGuard)`.
+    *   The `JwtAuthGuard` activates the `JwtStrategy`.
+    *   The `JwtStrategy` extracts the JWT from the request header, decodes it using the same secret key, and validates its integrity and expiration.
+    *   If valid, the `JwtStrategy`'s `validate` function is called with the decoded payload. This function extracts necessary user data (like the user ID) from the payload.
+    *   The extracted user data (e.g., `{ id: userId }`) is appended to the request object as `req.user`.
+    *   The protected endpoint can then access `req.user.id` to perform operations specific to the authenticated user.
+5.  **Unauthorized Access**: If the JWT is missing, invalid, or expired, the `JwtAuthGuard` immediately throws an `UnauthorizedException`, preventing access to the protected endpoint.
+
+---
+
+This comprehensive setup ensures that your NestJS API endpoints are securely protected using JWT authentication.
+
+---
+
+### NestJS Refresh Token: Step By Step Guide With Passport.JS
+
+This guide will walk you through implementing a refresh token mechanism in your NestJS application to enhance security and user experience by managing short-lived access tokens and long-lived refresh tokens.
+
+#### Understanding Access and Refresh Tokens
+
+Before diving into the implementation, it's crucial to understand the roles of access and refresh tokens:
+*   **Access Token**: This is a **short-lived JSON Web Token (JWT)** used to access protected resources, such as protected API endpoints. Its expiration time typically ranges from **minutes to a few hours (e.g., 5-15 minutes or 1 hour)**.
+*   **Refresh Token**: This is a **long-lived JWT** used specifically to obtain new access tokens when the current access token expires. Refresh tokens usually have a much longer expiration time, such as **1 day, 7 days, or even 2 weeks**.
+
+**Authentication Flow Summary**:
+1.  A user logs in with their credentials.
+2.  Upon successful login, the application issues **both an access token and a refresh token**.
+3.  The client stores these tokens securely.
+4.  For subsequent requests to protected APIs, the client provides the **access token** in the request header.
+5.  If the access token is valid, the API grants access.
+6.  If the access token is invalid or expired, the API returns an "unauthorized" error.
+7.  At this point, the client uses the **refresh token** to call a dedicated "refresh token API".
+8.  The refresh token API validates the refresh token and, if valid, issues a **new access token** back to the client.
+9.  The client then uses this new access token to access protected resources.
+
+#### Step 1: Create Refresh Token in the Login API
+
+The first step involves modifying your login API to generate and return a refresh token in addition to the existing access token.
+
+##### 1.1 Define Environment Variables for Refresh Token
+
+You need separate secret keys and expiration times for refresh tokens to ensure their long-lived nature and distinct security.
+
+*   **Create or update your `.env` file** with the following variables:
+
+    ```dotenv
+    # Existing JWT variables (for access token)
+    JWT_SECRET=your_access_token_secret
+    JWT_EXPIRE_IN=1h
+
+    # New JWT variables for refresh token
+    REFRESH_JWT_SECRET=your_refresh_token_secret
+    REFRESH_JWT_EXPIRE_IN=7d
+    ```
+
+*   **Generate a strong secret key for `REFRESH_JWT_SECRET`**:
+    *   Open your terminal and use OpenSSL:
+        ```bash
+        openssl rand -base64 32
+        ```
+    *   Copy the output and paste it as the value for `REFRESH_JWT_SECRET` in your `.env` file.
+
+##### 1.2 Create a Refresh JWT Configuration File
+
+Create a new configuration file to manage the refresh token's secret and expiration.
+
+*   **Create `refresh-jwt.config.ts`** inside your `config` directory (e.g., `src/auth/config/refresh-jwt.config.ts`):
+
+    ```typescript
+    import { registerAs } from '@nestjs/config';
+    import { JwtSignOptions } from '@nestjs/jwt';
+
+    export const refreshJwtConfig = registerAs(
+      'refreshJwt', // This is the namespace/key for this configuration
+      (): JwtSignOptions => ({
+        secret: process.env.REFRESH_JWT_SECRET,
+        expiresIn: process.env.REFRESH_JWT_EXPIRE_IN,
+      }),
+    );
+    ```
+    *   **Note**: The namespace (`'refreshJwt'`) is crucial. Ensure it's unique and different from other JWT configurations to prevent injection issues.
+
+##### 1.3 Register the Configuration with Config Module
+
+Register the newly created configuration file with NestJS's `ConfigModule`.
+
+*   **Update `auth.module.ts`**:
+
+    ```typescript
+    import { Module } from '@nestjs/common';
+    import { ConfigModule } from '@nestjs/config';
+    import { refreshJwtConfig } from './config/refresh-jwt.config'; // Import the new config
+    import { jwtConfig } from './config/jwt.config'; // Assuming you have an existing JWT config
+    // ... other imports
+
+    @Module({
+      imports: [
+        ConfigModule.forFeature(jwtConfig),
+        ConfigModule.forFeature(refreshJwtConfig), // Register refreshJwtConfig
+      ],
+      providers: [
+        // ... existing providers (AuthService, JwtStrategy, etc.)
+      ],
+      // ... other module properties
+    })
+    export class AuthModule {}
+    ```
+
+##### 1.4 Inject Refresh Token Configuration and Sign Refresh Token
+
+Now, inject the `refreshJwtConfig` into your `AuthService` and use it to sign the refresh token.
+
+*   **Update `auth.service.ts`**:
+
+    ```typescript
+    import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+    import { JwtService } from '@nestjs/jwt';
+    import { ConfigType } from '@nestjs/config';
+    import { jwtConfig } from './config/jwt.config'; // Access token config
+    import { refreshJwtConfig } from './config/refresh-jwt.config'; // Refresh token config
+    // ... other imports
+
+    @Injectable()
+    export class AuthService {
+      constructor(
+        private readonly jwtService: JwtService,
+        @Inject(jwtConfig.KEY)
+        private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+        @Inject(refreshJwtConfig.KEY) // Inject the refresh token configuration
+        private readonly refreshTokenConfiguration: ConfigType<typeof refreshJwtConfig>,
+      ) {}
+
+      async login(payload: { username: string; id: number }) {
+        // ... (your existing login logic)
+
+        // Create access token (using default/access token config)
+        const token = await this.jwtService.signAsync(payload, {
+          secret: this.jwtConfiguration.secret,
+          expiresIn: this.jwtConfiguration.expiresIn,
+        });
+
+        // Create refresh token (using specific refresh token config)
+        const refreshToken = await this.jwtService.signAsync(payload, {
+          secret: this.refreshTokenConfiguration.secret,
+          expiresIn: this.refreshTokenConfiguration.expiresIn,
+        });
+
+        // Return both tokens along with the user ID
+        return {
+          id: payload.id,
+          token, // Access Token
+          refreshToken, // Refresh Token
+        };
+      }
+
+      // ... other methods
+    }
+    ```
+
+##### 1.5 Update the Auth Controller
+
+Ensure your `AuthController` returns the full object containing both tokens.
+
+*   **Update `auth.controller.ts`**:
+
+    ```typescript
+    import { Controller, Post, Body } from '@nestjs/common';
+    import { AuthService } from './auth.service';
+    // ... other imports
+
+    @Controller('auth')
+    export class AuthController {
+      constructor(private readonly authService: AuthService) {}
+
+      @Post('login')
+      async login(@Body() loginDto: any) { // Replace 'any' with your actual DTO type
+        const { username, password } = loginDto; // Assuming these are in your DTO
+        // Your login logic to validate user and get payload
+        const userPayload = { username: loginDto.username, id: 1 }; // Example payload
+        return this.authService.login(userPayload); // Return the object with tokens
+      }
+
+      // ... other endpoints
+    }
+    ```
+
+##### 1.6 Test the Login API
+
+Send a request to your login API (e.g., `POST /auth/login`). You should now receive an `id`, an `access token` (`token`), and a `refresh token` in the response. The client should store these two tokens securely.
+
+#### Step 2: Create a Refresh Token Strategy
+
+This strategy will be responsible for extracting and validating the refresh token from incoming requests.
+
+##### 2.1 Create Refresh Token Strategy File
+
+*   **Create `refresh.strategy.ts`** inside your `strategies` directory (e.g., `src/auth/strategies/refresh.strategy.ts`):
+
+    ```typescript
+    import { Inject, Injectable } from '@nestjs/common';
+    import { PassportStrategy } from '@nestjs/passport';
+    import { ExtractJwt, Strategy } from 'passport-jwt';
+    import { ConfigType } from '@nestjs/config';
+    import { refreshJwtConfig } from '../config/refresh-jwt.config'; // Import refresh config
+
+    @Injectable()
+    export class RefreshJwtStrategy extends PassportStrategy(
+      Strategy,
+      'refresh-jwt', // Unique name for this strategy
+    ) {
+      constructor(
+        @Inject(refreshJwtConfig.KEY)
+        private readonly refreshTokenConfiguration: ConfigType<typeof refreshJwtConfig>,
+      ) {
+        super({
+          jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract from 'Bearer' header
+          ignoreExpiration: false, // Do not ignore expiration for refresh tokens
+          secretOrKey: refreshTokenConfiguration.secret, // Use refresh token secret
+        });
+      }
+
+      async validate(payload: any) {
+        // The decoded payload from the refresh token
+        // This function is called if the refresh token is valid and not expired
+        return { id: payload.id }; // Return user ID or relevant user information
+      }
+    }
+    ```
+    *   **Strategy Name**: The second parameter `('refresh-jwt')` is the unique name for this strategy, which you'll use in guards.
+    *   **Secret Key**: Ensure you use `refreshTokenConfiguration.secret` for `secretOrKey` to verify the refresh token correctly.
+    *   **`ignoreExpiration`**: It is crucial to set `ignoreExpiration: false` in both `JwtStrategy` (for access tokens) and `RefreshJwtStrategy` to ensure that expired tokens are actually rejected. Without this, `passport-jwt` might still allow expired tokens.
+
+##### 2.2 Register the Refresh Token Strategy
+
+Add the `RefreshJwtStrategy` to the `providers` array in `auth.module.ts`.
+
+*   **Update `auth.module.ts`**:
+
+    ```typescript
+    import { Module } from '@nestjs/common';
+    // ... other imports
+    import { RefreshJwtStrategy } from './strategies/refresh.strategy'; // Import new strategy
+
+    @Module({
+      imports: [
+        // ...
+      ],
+      providers: [
+        AuthService,
+        JwtStrategy,
+        RefreshJwtStrategy, // Register the refresh token strategy
+        // ... other providers
+      ],
+      // ...
+    })
+    export class AuthModule {}
+    ```
+
+##### 2.3 Create a Refresh Token Guard
+
+Guards apply strategies to specific routes.
+
+*   **Generate the guard using Nest CLI**:
+    ```bash
+    nest g gu auth/guards/refresh-auth
+    ```
+    This will create `src/auth/guards/refresh-auth.guard.ts`.
+
+*   **Update `refresh-auth.guard.ts`**:
+
+    ```typescript
+    import { Injectable } from '@nestjs/common';
+    import { AuthGuard } from '@nestjs/passport';
+
+    @Injectable()
+    export class RefreshAuthGuard extends AuthGuard('refresh-jwt') { // Use the strategy name
+      constructor() {
+        super();
+      }
+    }
+    ```
+
+#### Step 3: Create the Refresh Token API
+
+This API endpoint will accept the refresh token and issue a new access token.
+
+##### 3.1 Implement Refresh Token Function in `AuthService`
+
+This function will be called by the refresh API endpoint to generate a new access token.
+
+*   **Add `refreshToken` method to `auth.service.ts`**:
+
+    ```typescript
+    import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+    import { JwtService } from '@nestjs/jwt';
+    import { ConfigType } from '@nestjs/config';
+    import { jwtConfig } from './config/jwt.config';
+    import { refreshJwtConfig } from './config/refresh-jwt.config';
+
+    @Injectable()
+    export class AuthService {
+      constructor(
+        private readonly jwtService: JwtService,
+        @Inject(jwtConfig.KEY)
+        private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+        @Inject(refreshJwtConfig.KEY)
+        private readonly refreshTokenConfiguration: ConfigType<typeof refreshJwtConfig>,
+      ) {}
+
+      // ... existing login method
+
+      async refreshToken(userId: number) {
+        // Create payload for the new access token
+        const payload = { id: userId, username: 'exampleUser' /* Add other necessary user info */ };
+
+        // Sign a new access token using the *default* (access token) JWT configurations
+        const token = await this.jwtService.signAsync(payload, {
+          secret: this.jwtConfiguration.secret,
+          expiresIn: this.jwtConfiguration.expiresIn,
+        });
+
+        // Return the user ID and the new access token
+        return {
+          id: userId,
+          token, // New Access Token
+        };
+      }
+    }
+    ```
+    *   **Important**: Note that `refreshToken` generates a *new **access token***, so it uses `this.jwtConfiguration` (the access token config), not `this.refreshTokenConfiguration`.
+
+##### 3.2 Create Refresh Token Endpoint in `AuthController`
+
+Define a new POST endpoint for handling refresh token requests.
+
+*   **Add to `auth.controller.ts`**:
+
+    ```typescript
+    import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+    import { AuthService } from './auth.service';
+    import { RefreshAuthGuard } from './guards/refresh-auth.guard'; // Import the guard
+    import { Request } from 'express'; // Import Request type for better type inference
+
+    @Controller('auth')
+    export class AuthController {
+      constructor(private readonly authService: AuthService) {}
+
+      @Post('login')
+      async login(@Body() loginDto: any) {
+        // ... (existing login logic)
+      }
+
+      @Post('refresh') // Define the refresh endpoint
+      @UseGuards(RefreshAuthGuard) // Apply the refresh token guard
+      async refreshToken(@Req() req: Request) {
+        // req.user will contain the validated payload from RefreshJwtStrategy
+        return this.authService.refreshToken(req.user['id']); // Call service with user ID
+      }
+    }
+    ```
+    *   **`@UseGuards(RefreshAuthGuard)`**: This ensures that only requests with a valid refresh token can access this endpoint. The `RefreshJwtStrategy` will validate the token and append the decoded payload (e.g., `id`) to `req.user`.
+
+#### Step 4: Testing the Refresh Token System
+
+To effectively test the refresh token flow, you'll need to observe access token expiration.
+
+##### 4.1 Shorten Access Token Expiration for Testing
+
+*   **Update `JWT_EXPIRE_IN` in your `.env` file**:
+
+    ```dotenv
+    JWT_EXPIRE_IN=60s # Set to 60 seconds for quick testing
+    ```
+    Remember to revert this to a sensible production value (e.g., `1h`) after testing.
+
+##### 4.2 Enable Expiration Check in Strategies
+
+*   **Ensure `ignoreExpiration: false` is set in both `JwtStrategy` and `RefreshJwtStrategy`**.
+    *   **`jwt.strategy.ts`**: (Your access token strategy)
+        ```typescript
+        super({
+          jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+          ignoreExpiration: false, // Essential for expiration to work
+          secretOrKey: jwtConfiguration.secret,
+        });
+        ```
+    *   **`refresh.strategy.ts`**: (Already set in Step 2.1)
+        ```typescript
+        super({
+          jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+          ignoreExpiration: false, // Essential for expiration to work
+          secretOrKey: refreshTokenConfiguration.secret,
+        });
+        ```
+
+##### 4.3 Test Flow
+
+1.  **Login**: Send a `POST` request to `/auth/login` to get a new access token and a refresh token. Copy both.
+2.  **Access Protected API (initial)**: Use the **access token** to access a protected endpoint (e.g., `/profile`). It should return a successful response.
+3.  **Wait for Access Token to Expire**: Wait for 60 seconds (or whatever `JWT_EXPIRE_IN` you set).
+4.  **Access Protected API (expired)**: Try to access the same protected endpoint again with the **expired access token**. It should now return an `Unauthorized` error (HTTP 401).
+5.  **Refresh Token**: Send a `POST` request to `/auth/refresh` with the **refresh token** in the `Authorization: Bearer` header.
+    *   If successful, you should receive a **new access token** in the response.
+    *   **Test with invalid refresh token**: Try tampering with the refresh token and sending the request; it should return `Unauthorized`.
+6.  **Access Protected API (new access token)**: Use the **newly obtained access token** to access the protected endpoint. It should now grant access and return the response.
+
+This completes the implementation of a refresh token feature in your NestJS application.
+
+***
+
+---
+
+### **How to Revoke JWT Tokens in NestJS: Easy Step-by-Step Guide**
+
+This guide outlines how to invalidate JWT (JSON Web Token) tokens when a user signs out, is deleted, or banned from your system. The primary focus is on revoking **refresh tokens** due to their longer lifespan, while access tokens, often having a short expiration time (e.g., 1 hour), generally do not require explicit revocation in the database to avoid extra server overhead.
+
+---
+
+### **1. Storing the Hashed Refresh Token in the User Entity**
+
+**Explanation:**
+To revoke a refresh token, it must first be stored in the database. The most suitable place for this is within the `User` entity itself. Storing the *hashed* version of the refresh token enhances security.
+
+**Step-by-Step:**
+1.  **Add `hashedRefreshToken` field to `User` entity:**
+    *   Navigate to your `user.entity.ts` file.
+    *   Add a new column for storing the hashed refresh token. It should be of type `string`.
+    *   Optionally, you can rename the `password` field to `hashedPassword` to accurately reflect its stored form.
+    *   Set `nullable` to `true` for `hashedRefreshToken` as it will be set to `null` upon sign-out.
+
+**Example Code (`user.entity.ts`):**
+
+```typescript
+// Assuming you have a User entity
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  // Other user fields like email, username, etc.
+
+  @Column()
+  hashedPassword?: string; // Renamed for clarity as per source
+
+  @Column({ nullable: true }) // Allow null when user logs out
+  hashedRefreshToken?: string;
+}
+```
+
+---
+
+### **2. Generating and Storing the Hashed Refresh Token on Login**
+
+**Explanation:**
+When a user successfully logs in, a refresh token is generated. This token needs to be hashed using a strong algorithm and then stored in the `hashedRefreshToken` field of the user's record in the database.
+
+**Step-by-Step:**
+1.  **Create a `generateTokens` helper function:**
+    *   Inside your `AuthService`, create an `async` function, `generateTokens`, which takes `userId` as an argument.
+    *   This function will asynchronously generate both the access token and the refresh token using `Promise.all` for efficiency.
+    *   It uses `JwtService.signAsync` to create the tokens.
+    *   The refresh token will use a separate configuration (`refreshTokenConfig`) with its own secret and expiration time, distinct from the access token.
+
+**Example Code (`auth.service.ts`):**
+
+```typescript
+// auth.service.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService, ConfigType } from '@nestjs/config'; // Assuming these imports
+
+import * as argon2 from 'argon2'; // For hashing refresh token
+import { UserService } from '../user/user.service'; // Assuming UserService exists
+
+// ... other imports and class definition
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private jwtService: JwtService,
+    private userService: UserService,
+    // Inject the refresh token config if using separate configs
+    // @Inject(refreshTokenConfig.KEY)
+    // private refreshTokenConfig: ConfigType<typeof refreshTokenConfig>,
+    // For simplicity here, assuming direct config access or default setup
+  ) {}
+
+  // ... other functions
+
+  private async generateTokens(userId: number) {
+    const jwtPayload = { sub: userId }; // Payload for JWT
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(jwtPayload, {
+        // Default access token config (e.g., secret, expiresIn: '1h')
+        expiresIn: '1h', // Example: access token expires in 1 hour
+      }),
+      this.jwtService.signAsync(jwtPayload, {
+        // Use specific configuration for refresh token
+        secret: process.env.REFRESH_JWT_SECRET, // Example: from environment variable
+        expiresIn: '7d', // Example: refresh token expires in 7 days
+      }),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  // ... login function
+}
+```
+
+2.  **Install and use Argon2 for hashing:**
+    *   **Bcrypt vs. Argon2:** The video recommends **Argon2** over bcrypt for hashing refresh tokens because bcrypt uses an older algorithm less efficient with longer strings, like refresh tokens. Argon2 is faster and more efficient for this purpose.
+    *   **Installation:** Open your terminal and run `npm install argon2`.
+    *   **Hashing in `login` function:** After generating the refresh token, use `argon2.hash()` to hash it.
+
+**Example Code (`auth.service.ts` - within `login` function):**
+
+```typescript
+// auth.service.ts (inside your login function)
+import * as argon2 from 'argon2'; // Don't forget to import
+
+// ...
+async login(user: any) { // Assuming user object with ID
+    const { accessToken, refreshToken } = await this.generateTokens(user.id); // Call helper function
+
+    // Hash the refresh token
+    const hashedRefreshToken = await argon2.hash(refreshToken);
+
+    // Store the hashed refresh token
+    await this.userService.updateHashedRefreshToken(user.id, hashedRefreshToken);
+
+    return { id: user.id, accessToken, refreshToken }; // Return original refresh token to client
+}
+```
+
+3.  **Create `updateHashedRefreshToken` in `UserService`:**
+    *   This `async` function will take `userId` and `hashedRefreshToken` as parameters.
+    *   It uses your ORM (Object-Relational Mapper) to update the `hashedRefreshToken` field for the specified user ID.
+
+**Example Code (`user.service.ts`):**
+
+```typescript
+// user.service.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './user.entity'; // Assuming User entity is here
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  // ... other user service functions
+
+  async updateHashedRefreshToken(userId: number, hashedRefreshToken: string | null): Promise<void> {
+    await this.userRepository.update(userId, { hashedRefreshToken });
+  }
+
+  async findOne(id: number): Promise<User | undefined> {
+    // Ensure you select the hashedRefreshToken field when retrieving the user
+    return this.userRepository.findOne({ where: { id }, select: ['id', 'email', 'hashedRefreshToken'] });
+  }
+}
+```
+
+---
+
+### **3. Validating the Refresh Token on Refresh Request**
+
+**Explanation:**
+When a client requests a new access token using their refresh token, the provided refresh token must be validated against the hashed version stored in the database. This involves extracting the token from the request header, retrieving the corresponding user's hashed token, and comparing them using Argon2's verification function.
+
+**Step-by-Step:**
+1.  **Modify `RefreshStrategy` to access the request object:**
+    *   In your `refresh.strategy.ts`, set `passReqToCallback` to `true` in the `super()` call of `PassportStrategy`.
+    *   Add a `req` parameter of type `Request` (from `express`) to the `validate` function signature.
+
+**Example Code (`refresh.strategy.ts`):**
+
+```typescript
+// refresh.strategy.ts
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express'; // Import Request from express
+
+// ... other imports
+
+@Injectable()
+export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt') { // Ensure strategy name matches guard
+  constructor(
+    // ... inject refresh token config
+    // For simplicity, assuming direct secret access here
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false, // Important for JWT expiration checks
+      secretOrKey: process.env.REFRESH_JWT_SECRET, // Use the refresh token secret
+      passReqToCallback: true, // Pass request object to validate function
+    });
+  }
+
+  async validate(req: Request, payload: any) { // Add req parameter
+    // ... will call authService.validateRefreshToken here
+    // This function will be updated after creating validateRefreshToken in AuthService.
+  }
+}
+```
+
+2.  **Extract refresh token from header:**
+    *   Inside the `validate` function of `RefreshJwtStrategy`, extract the refresh token from the `Authorization` header.
+    *   Remove the "Bearer " prefix and trim any extra spaces.
+
+**Example Code (`refresh.strategy.ts` - within `validate`):**
+
+```typescript
+// refresh.strategy.ts (inside validate function)
+// ...
+async validate(req: Request, payload: any) {
+  const authorizationHeader = req.get('authorization');
+  if (!authorizationHeader) {
+    throw new UnauthorizedException('Authorization header missing');
+  }
+
+  const refreshToken = authorizationHeader.replace('Bearer', '').trim(); // Extract and clean
+  const userId = payload.sub; // Extract user ID from payload
+
+  // Inject AuthService to call validateRefreshToken
+  // Assuming AuthService is injected in RefreshJwtStrategy constructor
+  // private authService: AuthService;
+
+  return this.authService.validateRefreshToken(userId, refreshToken); // Call the validation function
+}
+```
+
+3.  **Create `validateRefreshToken` in `AuthService`:**
+    *   This `async` function takes `userId` (from payload) and the `refreshToken` (extracted from header) as arguments.
+    *   **Steps within `validateRefreshToken`:**
+        *   Retrieve the user from the `UserService` using the `userId`, ensuring the `hashedRefreshToken` field is included in the retrieved user object.
+        *   **Check 1: User presence and token existence:** If the user is `null` or `user.hashedRefreshToken` is `null`, throw an `UnauthorizedException` (e.g., "Invalid refresh token"). A `null` `hashedRefreshToken` indicates the user has logged out.
+        *   **Check 2: Token match:** Use `argon2.verify(user.hashedRefreshToken, refreshToken)` to compare the provided refresh token with the stored hashed version. Remember to `await` this call.
+        *   If the tokens do not match, throw another `UnauthorizedException` ("Invalid refresh token").
+        *   If all checks pass, return an object containing the `userId`.
+
+**Example Code (`auth.service.ts` - new function):**
+
+```typescript
+// auth.service.ts (new function)
+import * as argon2 from 'argon2'; // Don't forget to import
+
+// ...
+async validateRefreshToken(userId: number, refreshToken: string): Promise<{ userId: number }> {
+    const user = await this.userService.findOne(userId); // Retrieve user including hashed refresh token
+
+    // Check 1: User exists and is not logged out
+    if (!user || !user.hashedRefreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // Check 2: Verify refresh token with stored hash
+    const refreshTokensMatch = await argon2.verify(user.hashedRefreshToken, refreshToken);
+
+    if (!refreshTokensMatch) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    return { userId: user.id }; // Return user ID if valid
+}
+```
+
+4.  **Update `RefreshStrategy` to call `validateRefreshToken`:**
+    *   Inject `AuthService` into `RefreshJwtStrategy`'s constructor.
+    *   Call `this.authService.validateRefreshToken(userId, refreshToken)` from within the `validate` function of the strategy, returning its result.
+
+**Example Code (`refresh.strategy.ts` - updated `validate` function):**
+
+```typescript
+// refresh.strategy.ts (updated validate function)
+import { AuthService } from '../auth.service'; // Assuming path to AuthService
+
+// ...
+@Injectable()
+export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'refresh-jwt') {
+  constructor(
+    // Inject AuthService
+    private authService: AuthService,
+    // ... other injected configs
+  ) {
+    super({
+      // ... super config
+    });
+  }
+
+  async validate(req: Request, payload: any) {
+    // ... (extract refreshToken and userId as above)
+
+    // Call AuthService to validate the token
+    const validatedUser = await this.authService.validateRefreshToken(userId, refreshToken);
+    return { id: validatedUser.userId }; // Return an object with user ID
+  }
+}
+```
+
+---
+
+### **4. Implementing Refresh Token Rotation**
+
+**Explanation:**
+To enhance security, every time a client successfully uses a refresh token to obtain a new access token, a **new refresh token** should also be generated and returned. The old refresh token's hash in the database is then replaced with the hash of the new refresh token. This practice is known as **refresh token rotation**. If an old refresh token is compromised, it becomes immediately invalid after its first use, preventing attackers from using it.
+
+**Step-by-Step:**
+1.  **Modify `refreshToken` function in `AuthService`:**
+    *   In your `AuthService`, update the `refreshToken` function (which is called by your refresh API endpoint).
+    *   Instead of just generating a new access token, it should now call the `generateTokens` helper function (created in Step 2) to generate *both* a new access token and a new refresh token.
+    *   Hash the newly generated refresh token using Argon2.
+    *   Update the user's `hashedRefreshToken` field in the database with the hash of the *new* refresh token.
+    *   Return both the new access token and the new refresh token to the client.
+
+**Example Code (`auth.service.ts` - `refreshToken` function):**
+
+```typescript
+// auth.service.ts (refreshToken function)
+import * as argon2 from 'argon2';
+
+// ...
+async refreshToken(userId: number) {
+  const { accessToken, refreshToken } = await this.generateTokens(userId); // Generate new tokens
+
+  const hashedRefreshToken = await argon2.hash(refreshToken); // Hash the new refresh token
+
+  // Update the database with the new hashed refresh token
+  await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
+
+  return { accessToken, refreshToken }; // Return new tokens to client
+}
+```
+
+---
+
+### **5. Implementing Logout/Sign Out Functionality**
+
+**Explanation:**
+When a user signs out, their refresh token should be immediately invalidated. This is achieved by setting the `hashedRefreshToken` field in their `User` entity to `null`. This effectively logs them out by preventing any further refresh requests or access token generation with their old refresh token.
+
+**Step-by-Step:**
+1.  **Create `signOut` function in `AuthService`:**
+    *   This `async` function takes `userId` as an argument.
+    *   It calls `userService.updateHashedRefreshToken` for the given `userId`, passing `null` as the value for `hashedRefreshToken`.
+
+**Example Code (`auth.service.ts` - new function):**
+
+```typescript
+// auth.service.ts (new function)
+// ...
+async signOut(userId: number): Promise<void> {
+  await this.userService.updateHashedRefreshToken(userId, null); // Set hashed refresh token to null
+}
+```
+
+2.  **Create `signOut` endpoint in `AuthController`:**
+    *   Create a `POST` endpoint (e.g., `/auth/sign-out`) in your `AuthController`.
+    *   **Guard this route with `JwtAuthGuard`:** This ensures that only users with a valid *access token* can initiate a sign-out request. The `JwtAuthGuard` will automatically append the `userId` to the request object (`req.user.id`) upon successful validation of the access token.
+    *   Call `authService.signOut` with `req.user.id`.
+
+**Example Code (`auth.controller.ts`):**
+
+```typescript
+// auth.controller.ts
+import { Controller, Post, UseGuards, Req } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport'; // For JwtAuthGuard
+import { Request } from 'express'; // For Req
+
+import { AuthService } from './auth.service'; // Assuming AuthService
+
+// Assuming a JwtAuthGuard exists (similar to RefreshJwtGuard, but for standard JWT strategy)
+// export class JwtAuthGuard extends AuthGuard('jwt') {} // If defined in its own file
+
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  // ... other login, refresh routes
+
+  @Post('sign-out')
+  @UseGuards(AuthGuard('jwt')) // Use the default JWT Guard for access token validation
+  async signOut(@Req() req: Request) {
+    await this.authService.signOut(req.user['id']); // Call sign out with user ID from request
+    return { message: 'You have signed out successfully' }; // Optional: return a confirmation message
+  }
+}
+```
+
+---
+
+### **Testing and Verification (using Insomnia/Postman)**
+
+The video demonstrates testing these features using Insomnia.
+
+1.  **Login:** Send a `POST` request to your login API (`/auth/login`) with valid credentials. You should receive an `accessToken`, `refreshToken`, and `id`.
+2.  **Access Profile:** Use the `accessToken` in the `Authorization` header (`Bearer <accessToken>`) to access a protected profile API (`/auth/profile`). This should work.
+3.  **Test Access Token Expiration:** If your access token has a short expiration (e.g., 60 seconds), wait for it to expire and try accessing the profile API again. You should receive an `Unauthorized` error.
+    *   **Note:** Ensure `ignoreExpiration: false` is set in your `JwtStrategy` (and `RefreshJwtStrategy`) to enable expiration checks.
+4.  **Refresh Token Rotation Test:**
+    *   Send a `POST` request to your refresh token API (`/auth/refresh`) using the `refreshToken` in the `Authorization` header (`Bearer <refreshToken>`).
+    *   You should receive a *new* `accessToken` and a *new* `refreshToken`.
+    *   **Crucially:** Attempt to use the *previous* `refreshToken` again. You should get an `Unauthorized` error ("Invalid refresh token") because refresh token rotation has invalidated it. Only the *newest* refresh token is valid.
+5.  **Sign Out Test:**
+    *   Use your latest `accessToken` in the `Authorization` header to send a `POST` request to your sign-out API (`/auth/sign-out`).
+    *   You should receive a success message.
+    *   Now, attempt to use your *last valid* `refreshToken` to get a new access token via the refresh API. You should receive an `Unauthorized` error ("Invalid refresh token") because the `hashedRefreshToken` in the database has been set to `null`.
+
+---
+
+### **Conclusion**
+
+This comprehensive approach allows for **secure refresh token revocation** and **refresh token rotation** in a NestJS application. While the focus is on refresh tokens due to their longer lifespan, the same strategy can be applied to access tokens if they have a long lifespan and require explicit revocation. Short-lived access tokens generally do not require this explicit database-based revocation due to their rapid natural expiration.
+
+---
+
