@@ -2176,6 +2176,76 @@ All subsequent requests in Swagger will include that token automatically in the 
 
 ---
 
+### Swagger YML example
+```yml
 
+openapi: 3.0.0
+info:
+  title: Library API
+  description: API for managing books in a library
+  version: 1.0.0
 
+servers:
+  - url: https://api.example.com/v1
+
+paths:
+  /books:
+    get:
+      summary: Get all books
+      responses:
+        '200':
+          description: A list of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      summary: Add a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '201':
+          description: Book added successfully
+
+  /books/{id}:
+    get:
+      summary: Get a single book by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Book details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Book not found
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        author:
+          type: string
+        publishedDate:
+          type: string
+          format: date
+
+```
 
