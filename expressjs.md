@@ -279,4 +279,188 @@ app.get('/api/status', (req, res) => res.json({ status: 'ok' }));
 - Organize code with routers and controllers.
 - Use helmet, cors, and rate-limiter for security.
 
+
+- Error handling middleware.
+  - 
+    ```js
+    // Error handling middleware (must be last)
+    app.use((err, req, res, next) => {
+      console.error(err.stack);
+      
+      const status = err.status || 500;
+      const message = err.message || 'Something broke!';
+      
+      res.status(status).json({ 
+        error: message,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
+    });
+    ```
+    - use try/catch and call next(error) when errors occur
+    - Error middleware catches all errors and sends consistent error responses
+    - Always place error middleware last in your middleware stack
+
+  - Use async/await with try/catch for async routes.
+  ```js
+  app.get("/", async(req, res) => {
+    try{
+      // <!-- your business logic i.e. -->
+      const response = await fetch()
+      const data = response.json()
+    } catch (err){
+      console.error("Code Explain API Error", err);
+      res.status(500).json({ error: "Server Error", details: err.message})
+    }
+  })
+  ```
+- Validate user input and sanitize data.
+  ```bash
+    npm i zod 
+  ```
+
+  ```js
+  import express from 'express';
+  import { z } from 'zod';
+
+  const app = express();
+  app.use(express.json());
+
+  // Define Zod schemas
+  const userSchema = z.object({
+    email: z.string().email('Invalid email format'),
+    password: z.string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number'),
+    name: z.string()
+      .min(2, 'Name must be at least 2 characters')
+      .max(50, 'Name must be less than 50 characters')
+      .trim(),
+    age: z.number()
+      .int('Age must be an integer')
+      .min(18, 'Must be at least 18 years old')
+      .max(120, 'Age must be less than 120'),
+    role: z.enum(['user', 'admin']).optional().default('user')
+  });
+
+  const updateUserSchema = userSchema.partial(); // Makes all fields optional
+
+  // Middleware for Zod validation
+  const validateBody = (schema: z.ZodSchema) => {
+    return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      try {
+        const validatedData = schema.parse(req.body);
+        req.body = validatedData; // Replace with validated/sanitized data
+        next();
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({
+            error: 'Validation failed',
+            details: error.errors.map(err => ({
+              field: err.path.join('.'),
+              message: err.message
+            }))
+          });
+        }
+        next(error);
+      }
+    };
+  };
+
+  // Routes with Zod validation
+  app.post('/register', validateBody(userSchema), (req, res) => {
+    try {
+      const { email, password, name, age, role } = req.body;
+      
+      // Your business logic here - data is already validated and sanitized
+      res.json({ 
+        message: 'User registered successfully',
+        user: { email, name, age, role }
+      });
+      
+    } catch (error) {
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+  app.put('/user/:id', validateBody(updateUserSchema), (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // Your update logic here
+      res.json({ 
+        message: 'User updated successfully',
+        userId,
+        updates
+      });
+      
+    } catch (error) {
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+  // Query parameter validation
+  const searchSchema = z.object({
+    q: z.string().min(1, 'Search query is required'),
+    limit: z.string().regex(/^\d+$/, 'Limit must be a number').transform(Number).optional().default(10),
+    page: z.string().regex(/^\d+$/, 'Page must be a number').transform(Number).optional().default(1)
+  });
+
+  app.get('/search', (req, res) => {
+    try {
+      const { q, limit, page } = searchSchema.parse(req.query);
+      
+      // Your search logic here
+      res.json({ 
+        query: q,
+        limit,
+        page,
+        results: [`Result for "${q}"`]
+      });
+      
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          error: 'Invalid query parameters',
+          details: error.errors
+        });
+      }
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+  app.listen(3000, () => console.log('Server running on port 3000'));
+  ```
+- Use environment variables for secrets.
+  - 
+  ```bash
+  npm i dotenv
+  import { configDotenv } from "dotenv"
+  configDotenv()
+  ```
+- Organize code with routers and controllers.
+- Use helmet, cors, and rate-limiter for security.
+  -
+  ```bash
+  npm i cors helmet express-rate-limit
+  import helmet from "helmet"
+  import cors from "cors"
+  import { rateLimit } from "express-rate-limit"
+  app.use(helmet())
+  app.use(cors(
+      {
+          origin: process.env.FRONTEND_URL || "http://localhost:3000"
+      }
+  ))
+  const limiter = rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+      message: "Too many requests from this IP, please try again after 15 minutes"
+  })
+  app.use(limiter)
+  app.use(express.json({ limit: '10mb'}))
+
+  ```
+
 ---
