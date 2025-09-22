@@ -1669,3 +1669,38 @@
     8. Design a URL shortner
     9. Design a Logging Framework
     10. Design a Rate Limiter
+
+
+
+
+### 10 must read articles every software engineer should explore to level up their system design skills. 
+
+1. How Discord manages trillions of messages: 
+    https://discord.com/blog/how-discord-stores-trillions-of-messages
+
+2. Real-time Messaging at Slack: 
+    https://slack.engineering/real-time-messaging/
+
+3. Stripe's Payment API: 
+    https://stripe.com/blog/payment-api-design
+
+4. How Khan Academy moved from Monolith to Microservices: 
+    https://blog.khanacademy.org/beating-the-odds-khan-academys-successful-monolith%E2%86%92services-rewrite/
+
+5. How Stripe’s document databases supported 99.999% uptime: 
+    https://stripe.com/blog/how-stripes-document-databases-supported-99.999-uptime-with-zero-downtime-data-migrations
+
+6. Real World Use Cases for Kafka: 
+    https://dzone.com/articles/real-world-examples-and-use-cases-for-apache-kafka
+
+7. Scaling Media at Canva:  
+    https://www.canva.dev/blog/engineering/from-zero-to-50-million-uploads-per-day-scaling-media-at-canva/
+
+8. Scaling Infrastructure for Millions at Hotstar: 
+    https://blog.hotstar.com/scaling-infrastructure-for-millions-from-challenges-to-triumphs-part-1-6099141a99ef?gi=4be8179cc42c
+
+9. 100+ Petabytes with Minute Latency at Uber: 
+    https://www.uber.com/en-IN/blog/uber-big-data-platform/
+
+10. From Zero to 50 Million Uploads per Day at Canva: 
+    https://www.canva.dev/blog/engineering/from-zero-to-50-million-uploads-per-day-scaling-media-at-canva/
