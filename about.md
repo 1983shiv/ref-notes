@@ -4,13 +4,13 @@ I am Shiv Srivastava, thank you for this opportunity.
 
 I am a Full Stack Developer with 10+ years of experience working on WordPress/Shopify like CMS, modern JavaScript frameworks like React, Next.js, Nestjs and in Node.js eco system.
 
-Most recently, I worked with HeroThemes as a Senior WordPress Developer, where I built custom Gutenberg blocks, plugins, and optimized large-scale WordPress applications. 
+recently, I worked with HeroThemes, a London based companies who specialize in build WordPress themes/plugins as a Senior WordPress Developer, where I built many custom Gutenberg blocks, plugins, and optimized large-scale WordPress applications. 
 
 Before that, I upgraded a custom eCommerce system for Garment Printing Spain, including Salesforce API integration and advanced product filtering on the website. 
 
 I’ve also handled several freelance projects on Upwork and peopleperhour, such as developing application/website with MERN and PERN technologies, WordPress and Shopify, developing custom dashboard with python, streamlit or coding data fetching script in python. 
 
-Recently, I developed a backend for an Auction API using AWS services such as Cognito for authentication and authorization, Lambda, AppSync (GraphQL), and DynamoDB to manage real-time auction operations and SES for automated email notifications, Leveraged AppSync subscriptions to push real-time updates, also, I have integrated tagging for monitoring and event triggering in CloudWatch. 
+Most recently, I developed a backend for an Auction API using AWS services such as Cognito for authentication and authorization, Lambda, AppSync (GraphQL), and DynamoDB to manage real-time auction operations and SES for automated email notifications, Leveraged AppSync subscriptions to push real-time updates, also, I have integrated tagging for monitoring and event triggering in CloudWatch. 
 
 Recently i have redesigning a shopify website using Next.js as frontend, MongoDB as custom database for customer activity, and Shopify backend.
 
