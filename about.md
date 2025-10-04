@@ -16,8 +16,10 @@ I possess strong interpersonal and analytical skills that,
 enabling me to quickly adopt to new ideas and technologies.
 
 I believe in delivering quality work on time and I’m excited to discuss how my experiance can contribute to this job.
+
 ---
 Recently i have redesigning a shopify website using Next.js as frontend, MongoDB as custom database for customer activity, and Shopify backend.
+
 ---
 
 ## What is your hobbies?
@@ -32,17 +34,36 @@ It have tought me to be adaptable and open mindded, which are qualities i bring 
 3. **Fitness**
 I'm passionate about fitness and regularly go for morning walks, jogging, or running. It helps me stay disciplined and focused.
 I also play cricket regularly, which keeps me motivated and reminds me of the importance of fitness in life.
+
 ---
 
-## Why do you want to work here?
+## Why do you want to work here? 
 [Always research about the company, know its value and practices and then prepare this answer, it vary company to company]
 
 I'm excited about the potential to work with the leading experts in the field and contribute to the innovative work this company is doing. I have always been passionate about this industry and when I heard about this company, I knew it was the perfect fit for my skills and interests.
 
 ---
 
+## Why do you want this job?
+I like the culture of this organization. From that I've heard and what I've been reading about the company, it seems like a great fit for my personality and my values. I really connect with your mission statement, and feel passionate about the work that you do.
+
+---
+
 ## What is your greatest Strength?
+
+My greatest strength is my ability to stay organized and manage multiple tasks at once. I have the ability to break complex projects down into smaller tasks and finding efficient ways to complete them.
+
 My greatest strength is that I strive to stay abreast of the latest industry trends and technologies, and I'm always looking for new ways to improve.
+
+
+## What if interviewer ask something that you don't know.
+1. **Be Honest** : I appreciate your question, but I don't have the exact answer at the moment. However, I'm confident in my ability to quickly learn and find the solutions when faced with challenges.
+
+2. **Acknowledge Limitations** : I'm not familiar with that topic, but I'm always eager to expand my knowledge. If this is a critical aspect of the role, I'd be happy to learn and provide a more informed response.
+
+3. **Emphasize Willingness to Learn** : I'm not entirely certain about that, but I'm a proactive learner. If this is something vital to the position, I'd welcome the opportunity to research and understand it better.
+
+4. **Express Openness to Collabration** : I don't have all the details on that particular subject, but I believe in the power of teamwork. If i were to encounter such a situation, I'd collaborate with colleagues to ensure we find the best solution together.
 
 ## What is your Weakness?
 
@@ -52,6 +73,39 @@ My greatest strength is that I strive to stay abreast of the latest industry tre
 
 ## Tell me your current CTC
 
+
+## How do you handle Challenging Situations at work ?
+When faced with a challenging situation, i like to take a step back and analyse the situation from different angles. After assessing the situation, i develop a plan of action that outlines short-term as well as long-term solutions.
+
+---
+
+## What makes you stand Out from the rest of the candidates.
+I believe that my passion for the position, combined with my educational qualifications and diverse work experiance make me stand out from the rest of the candidates. I have a clear understanding of what the job entails, and i am eager to use my skills.
+
+---
+
+## How do you handle the work Pressure?
+I thrive under pressure and I am able to prioritize efficiently to ensure that all tasks are completed in a timely manner. I also make sure to stay focused on the goal and use positive self talk and affirmations to help me stay motivated.
+
+---
+
+## Why Do we hire you | Why should we select you?
+I'm a good team player, and I really feel like that's one skill that really sets me apart from others. Whatever team I might be managing, I end up making good relations with everyone. I'm also very effective at encouraging/motivating my teammates without having to push them or be too micro-managing.
+
+---
+
+## Do have any job offer at hand?
+
+**If you don't have any job offer**: 
+No, I don't have any job offer at hand currently. I am actively exploring opportunities that align with my skills 
+and career goals, where I can make a meaningful contribution. 
+
+This role has caught my attention because [ mention reasons specific to the role or company such as growth opportunities, company culture, alignment with skills etc.]. I am enthusiastic about the possibilities of joining your team and contributing to the company's success.
+
+**If you have a job offer**
+Yes, I do have a job offer at hand. However, I am still exploring other opportunities to ensure that I make the best decision for my career growth and personal development.
+
+---
 
 ## Thank You Email template before Interview
 
@@ -81,6 +135,7 @@ Thank you again for your time and consideration.
 Best regards,
 
 [Your Name]
+
 ---
 
 ## How to Ask for Job Opportunity from Recruiter ?
@@ -95,6 +150,7 @@ thank you for your time and consideration, and i look forward to hearing from yo
 Regards
 
 [Your Name]
+
 ---
 
 
