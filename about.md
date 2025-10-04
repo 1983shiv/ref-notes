@@ -12,13 +12,12 @@ I’ve also handled several freelance projects on Upwork and peopleperhour, such
 
 Most recently, I developed a backend for an Auction API using AWS services such as Cognito for authentication and authorization, Lambda, AppSync (GraphQL), and DynamoDB to manage real-time auction operations and SES for automated email notifications, Leveraged AppSync subscriptions to push real-time updates, also, I have integrated tagging for monitoring and event triggering in CloudWatch. 
 
-Recently i have redesigning a shopify website using Next.js as frontend, MongoDB as custom database for customer activity, and Shopify backend.
-
 I possess strong interpersonal and analytical skills that,
 enabling me to quickly adopt to new ideas and technologies.
 
 I believe in delivering quality work on time and I’m excited to discuss how my experiance can contribute to this job.
-
+---
+Recently i have redesigning a shopify website using Next.js as frontend, MongoDB as custom database for customer activity, and Shopify backend.
 ---
 
 ## What is your hobbies?
@@ -39,6 +38,7 @@ I also play cricket regularly, which keeps me motivated and reminds me of the im
 [Always research about the company, know its value and practices and then prepare this answer, it vary company to company]
 
 I'm excited about the potential to work with the leading experts in the field and contribute to the innovative work this company is doing. I have always been passionate about this industry and when I heard about this company, I knew it was the perfect fit for my skills and interests.
+
 ---
 
 ## What is your greatest Strength?
